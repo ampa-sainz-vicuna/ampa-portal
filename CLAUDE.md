@@ -113,7 +113,8 @@ cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, S
 - **Despliegue preparado, sin estrenar**: `Dockerfile` (construido y probado
   en local contra la base de desarrollo: migra, sirve el front, `/api/acceso`
   en ~25 ms), `deploy/preparar.sh`, `deploy/desplegar.sh`,
-  `deploy/dar-permisos-produccion.sh` (probado contra la base local). Pasos
+  `deploy/dar-permisos.sh` (un *job* de Cloud Run: la contraseña de la base
+  no sale de Google; probado en producción). Pasos
   en el README, "Desplegar".
 - En la base de desarrollo quedan dos personas de prueba (`admin.prueba@example.com`
   con todo y `vocal.prueba@example.com`).
@@ -145,9 +146,10 @@ despliegues y demás")**
 1. Certificado de `portal.ampasainzvicuna.com` (sale solo cuando Google ve el
    CNAME) y **origen en el cliente de OAuth** (`https://portal.ampasainzvicuna.com`
    y, para desarrollo, `http://localhost:5176`).
-2. **El primer administrador** y los accesos que ya existen (listados:
-   admin@ e info@; fichajes: sus administradores activos, con su segundo
-   correo) con `deploy/dar-permisos-produccion.sh`.
+2. ~~El primer administrador~~ **Hecho** con `deploy/dar-permisos.sh`:
+   **Admin** (`admin@`: portal·admin, fichajes·admin, listados·usuario;
+   segundo correo el personal del usuario, avisos a los dos) y **Alberto**
+   (`info@`: listados·usuario, fichajes·empleado).
 3. **Adoptarlo en listados** → fichajes → facturación (cliente/README.md y
    `@ampa/ui`, *Pasar de la 0.1 a la 0.2*). En listados:
    `APP_ALLOWED_EMAILS` → `listados:usuario`. En fichajes: administradores

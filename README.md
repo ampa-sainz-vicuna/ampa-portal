@@ -246,13 +246,15 @@ El orden, la primera vez:
 6. **OAuth**: añadir `https://portal.ampasainzvicuna.com` a los orígenes
    autorizados del cliente de Google.
 7. **El primer administrador** y los accesos que ya había (fichajes y
-   listados), desde tu ordenador contra la base de producción:
+   listados):
 
    ```bash
-   docker compose run --rm php bash ../deploy/dar-permisos-produccion.sh admin@ampasainzvicuna.com portal:admin listados:usuario --nombre="Nombre Apellido"
+   docker compose run --rm gcloud bash deploy/dar-permisos.sh admin@ampasainzvicuna.com portal:admin listados:usuario --nombre=Admin --segundo-correo=alguien@gmail.com
    ```
 
-   Pide la cadena de Neon sin mostrarla.
+   Corre `app:permisos:dar` dentro de Google, como un *job* de Cloud Run con
+   la imagen y los secretos del portal, y luego lo borra: la contraseña de la
+   base no pasa por tu ordenador.
 8. Primera etiqueta del cliente, **v0.1.0** (abajo), y adoptarlo en listados.
 
 Un secreto de firma para toda la suite y otro para la base: dos de los seis
