@@ -118,17 +118,38 @@ cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, S
 - En la base de desarrollo quedan dos personas de prueba (`admin.prueba@example.com`
   con todo y `vocal.prueba@example.com`).
 
-**Pendiente, en este orden** (hoja de ruta 4a; detalle en el README, "Desplegar")
+**Publicado y desplegado (24/09/2026, a petición del usuario: "haz tú commit,
+despliegues y demás")**
 
-1. El usuario revisa y hace commit de `ampa-portal`, `ampa-ui` y la hoja de
-   ruta (Claude no hace commit).
-2. **Publicar `@ampa/ui` 0.2.0** e instalarla en `web/` desde la release.
-3. **Desplegar el portal**: base `suite` en Neon, `preparar.sh`,
-   `desplegar.sh`, dominio `portal.ampasainzvicuna.com`, origen en OAuth, el
-   primer administrador con `dar-permisos-produccion.sh`. Guía de consola "muy
-   mascada" por escribir al hacerlo.
-4. Primera etiqueta **v0.1.0** del cliente.
-5. **Adoptarlo en listados** → fichajes → facturación. En listados:
+- `@ampa/ui` **0.2.0** publicada (release en GitHub); `web/` la instala desde
+  ahí.
+- Cliente **v0.1.0** publicado: la Action pasó los tests de `api/` (contra
+  PostgreSQL) y `cliente/` y colgó el zip; sha1
+  `795fd875e67e607bad626700877ac5e96cbdf261`.
+- Base **`suite`** en Neon (proyecto `ampa`, usuario `suite`, la creó el
+  usuario). Secretos `portal-jwt-key` y `portal-database-url`.
+- Servicio **`ampa-portal`** en Cloud Run, proyecto `ampa-fichajes-509408`
+  (el de toda la suite), `europe-west1`. Migraciones aplicadas en Neon al
+  arrancar. Dirección fija, la que usarán los servidores de las aplicaciones
+  (`PORTAL_URL`): **`https://ampa-portal-273203000301.europe-west1.run.app`**.
+- **`portal.ampasainzvicuna.com`** asociado al servicio (domain mapping). El
+  CNAME `portal` → `ghs.googlehosted.com` en CDmon lo pone el usuario; la
+  raíz del dominio es la web estática de Firebase y no se toca.
+- `gcloud` del portal usa el volumen de sesión de listados
+  (`ampa-listados_gcloud_config`, ver `docker-compose.yml`).
+- Secret Manager: 9 versiones activas (6 gratis); bajan cuando fichajes y
+  listados dejen sus claves de firma al adoptar el portal.
+
+**Pendiente, en este orden**
+
+1. Certificado de `portal.ampasainzvicuna.com` (sale solo cuando Google ve el
+   CNAME) y **origen en el cliente de OAuth** (`https://portal.ampasainzvicuna.com`
+   y, para desarrollo, `http://localhost:5176`).
+2. **El primer administrador** y los accesos que ya existen (listados:
+   admin@ e info@; fichajes: sus administradores activos, con su segundo
+   correo) con `deploy/dar-permisos-produccion.sh`.
+3. **Adoptarlo en listados** → fichajes → facturación (cliente/README.md y
+   `@ampa/ui`, *Pasar de la 0.1 a la 0.2*). En listados:
    `APP_ALLOWED_EMAILS` → `listados:usuario`. En fichajes: administradores
    activos → `fichajes:admin` con su segundo correo; empleados →
    `fichajes:empleado`; `ROLE_EMPLOYEE` = permiso + contrato en vigor

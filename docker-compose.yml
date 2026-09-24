@@ -72,8 +72,8 @@ services:
 
   # Herramienta de Google Cloud (gcloud) para desplegar, sin instalar nada en
   # Windows. No arranca con "up": se usa con "docker compose run --rm gcloud ...".
-  # La sesión de Google se guarda en el volumen gcloud_config, así que solo hay
-  # que iniciarla una vez. Igual que en fichajes y listados.
+  # La sesión de Google se guarda en el volumen gcloud_config, que aquí es el
+  # de listados (ver abajo): así no hay que volver a iniciarla.
   gcloud:
     image: gcr.io/google.com/cloudsdktool/google-cloud-cli:alpine
     working_dir: /workspace
@@ -86,4 +86,10 @@ volumes:
   db_data:
   api_var:
   node_modules:
+  # La sesión de gcloud ya iniciada en ampa-listados (admin@, proyecto de la
+  # suite). Es el mismo proyecto de Google Cloud para todas las aplicaciones,
+  # así que no tiene sentido iniciarla otra vez aquí. Si algún día no existe:
+  # docker compose run --rm gcloud gcloud auth login (y quitar estas dos líneas).
   gcloud_config:
+    external: true
+    name: ampa-listados_gcloud_config
