@@ -1,0 +1,128 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Portal\Api;
+
+use App\Portal\Domain\User\NotificationTarget;
+use App\Tests\Support\ApiTestCase;
+use PHPUnit\Framework\Attributes\Test;
+
+/**
+ * Lo que preguntan las aplicaciones al portal desde su servidor: el contrato
+ * con el cliente (cliente/). Si uno de estos tests cambia, cambia el
+ * contrato, y sube la segunda cifra de la versión.
+ */
+final class AccessApiTest extends ApiTestCase
+{
+    #[Test]
+    public function devuelve_quien_es_sus_roles_en_esa_aplicacion_y_a_donde_avisarle(): void
+    {
+        $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin'], 'listados' => ['usuario']], secondaryEmail: 'alguien@gmail.com', notify: NotificationTarget::Secondary);
+
+        $this->access('fichajes', $this->tokenFor('tesoreria@ampasainzvicuna.com'));
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame([
+            'email' => 'tesoreria@ampasainzvicuna.com',
+            'name' => 'Tesoreria',
+            'roles' => ['admin'],
+            'notificationEmails' => ['alguien@gmail.com'],
+        ], $this->payload());
+    }
+
+    #[Test]
+    public function sin_permiso_en_esa_aplicacion_contesta_con_roles_vacios(): void
+    {
+        // No es un error: el cliente decide (en fichajes, un contrato también
+        // puede dar un rol).
+        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->access('fichajes', $this->tokenFor('admin@ampasainzvicuna.com'));
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame([], $this->payload()['roles']);
+    }
+
+    #[Test]
+    public function sin_token_es_un_401(): void
+    {
+        $this->request('GET', '/api/acceso?aplicacion=fichajes');
+
+        self::assertSame(401, $this->responseStatus());
+    }
+
+    #[Test]
+    public function con_un_token_que_no_vale_es_un_401(): void
+    {
+        $this->access('fichajes', 'basura');
+
+        self::assertSame(401, $this->responseStatus());
+    }
+
+    #[Test]
+    public function desactivada_es_un_401_aunque_el_token_siga_vigente(): void
+    {
+        $this->given('antiguo@ampasainzvicuna.com', ['fichajes' => ['admin']], active: false);
+
+        $this->access('fichajes', $this->tokenFor('antiguo@ampasainzvicuna.com'));
+
+        self::assertSame(401, $this->responseStatus());
+    }
+
+    #[Test]
+    public function una_aplicacion_que_no_existe_es_un_404(): void
+    {
+        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->access('inventada', $this->tokenFor('admin@ampasainzvicuna.com'));
+
+        self::assertSame(404, $this->responseStatus());
+    }
+
+    #[Test]
+    public function los_avisos_van_a_quien_tiene_el_rol_cada_uno_a_su_correo(): void
+    {
+        $this->given('empleada@ampasainzvicuna.com', ['fichajes' => ['empleado']]);
+        $this->given('presidencia@ampasainzvicuna.com', ['fichajes' => ['admin']], secondaryEmail: 'presi@gmail.com', notify: NotificationTarget::Both);
+        $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin']]);
+        $this->given('baja@ampasainzvicuna.com', ['fichajes' => ['admin']], active: false);
+        $this->given('listados@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->request('GET', '/api/avisos?aplicacion=fichajes&rol=admin', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('empleada@ampasainzvicuna.com'),
+        ]);
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame([
+            ['name' => 'Presidencia', 'emails' => ['presidencia@ampasainzvicuna.com', 'presi@gmail.com']],
+            ['name' => 'Tesoreria', 'emails' => ['tesoreria@ampasainzvicuna.com']],
+        ], $this->payload());
+    }
+
+    #[Test]
+    public function los_correos_de_una_aplicacion_no_se_los_da_a_quien_no_entra_en_ella(): void
+    {
+        $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin']]);
+        $this->given('listados@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->request('GET', '/api/avisos?aplicacion=fichajes&rol=admin', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('listados@ampasainzvicuna.com'),
+        ]);
+
+        self::assertSame(403, $this->responseStatus());
+    }
+
+    #[Test]
+    public function los_avisos_de_un_rol_que_no_existe_son_un_404(): void
+    {
+        $this->request('GET', '/api/avisos?aplicacion=fichajes&rol=jefe');
+
+        self::assertSame(404, $this->responseStatus());
+    }
+
+    private function access(string $application, string $token): void
+    {
+        $this->request('GET', '/api/acceso?aplicacion='.$application, server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);
+    }
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Portal\Domain\User\User" table="users">
+
+        <!-- Nombre explícito para que coincida con la migración escrita a mano -->
+        <unique-constraints>
+            <unique-constraint name="uniq_users_email" columns="email"/>
+        </unique-constraints>
+
+        <id name="id" type="user_id" column="id">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="email"  type="email_address" column="email"  length="180"/>
+        <field name="name"   type="string"        column="name"   length="120"/>
+        <field name="active" type="boolean"       column="active"/>
+        <field name="grants" type="grants"        column="grants"/>
+
+        <field name="secondaryEmail" type="email_address" column="secondary_email" length="180" nullable="true"/>
+        <field name="notify"         type="string"        column="notify"          length="10"
+               enum-type="App\Portal\Domain\User\NotificationTarget"/>
+
+    </entity>
+</doctrine-mapping>

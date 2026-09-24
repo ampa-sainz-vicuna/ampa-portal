@@ -1,0 +1,5 @@
+# Los scripts se ejecutan en Linux (contenedores). Con saltos de línea de
+# Windows (CRLF) el "#!/bin/sh" deja de funcionar, así que se fuerzan a LF.
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker/**/*.conf text eol=lf

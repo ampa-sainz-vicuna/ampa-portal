@@ -1,0 +1,89 @@
+name: ampa-portal
+
+# Puertos distintos de los de las otras aplicaciones de la suite a propósito:
+# en desarrollo el portal tiene que estar levantado A LA VEZ que la aplicación
+# que se esté probando (es quien da la sesión), y si compartieran puerto la
+# segunda no arrancaría.
+#
+#   fichajes 8080/5432 · listados 8081/5433 · facturación 8082/5434 · portal 8083/5435
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: suite
+      POSTGRES_USER: suite
+      POSTGRES_PASSWORD: suite
+    ports:
+      - "5435:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suite -d suite"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  php:
+    build:
+      context: ./docker/php
+    # El repositorio entero, no solo api/: en el mismo contenedor se prueban
+    # el servicio (api/) y el cliente que instalan las aplicaciones (cliente/).
+    working_dir: /var/www/html/api
+    environment:
+      DATABASE_URL: "postgresql://suite:suite@db:5432/suite?serverVersion=16&charset=utf8"
+    volumes:
+      - .:/var/www/html
+      # var/ (caché y logs) en un volumen de Docker, no en el disco de Windows:
+      # ahí el borrado no es inmediato y Symfony falla al limpiar la caché con
+      # "Directory not empty". Además es bastante más rápido. (Trampa heredada
+      # de fichajes.)
+      - api_var:/var/www/html/api/var
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8083:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+  # El front del portal: http://localhost:5176. En desarrollo es AQUÍ donde se
+  # entra con Google, y la cookie de "localhost" vale luego para el Vite de
+  # cada aplicación (5173, 5174, 5175).
+  node:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5176:5173"
+    volumes:
+      - ./web:/app
+      - node_modules:/app/node_modules
+      # La librería común de la suite, si está al lado (C:\Users\jimix\dev\ampa-ui).
+      # Solo sirve para probar una versión de @ampa/ui antes de publicarla:
+      # dentro del contenedor, /app/../ampa-ui es /ampa-ui. Ver el README de ampa-ui.
+      - ../ampa-ui:/ampa-ui
+
+  # Herramienta de Google Cloud (gcloud) para desplegar, sin instalar nada en
+  # Windows. No arranca con "up": se usa con "docker compose run --rm gcloud ...".
+  # La sesión de Google se guarda en el volumen gcloud_config, así que solo hay
+  # que iniciarla una vez. Igual que en fichajes y listados.
+  gcloud:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:alpine
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - gcloud_config:/root/.config/gcloud
+    profiles: ["tools"]
+
+volumes:
+  db_data:
+  api_var:
+  node_modules:
+  gcloud_config:

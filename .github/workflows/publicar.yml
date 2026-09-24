@@ -1,0 +1,109 @@
+# Publica una versión del cliente del portal (ampa/portal-cliente).
+#
+# Se dispara al subir una etiqueta vX.Y.Z (ver README, "Publicar una versión").
+# Pasa los tests del portal (contra un PostgreSQL de verdad) y los del
+# cliente, empaqueta el cliente y lo cuelga en la release de GitHub. Las
+# aplicaciones lo instalan desde ahí, sin credenciales:
+#
+#   https://github.com/ampa-sainz-vicuna/ampa-portal/releases/download/vX.Y.Z/ampa-portal-cliente-X.Y.Z.zip
+#
+# Se hace aquí y no a mano para que lo que se instala sea exactamente lo que ha
+# pasado los tests, construido siempre de la misma forma. El sha1 del zip va en
+# las notas de la release: es lo que cada aplicación pone en su composer.json
+# para que Composer compruebe que descarga eso y no otra cosa.
+
+name: Publicar versión
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  # Para crear la release y subirle el zip. Nada más.
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # La misma versión que docker-compose.yml.
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: suite
+          POSTGRES_USER: suite
+          POSTGRES_PASSWORD: suite
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U suite -d suite"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://suite:suite@localhost:5432/suite?serverVersion=16&charset=utf8
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: La etiqueta es una versión (vX.Y.Z)
+        run: |
+          if ! echo "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "La etiqueta $GITHUB_REF_NAME no tiene la forma vX.Y.Z."
+            exit 1
+          fi
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # La misma versión que la imagen de desarrollo (docker/php).
+          php-version: '8.4'
+          extensions: pdo_pgsql, intl
+          tools: composer
+
+      - name: Tests del portal
+        working-directory: api
+        run: |
+          composer install --no-interaction --no-progress
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:migrations:migrate --env=test --no-interaction
+          vendor/bin/phpunit
+
+      - name: Tests del cliente
+        working-directory: cliente
+        run: |
+          composer install --no-interaction --no-progress
+          vendor/bin/phpunit
+
+      - name: Empaquetar el cliente
+        id: zip
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sh scripts/empaquetar-cliente.sh "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha1=$(sha1sum dist/ampa-portal-cliente-$VERSION.zip | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Crear la release con el zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.zip.outputs.version }}
+          SHA1: ${{ steps.zip.outputs.sha1 }}
+        run: |
+          cat > notas.md <<EOF
+          Cliente del portal para las aplicaciones: \`ampa-portal-cliente-$VERSION.zip\`
+
+          sha1: \`$SHA1\`
+
+          En el \`composer.json\` de la aplicación (detalle en cliente/README.md):
+
+          \`\`\`json
+          "version": "$VERSION",
+          "dist": {
+              "url": "https://github.com/ampa-sainz-vicuna/ampa-portal/releases/download/v$VERSION/ampa-portal-cliente-$VERSION.zip",
+              "type": "zip",
+              "shasum": "$SHA1"
+          }
+          \`\`\`
+          EOF
+          gh release create "$GITHUB_REF_NAME" "dist/ampa-portal-cliente-$VERSION.zip" \
+            --title "$GITHUB_REF_NAME" --notes-file notas.md

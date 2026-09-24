@@ -1,0 +1,27 @@
+# Lo que NO entra en la imagen de producción. Sobre todo, ningún secreto.
+
+.git
+.github
+.idea
+.vscode
+**/*.log
+
+# Configuración local: en producción llega como variables de Cloud Run.
+api/.env.local
+api/.env.*.local
+api/.env.local.php
+
+# Se regeneran dentro de la imagen.
+api/vendor
+api/var
+web/node_modules
+web/dist
+
+# Solo para desarrollo y pruebas, o se publica aparte.
+api/tests
+api/phpunit.dist.xml
+cliente
+dist
+docker/php
+docker/nginx
+scripts

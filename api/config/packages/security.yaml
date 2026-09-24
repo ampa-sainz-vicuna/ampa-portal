@@ -1,0 +1,38 @@
+security:
+    providers:
+        # Mira la base de datos en cada petición: desactivar a alguien o
+        # quitarle la gestión de permisos surte efecto al momento.
+        users:
+            id: App\Portal\Infrastructure\Security\PortalUserProvider
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+
+        # Sin cortafuegos:
+        #   - entrar (canjea la identidad de Google; la comprueba el
+        #     verificador) y salir (borrar una cookie no pide nada);
+        #   - /api/acceso y /api/avisos, que no los llama un navegador sino el
+        #     servidor de cada aplicación, con el token en la cabecera; lo
+        #     comprueba el propio controlador (BearerUser).
+        public:
+            pattern: ^/api/(auth/google|auth/salir|acceso|avisos)$
+            stateless: true
+            security: false
+
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: users
+            custom_authenticators:
+                - App\Portal\Infrastructure\Security\SessionCookieAuthenticator
+            entry_point: App\Portal\Infrastructure\Security\SessionCookieAuthenticator
+            access_denied_handler: App\Portal\Infrastructure\Security\JsonAccessDeniedHandler
+
+    # Se aplica la PRIMERA regla que encaja, de arriba abajo: el orden importa.
+    access_control:
+        # La pantalla de permisos.
+        - { path: ^/api/admin, roles: ROLE_SUITE_ADMIN }
+        # El resto (/api/me: quién soy y a dónde puedo ir) basta con haber entrado.
+        - { path: ^/api, roles: IS_AUTHENTICATED }

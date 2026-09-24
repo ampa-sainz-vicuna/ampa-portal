@@ -1,0 +1,11 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    # Sin sesiones de PHP: la sesión de la suite es la cookie firmada del
+    # portal (SessionCookie), y cada petición se comprueba sola.
+    session: false
+
+when@test:
+    framework:
+        test: true

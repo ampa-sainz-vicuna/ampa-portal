@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+parameters:
+    # Cuánto dura una sesión, en segundos: una semana. Se entra con Google una
+    # vez a la semana, no cada mañana.
+    #
+    # Alargarla no retrasa quitarle el acceso a nadie: cada aplicación pregunta
+    # al portal en cada petición, y a una persona desactivada o sin permiso se
+    # le cierra la puerta al momento aunque su token siga vigente. Lo que sí
+    # alarga es cuánto vale una cookie robada de alguien que sigue activo.
+    session.ttl: 604800
+
+services:
+    _defaults:
+        autowire: true      # Inyecta las dependencias solo.
+        autoconfigure: true # Registra comandos, suscriptores, etc.
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+            # El dominio no tiene servicios: son entidades y value objects, y
+            # varios tienen el constructor privado. Si Symfony intentase
+            # registrarlos, fallaría al compilar.
+            - '../src/Portal/Domain/'
+
+    # Cada puerto apunta a su implementación. Es el único sitio del proyecto
+    # donde las dos capas se tocan.
+    App\Portal\Domain\User\UserRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
+    App\Portal\Infrastructure\Security\IdentityVerifier: '@App\Portal\Infrastructure\Security\GoogleIdTokenVerifier'
+
+    App\Portal\Domain\Suite\ApplicationCatalog:
+        factory: ['App\Portal\Infrastructure\Suite\ApplicationCatalogFactory', 'fromConfig']
+        arguments: ['%suite.applications%']
+
+    App\Portal\Infrastructure\Security\GoogleIdTokenVerifier:
+        arguments:
+            $clientId: '%env(GOOGLE_CLIENT_ID)%'
+            $hostedDomain: '%env(GOOGLE_HOSTED_DOMAIN)%'
+
+    App\Portal\Infrastructure\Security\SessionTokens:
+        arguments:
+            $key: '%env(JWT_KEY)%'
+            $ttl: '%session.ttl%'
+
+    App\Portal\Infrastructure\Security\SessionCookie:
+        arguments:
+            $domain: '%env(SESSION_COOKIE_DOMAIN)%'
+            $secure: '%env(bool:SESSION_COOKIE_SECURE)%'
+
+when@test:
+    services:
+        # No hay forma de fabricar un token de Google firmado por Google: en
+        # los tests, el token ES el correo (ver FakeIdentityVerifier).
+        App\Portal\Infrastructure\Security\IdentityVerifier:
+            class: App\Tests\Double\FakeIdentityVerifier

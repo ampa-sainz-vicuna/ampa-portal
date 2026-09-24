@@ -1,0 +1,18 @@
+/api/vendor/
+/api/var/
+/api/.env.local
+/api/.env.*.local
+/api/.phpunit.cache/
+
+/cliente/vendor/
+/cliente/composer.lock
+/cliente/.phpunit.cache/
+/cliente/var/
+
+# El zip del cliente se construye en la Action; en local, solo para probarlo.
+/dist/
+
+.idea/
+.vscode/
+*.log
+.DS_Store

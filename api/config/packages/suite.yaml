@@ -1,0 +1,37 @@
+# Las aplicaciones de la suite y los roles que se pueden dar en cada una.
+#
+# Aquí y no en la base de datos a propósito: una aplicación o un rol nuevo
+# llegan siempre con código nuevo en esa aplicación, así que se añaden aquí en
+# el mismo momento (ver ApplicationCatalog).
+#
+# Qué SIGNIFICA cada rol lo decide cada aplicación, con el cliente del portal
+# (cliente/README.md, "Roles"). Quitar un rol de aquí no borra los permisos
+# que ya se hubieran dado: el portal dejaría de aceptarlo al guardar esa ficha.
+#
+# El orden es el de las tarjetas del portal. Las URLs cambian entre desarrollo
+# y producción, por eso vienen de variables de entorno (api/.env).
+
+parameters:
+    suite.applications:
+        fichajes:
+            name: 'Fichajes'
+            url: '%env(URL_FICHAJES)%'
+            roles:
+                # Además, fichajes exige un contrato en vigor: eso es suyo.
+                empleado: 'Empleado'
+                admin: 'Administración'
+        listados:
+            name: 'Listados'
+            url: '%env(URL_LISTADOS)%'
+            roles:
+                usuario: 'Usuario'
+        facturacion:
+            name: 'Facturación'
+            url: '%env(URL_FACTURACION)%'
+            roles:
+                usuario: 'Usuario'
+        # El propio portal: quien tiene "admin" gestiona los permisos de todas.
+        portal:
+            name: 'Portal'
+            roles:
+                admin: 'Gestiona los permisos'

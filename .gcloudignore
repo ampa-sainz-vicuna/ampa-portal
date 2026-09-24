@@ -1,0 +1,23 @@
+# Lo que NO se sube a Google Cloud al desplegar (gcloud run deploy --source).
+# Mismo criterio que .dockerignore: nada de secretos ni de ficheros generados.
+
+.gcloudignore
+.git
+.github
+.gitignore
+.idea
+.vscode
+**/*.log
+
+api/.env.local
+api/.env.*.local
+api/.env.local.php
+
+api/vendor
+api/var
+web/node_modules
+web/dist
+
+api/tests
+cliente
+dist
