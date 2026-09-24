@@ -143,9 +143,11 @@ despliegues y demás")**
 
 **Pendiente, en este orden**
 
-1. Certificado de `portal.ampasainzvicuna.com` (sale solo cuando Google ve el
-   CNAME) y **origen en el cliente de OAuth** (`https://portal.ampasainzvicuna.com`
-   y, para desarrollo, `http://localhost:5176`).
+1. ~~Certificado~~ de `portal.ampasainzvicuna.com`: **funciona** desde el
+   24/09/2026 (tardó ~50 minutos tras el CNAME). Queda que el usuario
+   compruebe que entra con Google; si el botón da error de origen, falta
+   `https://portal.ampasainzvicuna.com` (y `http://localhost:5176`) en los
+   orígenes del cliente de OAuth.
 2. ~~El primer administrador~~ **Hecho** con `deploy/dar-permisos.sh`:
    **Admin** (`admin@`: portal·admin, fichajes·admin, listados·usuario;
    segundo correo el personal del usuario, avisos a los dos) y **Alberto**
