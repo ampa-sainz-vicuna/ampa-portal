@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ampa\PortalCliente\Testing;
 
+use Ampa\PortalCliente\Portal\Member;
 use Ampa\PortalCliente\Portal\Portal;
 use Ampa\PortalCliente\Portal\PortalAccess;
 use Ampa\PortalCliente\Portal\Recipient;
@@ -19,7 +20,8 @@ use Ampa\PortalCliente\Portal\SessionRejected;
  *       FakePortal::session('admin@ampasainzvicuna.com', 'Admin', ['usuario']),
  *   ));
  *
- * y los avisos se preparan con FakePortal::recipientsFor('admin', [...]).
+ * y los avisos se preparan con FakePortal::recipientsFor('admin', [...]), y
+ * quién hay en la aplicación, con FakePortal::membersAre([...]).
  * Se activa en el `when@test` de services.yaml de la aplicación:
  *
  *   Ampa\PortalCliente\Portal\Portal:
@@ -31,6 +33,9 @@ final class FakePortal implements Portal
 
     /** @var array<string, list<Recipient>> */
     private static array $recipients = [];
+
+    /** @var list<Member> */
+    private static array $members = [];
 
     /**
      * @param list<string> $roles              los roles del portal en la aplicación ("usuario", "admin"…)
@@ -58,9 +63,20 @@ final class FakePortal implements Portal
         self::$recipients[$role] = $recipients;
     }
 
+    /**
+     * Quiénes saldrán en `members()`. Estático por lo mismo que recipientsFor().
+     *
+     * @param list<Member> $members
+     */
+    public static function membersAre(array $members): void
+    {
+        self::$members = $members;
+    }
+
     public static function reset(): void
     {
         self::$recipients = [];
+        self::$members = [];
     }
 
     public function access(string $token): PortalAccess
@@ -82,5 +98,14 @@ final class FakePortal implements Portal
         }
 
         return self::$recipients[$role] ?? [];
+    }
+
+    public function members(string $token): array
+    {
+        if ([] === $this->access($token)->getRoles()) {
+            throw new SessionRejected('Sin rol en esta aplicación, el portal no dice quién hay.');
+        }
+
+        return self::$members;
     }
 }

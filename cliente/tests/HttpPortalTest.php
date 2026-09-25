@@ -82,6 +82,27 @@ final class HttpPortalTest extends TestCase
     }
 
     #[Test]
+    public function pide_quien_hay_en_la_aplicacion(): void
+    {
+        $response = new JsonMockResponse([['name' => 'Alberto', 'email' => 'alberto@ampa.com', 'roles' => ['miembro']]]);
+
+        $members = $this->portal($response)->members('t');
+
+        self::assertSame('http://portal/api/personas?aplicacion=listados', $response->getRequestUrl());
+        self::assertSame('alberto@ampa.com', $members[0]->getEmail());
+        self::assertSame('Alberto', $members[0]->getName());
+        self::assertSame(['miembro'], $members[0]->getRoles());
+    }
+
+    #[Test]
+    public function sin_acceso_a_la_aplicacion_no_dice_quien_hay(): void
+    {
+        $this->expectException(SessionRejected::class);
+
+        $this->portal(new JsonMockResponse(['error' => 'no'], ['http_code' => 403]))->members('t');
+    }
+
+    #[Test]
     public function sin_acceso_a_la_aplicacion_no_da_los_correos(): void
     {
         $this->expectException(SessionRejected::class);

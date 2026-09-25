@@ -59,6 +59,18 @@ final readonly class HttpPortal implements Portal
         return $recipients;
     }
 
+    public function members(string $token): array
+    {
+        $members = [];
+        foreach ($this->get('/api/personas', ['aplicacion' => $this->application], $token) as $member) {
+            if (is_array($member)) {
+                $members[] = new Member((string) ($member['email'] ?? ''), (string) ($member['name'] ?? ''), self::strings($member['roles'] ?? []));
+            }
+        }
+
+        return $members;
+    }
+
     /**
      * @param array<string, string> $query
      *
@@ -76,7 +88,8 @@ final readonly class HttpPortal implements Portal
             $status = $response->getStatusCode();
 
             // 401: la sesión no vale. 403: no tiene acceso a esta aplicación
-            // (solo lo da /api/avisos). Para quien pregunta, las dos son "no".
+            // (lo dan /api/avisos y /api/personas). Para quien pregunta, las
+            // dos son "no".
             if (401 === $status || 403 === $status) {
                 throw new SessionRejected('El portal no acepta la sesión.');
             }

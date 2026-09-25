@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ampa\PortalCliente\Portal;
 
 /**
- * Las dos preguntas que una aplicación le hace al portal, siempre con el token
+ * Las preguntas que una aplicación le hace al portal, siempre con el token
  * de quien está haciendo la petición.
  *
  * Es una interfaz para que los tests de cada aplicación no necesiten un portal
@@ -33,4 +33,15 @@ interface Portal
      * @throws PortalUnavailable si no se ha podido preguntar
      */
     public function recipients(string $token, string $role): array;
+
+    /**
+     * Quién hay en esta aplicación: las personas activas con algún rol en
+     * ella, por nombre. Solo contesta si quien pregunta tiene algún rol aquí.
+     *
+     * @return list<Member>
+     *
+     * @throws SessionRejected   si el token no vale o no tiene acceso a esta aplicación
+     * @throws PortalUnavailable si no se ha podido preguntar
+     */
+    public function members(string $token): array;
 }

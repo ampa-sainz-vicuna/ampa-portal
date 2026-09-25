@@ -4,6 +4,7 @@ import AccountBalanceWalletRounded from '@mui/icons-material/AccountBalanceWalle
 import AppsRounded from '@mui/icons-material/AppsRounded'
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded'
 import FactCheckRounded from '@mui/icons-material/FactCheckRounded'
+import ViewKanbanRounded from '@mui/icons-material/ViewKanbanRounded'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
@@ -31,6 +32,7 @@ const LOOKS: Record<string, Look> = {
   fichajes: { icon: <AccessTimeRounded />, description: 'Registro de jornada y bolsa de horas', color: 'primary' },
   listados: { icon: <FactCheckRounded />, description: 'Listados de las extraescolares para los monitores', color: 'secondary' },
   facturacion: { icon: <AccountBalanceWalletRounded />, description: 'Contabilidad y tesorería: caja, banco y cierres', color: 'primary' },
+  tareas: { icon: <ViewKanbanRounded />, description: 'Tablero de tareas de la junta y Alberto', color: 'secondary' },
 }
 
 const DEFAULT_LOOK: Look = { icon: <AppsRounded />, description: 'Aplicación del AMPA', color: 'secondary' }

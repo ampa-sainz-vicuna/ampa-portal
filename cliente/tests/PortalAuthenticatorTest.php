@@ -33,6 +33,11 @@ final class PortalAuthenticatorTest extends TestCase
             {
                 return [];
             }
+
+            public function members(string $token): array
+            {
+                return [];
+            }
         }, new PortalRolesAsSymfonyRoles());
 
         $request = Request::create('/api/me');

@@ -30,6 +30,13 @@ parameters:
             url: '%env(URL_FACTURACION)%'
             roles:
                 usuario: 'Usuario'
+        tareas:
+            name: 'Tareas'
+            url: '%env(URL_TAREAS)%'
+            roles:
+                miembro: 'Miembro'
+                # Además de miembro, no en su lugar: sin miembro no entra.
+                admin: 'Administración (borra tareas ajenas)'
         # El propio portal: quien tiene "admin" gestiona los permisos de todas.
         portal:
             name: 'Portal'

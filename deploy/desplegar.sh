@@ -61,6 +61,8 @@ ENV_VARS+=",URL_LISTADOS=https://listados.ampasainzvicuna.com"
 # Facturación aún no está desplegada: es la dirección prevista. Su tarjeta
 # solo la ve quien tenga permiso en ella.
 ENV_VARS+=",URL_FACTURACION=https://facturacion.ampasainzvicuna.com"
+# Tareas aún no está desplegada: es la dirección prevista.
+ENV_VARS+=",URL_TAREAS=https://tareas.ampasainzvicuna.com"
 
 echo "Desplegando el portal en $PROJECT ($REGION). Tarda unos 5 minutos..."
 echo

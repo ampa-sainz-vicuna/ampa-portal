@@ -121,6 +121,45 @@ final class AccessApiTest extends ApiTestCase
         self::assertSame(404, $this->responseStatus());
     }
 
+    #[Test]
+    public function las_personas_de_una_aplicacion_con_el_correo_de_su_cuenta(): void
+    {
+        // Alberto quiere los avisos en su correo personal, pero su identidad
+        // sigue siendo la cuenta: es la que sale aquí.
+        $this->given('alberto@ampasainzvicuna.com', ['tareas' => ['miembro']], secondaryEmail: 'alberto@gmail.com', notify: NotificationTarget::Secondary);
+        $this->given('presidencia@ampasainzvicuna.com', ['tareas' => ['miembro', 'admin']]);
+        $this->given('baja@ampasainzvicuna.com', ['tareas' => ['miembro']], active: false);
+        $this->given('listados@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->request('GET', '/api/personas?aplicacion=tareas', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('alberto@ampasainzvicuna.com'),
+        ]);
+
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame([
+            ['name' => 'Alberto', 'email' => 'alberto@ampasainzvicuna.com', 'roles' => ['miembro']],
+            ['name' => 'Presidencia', 'email' => 'presidencia@ampasainzvicuna.com', 'roles' => ['admin', 'miembro']],
+        ], $this->payload());
+    }
+
+    #[Test]
+    public function las_personas_de_una_aplicacion_no_se_las_da_a_quien_no_entra_en_ella(): void
+    {
+        $this->given('alberto@ampasainzvicuna.com', ['tareas' => ['miembro']]);
+        $this->given('listados@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->request('GET', '/api/personas?aplicacion=tareas', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('listados@ampasainzvicuna.com'),
+        ]);
+        self::assertSame(403, $this->responseStatus());
+
+        $this->request('GET', '/api/personas?aplicacion=tareas');
+        self::assertSame(401, $this->responseStatus());
+
+        $this->request('GET', '/api/personas?aplicacion=quiniela');
+        self::assertSame(404, $this->responseStatus());
+    }
+
     private function access(string $application, string $token): void
     {
         $this->request('GET', '/api/acceso?aplicacion='.$application, server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);

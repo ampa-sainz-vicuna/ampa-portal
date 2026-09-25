@@ -8,6 +8,7 @@ use Ampa\PortalCliente\Http\NoMeExtension;
 use Ampa\PortalCliente\Http\SignOutController;
 use Ampa\PortalCliente\Portal\HttpPortal;
 use Ampa\PortalCliente\Portal\Portal;
+use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\Security\ApplicationRoles;
 use Ampa\PortalCliente\Security\CrossSiteRequestGuard;
@@ -57,6 +58,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set(PortalUserProvider::class);
     $services->set(JsonAccessDeniedHandler::class);
     $services->set(SuiteRecipients::class);
+    $services->set(SuiteMembers::class);
 
     $services->set(CrossSiteRequestGuard::class)
         // Prioridad alta: antes que el cortafuegos, para no preguntar al

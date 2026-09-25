@@ -13,11 +13,11 @@ security:
         # Sin cortafuegos:
         #   - entrar (canjea la identidad de Google; la comprueba el
         #     verificador) y salir (borrar una cookie no pide nada);
-        #   - /api/acceso y /api/avisos, que no los llama un navegador sino el
-        #     servidor de cada aplicación, con el token en la cabecera; lo
-        #     comprueba el propio controlador (BearerUser).
+        #   - /api/acceso, /api/avisos y /api/personas, que no los llama un
+        #     navegador sino el servidor de cada aplicación, con el token en
+        #     la cabecera; lo comprueba el propio controlador (BearerUser).
         public:
-            pattern: ^/api/(auth/google|auth/salir|acceso|avisos)$
+            pattern: ^/api/(auth/google|auth/salir|acceso|avisos|personas)$
             stateless: true
             security: false
 

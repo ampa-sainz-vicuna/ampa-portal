@@ -141,6 +141,21 @@ despliegues y demás")**
 - Secret Manager: 9 versiones activas (6 gratis); bajan cuando fichajes y
   listados dejen sus claves de firma al adoptar el portal.
 
+**Tareas (25/09/2026, desde la sesión de `ampa-tareas`; sin commit, sin publicar ni desplegar)**
+
+- `tareas` en `suite.yaml` (roles `miembro` y `admin`), `URL_TAREAS` en
+  `api/.env` y `deploy/desplegar.sh`, tarjeta en `web/src/home/Applications.tsx`.
+- **Ruta nueva `GET /api/personas?aplicacion=…`** (`MembersController`, abierta
+  en el cortafuegos como `/api/avisos`): quién tiene algún rol en esa
+  aplicación, con el correo de la **cuenta**, nombre y roles. La pidió tareas
+  para elegir responsable (`/api/avisos` da correos de aviso, no identidades).
+- **Cliente 0.1.1**: `Member`, `Portal::members()`, `SuiteMembers`,
+  `FakePortal::membersAre()`, README. Solo añade: ninguna aplicación tiene que
+  cambiar nada (por eso tercera cifra).
+- 66 tests de PHP y 21 del cliente en verde.
+- **Falta**: commit, etiqueta `v0.1.1` (publica el cliente) y desplegar el
+  portal. Pedir permiso al usuario.
+
 **Pendiente, en este orden**
 
 1. ~~Certificado~~ de `portal.ampasainzvicuna.com`: **funciona** desde el
