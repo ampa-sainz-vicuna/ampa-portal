@@ -155,8 +155,11 @@ despliegues y demás")**
 3. ~~Adoptarlo en las tres aplicaciones~~ **Hecho en el código.**
    Facturación fue la primera (25/09/2026) y está desplegada. **Listados y
    fichajes, el 25/09/2026 por la tarde** (Claude, "hazlo tú"), con tests en
-   verde y probados contra este portal en local; **falta desplegarlos**
-   (`docs/despliegue.md` de cada una, *Pasar al portal*). En listados,
+   verde y probados contra este portal en local; **desplegados el 25/09/2026**
+   (`docs/despliegue.md` de cada una, *Pasar al portal*; queda borrar los
+   secretos viejos cuando se compruebe que entran). Fichajes se desplegó con
+   la sesión de gcloud de listados (`docker run -v ampa-listados_gcloud_config:…`):
+   la de su propio volumen había caducado. En listados,
    `APP_ALLOWED_EMAILS` desapareció. En fichajes, **decidido con el usuario:
    manda el portal**: fuera el agregado `Administrator` y su pantalla (la
    tabla se queda en la base sin leerse); `fichajes:admin` da la
