@@ -110,7 +110,7 @@ cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, S
   hacer Claude): tarjetas, permisos, guardar una ficha (comprobado en la base)
   y salir. Usa **`@ampa/ui` 0.2.0, escrita a la vez y sin publicar**, con
   `file:` desde el `.tgz` local.
-- **Despliegue preparado, sin estrenar**: `Dockerfile` (construido y probado
+- **Despliegue preparado** (estrenado ese mismo día, ver abajo): `Dockerfile` (construido y probado
   en local contra la base de desarrollo: migra, sirve el front, `/api/acceso`
   en ~25 ms), `deploy/preparar.sh`, `deploy/desplegar.sh`,
   `deploy/dar-permisos.sh` (un *job* de Cloud Run: la contraseña de la base
@@ -138,8 +138,11 @@ despliegues y demás")**
   raíz del dominio es la web estática de Firebase y no se toca.
 - `gcloud` del portal usa el volumen de sesión de listados
   (`ampa-listados_gcloud_config`, ver `docker-compose.yml`).
-- Secret Manager: 9 versiones activas (6 gratis); bajan cuando fichajes y
-  listados dejen sus claves de firma al adoptar el portal.
+- Secret Manager: **11 versiones activas** el 25/09/2026 (6 gratis por cuenta
+  de facturación, 0,06 $ al mes cada una de más). Fichajes y listados ya no
+  usan sus claves de firma; destruirlas (`jwt-private-key`, `jwt-public-key`,
+  `jwt-passphrase` y `listados-jwt-key`) lo deja en 7. Instrucciones en el
+  `docs/despliegue.md` de cada una, *Pasar al portal*.
 
 **Tareas (25/09/2026, desde la sesión de `ampa-tareas`; publicado y desplegado con permiso del usuario)**
 
@@ -171,8 +174,9 @@ despliegues y demás")**
    Facturación fue la primera (25/09/2026) y está desplegada. **Listados y
    fichajes, el 25/09/2026 por la tarde** (Claude, "hazlo tú"), con tests en
    verde y probados contra este portal en local; **desplegados el 25/09/2026**
-   (`docs/despliegue.md` de cada una, *Pasar al portal*; queda borrar los
-   secretos viejos cuando se compruebe que entran). Fichajes se desplegó con
+   (`docs/despliegue.md` de cada una, *Pasar al portal*). El usuario comprobó
+   ese día que **la sesión viaja entre aplicaciones**; queda destruir los
+   secretos viejos (arriba). Fichajes se desplegó con
    la sesión de gcloud de listados (`docker run -v ampa-listados_gcloud_config:…`):
    la de su propio volumen había caducado. En listados,
    `APP_ALLOWED_EMAILS` desapareció. En fichajes, **decidido con el usuario:
@@ -183,6 +187,63 @@ despliegues y demás")**
    (`FichajesRoles`); `RunScheduledWork` cuelga de `ApplicationOpened`.
    Consecuencia para quien administra: dar de alta a un empleado son **dos
    pasos**, el permiso aquí y el alta con contrato en fichajes.
+4. **Cuentas que no son del Workspace** (pedido por el usuario el 25/09/2026,
+   "importante"): dar entrada a gente sin pagarle una cuenta del Workspace,
+   que hoy es una prueba de Business Starter y **pasa a cobrar por usuario
+   hacia el 29/09/2026** (Google for Nonprofits sigue sin aprobarse).
+
+   **Lo que NO sirve: los alias.** Un alias de Workspace (hasta 30 por
+   usuario, gratis) solo recibe correo en el buzón de otra cuenta; **no es
+   una cuenta de Google y no se puede entrar con él** (ayuda de Google,
+   comprobado el 25/09/2026). Un grupo (`junta@`) tampoco.
+
+   **Camino recomendado: Cloud Identity Free.** Cuentas
+   `nombre@ampasainzvicuna.com` que **son** cuentas de Google (se entra con
+   ellas en el portal) pero **sin Gmail ni Drive y sin licencia de pago**:
+   50 gratis por defecto, y se añade al Workspace existente desde la
+   consola de administración. Como son de la organización, **el portal no
+   cambia nada** (OAuth sigue en *Interno* y el `hd` se cumple). No tienen
+   buzón, así que los avisos van al **segundo correo** de su ficha en el
+   portal, con "a dónde van los avisos" en *segundo*: para esto se pensó.
+   Además, las cuentas son del AMPA: cuando cambia la junta, se le cambia la
+   contraseña a la cuenta del cargo, no se pierde nada. **Cuidado**: con el
+   Workspace y Cloud Identity a la vez, hay que **desactivar la asignación
+   automática de licencias del Workspace** al añadir Cloud Identity (casilla
+   *Switch off Auto-Assign*); si no, cada usuario nuevo se lleva una
+   licencia de pago. Comprobar en la ficha de cada usuario nuevo que solo
+   tiene *Cloud Identity Free*.
+
+   **Camino alternativo, solo si hace falta alguien sin cuenta del dominio**:
+   cuentas de Google personales. Hoy solo entran cuentas
+   `@ampasainzvicuna.com`, por **tres** cerrojos, y habría que abrir los
+   tres:
+   - El cliente OAuth está en **Interno** (solo la organización). Pasa a
+     **Externo** y a **En producción**. Con solo `openid`, `email` y
+     `profile` (lo único que pide el portal) Google no exige verificar la
+     aplicación; sin logo en la pantalla de consentimiento, tampoco la marca.
+     En *Prueba* solo entran los usuarios de prueba que se apunten a mano.
+   - `GOOGLE_HOSTED_DOMAIN=ampasainzvicuna.com` en `api/.env` (el servidor
+     rechaza el token si su `hd` no es ese): en producción, vacío, con
+     `GOOGLE_HOSTED_DOMAIN=` en el `ENV_VARS` de `deploy/desplegar.sh`
+     (comprobar al hacerlo que la revisión nueva lo lleva vacío y no sin
+     definir: sin definir, Symfony usaría el de `api/.env`).
+   - `VITE_GOOGLE_HOSTED_DOMAIN` en `web/.env` (el botón de Google solo
+     ofrece cuentas de ese dominio): vacío. Va dentro de la imagen, así que
+     hace falta redesplegar, no basta con `services update`.
+   Con esto, la barrera pasaría a ser **solo el permiso** de cada persona. Cada persona entraría
+   con su Gmail o, si no tiene, con una **cuenta de Google creada con el
+   correo que ya use** (<https://accounts.google.com/signup>, «Usar mi
+   dirección de correo electrónico actual»): es gratis y no ocupa licencia.
+   Antes de su primera entrada, alguien con permiso de administración le da
+   de alta en *Permisos* con **ese mismo correo** (la ficha se busca por el
+   correo de la cuenta de Google). Fichajes no cambia: exige además el alta
+   con contrato.
+5. **Saltar entre aplicaciones desde la barra** (pedido por el usuario el
+   25/09/2026). `/api/acceso` añade `applications` (código, nombre, url; lo
+   mismo que ya calcula `SessionPresenter`), el cliente lo pasa a `/api/me`
+   (0.1.2: solo añade) y `@ampa/ui` lo pinta en `AppShell`. Después, cada
+   aplicación sube de versión y se redespliega.
+6. Tareas: su repositorio en GitHub y su despliegue (ver su `CLAUDE.md`).
 
 ---
 

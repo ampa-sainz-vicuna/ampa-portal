@@ -225,10 +225,8 @@ dónde van los avisos.
 
 Un contenedor en Cloud Run, como fichajes y listados: Apache sirve `/api`
 (Symfony) y el front compilado (`Dockerfile`, `docker/prod/`). Al arrancar
-aplica las migraciones. **Sin estrenar**: la imagen se ha construido y probado
-en local el 24/09/2026 (migra al arrancar, sirve el front, `/api/acceso` en
-~25 ms con el contenedor caliente), pero los scripts de Google Cloud no se han
-ejecutado nunca.
+aplica las migraciones. **En producción desde el 24/09/2026** (revisión
+vigente el 25/09/2026: `ampa-portal-00003-lm6`), con estos mismos scripts.
 
 El orden, la primera vez:
 
