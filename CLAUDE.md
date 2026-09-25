@@ -141,7 +141,7 @@ despliegues y demás")**
 - Secret Manager: 9 versiones activas (6 gratis); bajan cuando fichajes y
   listados dejen sus claves de firma al adoptar el portal.
 
-**Tareas (25/09/2026, desde la sesión de `ampa-tareas`; sin commit, sin publicar ni desplegar)**
+**Tareas (25/09/2026, desde la sesión de `ampa-tareas`; publicado y desplegado con permiso del usuario)**
 
 - `tareas` en `suite.yaml` (roles `miembro` y `admin`), `URL_TAREAS` en
   `api/.env` y `deploy/desplegar.sh`, tarjeta en `web/src/home/Applications.tsx`.
@@ -153,8 +153,8 @@ despliegues y demás")**
   `FakePortal::membersAre()`, README. Solo añade: ninguna aplicación tiene que
   cambiar nada (por eso tercera cifra).
 - 66 tests de PHP y 21 del cliente en verde.
-- **Falta**: commit, etiqueta `v0.1.1` (publica el cliente) y desplegar el
-  portal. Pedir permiso al usuario.
+- **Publicado y desplegado el 25/09/2026**: commit `c1bb536`, release `v0.1.1`
+  (sha1 `0335b8884b1f3f1e3a96aa5584739af7582bf4cb`), revisión `ampa-portal-00003-lm6`.
 
 **Pendiente, en este orden**
 
