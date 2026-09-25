@@ -152,17 +152,19 @@ despliegues y demás")**
    **Admin** (`admin@`: portal·admin, fichajes·admin, listados·usuario;
    segundo correo el personal del usuario, avisos a los dos) y **Alberto**
    (`info@`: listados·usuario, fichajes·empleado).
-3. **Adoptarlo en listados** → fichajes (cliente/README.md y
-   `@ampa/ui`, *Pasar de la 0.1 a la 0.2*). **Facturación se adelantó**: fue
-   la primera en adoptarlo (25/09/2026, `ampa/portal-cliente` 0.1.0) y está
-   desplegada ese mismo día en `https://facturacion.ampasainzvicuna.com`,
-   con el rol `facturacion:usuario`. En listados:
-   `APP_ALLOWED_EMAILS` → `listados:usuario`. En fichajes: administradores
-   activos → `fichajes:admin` con su segundo correo; empleados →
-   `fichajes:empleado`; `ROLE_EMPLOYEE` = permiso + contrato en vigor
-   (`ApplicationRoles` propio); `RunScheduledWork` colgado de
-   `ApplicationOpened`; la tabla `administrators` y su pantalla, por decidir
-   (el segundo correo ya vive en el portal).
+3. ~~Adoptarlo en las tres aplicaciones~~ **Hecho en el código.**
+   Facturación fue la primera (25/09/2026) y está desplegada. **Listados y
+   fichajes, el 25/09/2026 por la tarde** (Claude, "hazlo tú"), con tests en
+   verde y probados contra este portal en local; **falta desplegarlos**
+   (`docs/despliegue.md` de cada una, *Pasar al portal*). En listados,
+   `APP_ALLOWED_EMAILS` desapareció. En fichajes, **decidido con el usuario:
+   manda el portal**: fuera el agregado `Administrator` y su pantalla (la
+   tabla se queda en la base sin leerse); `fichajes:admin` da la
+   administración y los avisos a la junta salen de `/api/avisos`;
+   `ROLE_EMPLOYEE` = `fichajes:empleado` + contrato en vigor
+   (`FichajesRoles`); `RunScheduledWork` cuelga de `ApplicationOpened`.
+   Consecuencia para quien administra: dar de alta a un empleado son **dos
+   pasos**, el permiso aquí y el alta con contrato en fichajes.
 
 ---
 
