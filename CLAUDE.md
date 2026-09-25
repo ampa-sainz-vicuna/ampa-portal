@@ -152,8 +152,11 @@ despliegues y demás")**
    **Admin** (`admin@`: portal·admin, fichajes·admin, listados·usuario;
    segundo correo el personal del usuario, avisos a los dos) y **Alberto**
    (`info@`: listados·usuario, fichajes·empleado).
-3. **Adoptarlo en listados** → fichajes → facturación (cliente/README.md y
-   `@ampa/ui`, *Pasar de la 0.1 a la 0.2*). En listados:
+3. **Adoptarlo en listados** → fichajes (cliente/README.md y
+   `@ampa/ui`, *Pasar de la 0.1 a la 0.2*). **Facturación se adelantó**: fue
+   la primera en adoptarlo (25/09/2026, `ampa/portal-cliente` 0.1.0) y está
+   desplegada ese mismo día en `https://facturacion.ampasainzvicuna.com`,
+   con el rol `facturacion:usuario`. En listados:
    `APP_ALLOWED_EMAILS` → `listados:usuario`. En fichajes: administradores
    activos → `fichajes:admin` con su segundo correo; empleados →
    `fichajes:empleado`; `ROLE_EMPLOYEE` = permiso + contrato en vigor
