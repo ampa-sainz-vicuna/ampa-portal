@@ -20,7 +20,7 @@ son las dos mitades del mismo contrato. El porqué del diseño, en el
 | `POST /api/auth/salir` | Borra la cookie: sale de toda la suite. |
 | `PortalUser` | El usuario de Symfony: `getUserIdentifier()` es el correo, `getName()`, `getPortalRoles()`, `getNotificationEmails()`. |
 | `SuiteRecipients` | A quién avisar: `emailsWithRole('admin')` da los correos de quienes tienen ese rol aquí, cada uno en el que eligió (el de la cuenta, el personal o los dos). |
-| `SuiteMembers` | Quién hay aquí: `all()` da las personas activas con algún rol en esta aplicación (`Member`: correo de la cuenta, nombre y roles), por nombre; `has($correo)` dice si alguien es de aquí. Desde la 0.1.1. |
+| `SuiteMembers` | Quién hay aquí: `all()` da las personas activas con algún rol en esta aplicación (`Member`: correo de la cuenta, nombre, roles y, desde la 0.1.2, `getNotificationEmails()`, a dónde avisarle), por nombre; `has($correo)` dice si alguien es de aquí. Desde la 0.1.1. |
 | `CrossSiteRequestGuard` | Rechaza cualquier petición que cambie algo y venga de otra web (cabecera `Sec-Fetch-Site`). Segunda barrera contra CSRF además de `SameSite=Lax`. |
 | `JsonAccessDeniedHandler` | Los 403 de `access_control` en JSON (`{"error"}`), no como página de Symfony. |
 | `FakePortal` | El portal en los tests de la aplicación, sin red. |

@@ -158,6 +158,13 @@ despliegues y demás")**
 - 66 tests de PHP y 21 del cliente en verde.
 - **Publicado y desplegado el 25/09/2026**: commit `c1bb536`, release `v0.1.1`
   (sha1 `0335b8884b1f3f1e3a96aa5584739af7582bf4cb`), revisión `ampa-portal-00003-lm6`.
+- **Cliente 0.1.2 (26/09/2026, desde la sesión de tareas; sin commit, sin
+  publicar ni desplegar)**: `/api/personas` devuelve también
+  `notificationEmails` (a dónde van los avisos de cada persona, según su
+  ficha) y `Member::getNotificationEmails()` (vacío = el de la cuenta, para
+  un portal anterior). Solo añade. Tareas ya lo usa copiado a su `vendor/`, y
+  **no se puede desplegar hasta publicarlo** (ver el `CLAUDE.md` de tareas).
+  Por eso *saltar entre aplicaciones* (pendiente 5) pasa a ser la **0.1.3**.
 
 **Pendiente, en este orden**
 
@@ -212,6 +219,12 @@ despliegues y demás")**
    *Switch off Auto-Assign*); si no, cada usuario nuevo se lleva una
    licencia de pago. Comprobar en la ficha de cada usuario nuevo que solo
    tiene *Cloud Identity Free*.
+   **Aceptado por el usuario el 25/09/2026**: los que se den de alta así no
+   van a mirar ningún correo del AMPA y no tienen que recibir nada en esa
+   dirección. Ojo con tareas: sus avisos (asignaciones, vencimientos,
+   resumen diario) sí son para esas personas, así que en su ficha del
+   portal va su correo personal como **segundo correo** con los avisos a
+   *segundo*. Si no, los avisos rebotan contra una dirección sin buzón.
 
    **Camino alternativo, solo si hace falta alguien sin cuenta del dominio**:
    cuentas de Google personales. Hoy solo entran cuentas
@@ -241,7 +254,7 @@ despliegues y demás")**
 5. **Saltar entre aplicaciones desde la barra** (pedido por el usuario el
    25/09/2026). `/api/acceso` añade `applications` (código, nombre, url; lo
    mismo que ya calcula `SessionPresenter`), el cliente lo pasa a `/api/me`
-   (0.1.2: solo añade) y `@ampa/ui` lo pinta en `AppShell`. Después, cada
+   (0.1.3, porque la 0.1.2 se la llevó tareas: solo añade) y `@ampa/ui` lo pinta en `AppShell`. Después, cada
    aplicación sube de versión y se redespliega.
 6. Tareas: su repositorio en GitHub y su despliegue (ver su `CLAUDE.md`).
 

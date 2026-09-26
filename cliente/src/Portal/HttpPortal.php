@@ -64,7 +64,12 @@ final readonly class HttpPortal implements Portal
         $members = [];
         foreach ($this->get('/api/personas', ['aplicacion' => $this->application], $token) as $member) {
             if (is_array($member)) {
-                $members[] = new Member((string) ($member['email'] ?? ''), (string) ($member['name'] ?? ''), self::strings($member['roles'] ?? []));
+                $members[] = new Member(
+                    (string) ($member['email'] ?? ''),
+                    (string) ($member['name'] ?? ''),
+                    self::strings($member['roles'] ?? []),
+                    self::strings($member['notificationEmails'] ?? []),
+                );
             }
         }
 

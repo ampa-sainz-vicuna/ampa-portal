@@ -84,7 +84,11 @@ final class HttpPortalTest extends TestCase
     #[Test]
     public function pide_quien_hay_en_la_aplicacion(): void
     {
-        $response = new JsonMockResponse([['name' => 'Alberto', 'email' => 'alberto@ampa.com', 'roles' => ['miembro']]]);
+        $response = new JsonMockResponse([
+            ['name' => 'Alberto', 'email' => 'alberto@ampa.com', 'roles' => ['miembro'], 'notificationEmails' => ['alberto@gmail.com']],
+            // Un portal anterior a la 0.1.2 no manda los correos de aviso.
+            ['name' => 'Vocal', 'email' => 'vocal@ampa.com', 'roles' => ['miembro']],
+        ]);
 
         $members = $this->portal($response)->members('t');
 
@@ -92,6 +96,8 @@ final class HttpPortalTest extends TestCase
         self::assertSame('alberto@ampa.com', $members[0]->getEmail());
         self::assertSame('Alberto', $members[0]->getName());
         self::assertSame(['miembro'], $members[0]->getRoles());
+        self::assertSame(['alberto@gmail.com'], $members[0]->getNotificationEmails());
+        self::assertSame(['vocal@ampa.com'], $members[1]->getNotificationEmails(), 'Sin correos de aviso, el de la cuenta.');
     }
 
     #[Test]

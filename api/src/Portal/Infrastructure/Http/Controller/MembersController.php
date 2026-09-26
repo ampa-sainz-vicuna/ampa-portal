@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Portal\Infrastructure\Http\Controller;
 
 use App\Portal\Domain\Suite\ApplicationCatalog;
+use App\Portal\Domain\User\EmailAddress;
 use App\Portal\Domain\User\User;
 use App\Portal\Domain\User\UserRepository;
 use App\Portal\Infrastructure\Security\BearerUser;
@@ -19,14 +20,17 @@ use Symfony\Component\Routing\Attribute\Route;
  * con el correo de su CUENTA (el que las identifica en toda la suite) y su
  * nombre. Por ejemplo, tareas lo usa para elegir a quién se asigna una tarea.
  *
- * No es /api/avisos: aquel da los correos a los que avisar, que pueden ser el
- * personal; este da la identidad, que es lo que una aplicación guarda.
+ * No es /api/avisos: aquel da los correos a los que avisar a quienes tienen un
+ * ROL, sin decir de quién es cada uno; este da la identidad, que es lo que una
+ * aplicación guarda, y además (desde el cliente 0.1.2) a dónde quiere los
+ * avisos cada persona, para avisar a alguien concreto: "te han asignado una
+ * tarea" va al responsable, no a todos los miembros.
  *
  * Como /api/avisos, la llama el servidor de la aplicación con el token de quien
  * hace la petición, y solo contesta si ESA persona tiene algún rol en ella.
  *
  *   GET /api/personas?aplicacion=tareas
- *   200 [{"name", "email", "roles": [...]}]   por nombre; solo personas activas
+ *   200 [{"name", "email", "roles": [...], "notificationEmails": [...]}]   por nombre; solo personas activas
  *   401 sin sesión válida · 403 sin rol en esa aplicación · 404 aplicación que no existe
  */
 final readonly class MembersController
@@ -65,6 +69,10 @@ final readonly class MembersController
                 'name' => $user->getName(),
                 'email' => $user->getEmail()->getValue(),
                 'roles' => $user->rolesIn($code),
+                'notificationEmails' => array_map(
+                    static fn (EmailAddress $email): string => $email->getValue(),
+                    $user->getNotificationEmails(),
+                ),
             ],
             $members,
         )));

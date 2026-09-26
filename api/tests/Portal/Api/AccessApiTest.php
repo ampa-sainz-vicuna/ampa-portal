@@ -137,8 +137,8 @@ final class AccessApiTest extends ApiTestCase
 
         self::assertSame(200, $this->responseStatus());
         self::assertSame([
-            ['name' => 'Alberto', 'email' => 'alberto@ampasainzvicuna.com', 'roles' => ['miembro']],
-            ['name' => 'Presidencia', 'email' => 'presidencia@ampasainzvicuna.com', 'roles' => ['admin', 'miembro']],
+            ['name' => 'Alberto', 'email' => 'alberto@ampasainzvicuna.com', 'roles' => ['miembro'], 'notificationEmails' => ['alberto@gmail.com']],
+            ['name' => 'Presidencia', 'email' => 'presidencia@ampasainzvicuna.com', 'roles' => ['admin', 'miembro'], 'notificationEmails' => ['presidencia@ampasainzvicuna.com']],
         ], $this->payload());
     }
 
