@@ -29,7 +29,20 @@ final class AccessApiTest extends ApiTestCase
             'name' => 'Tesoreria',
             'roles' => ['admin'],
             'notificationEmails' => ['alguien@gmail.com'],
+            'applications' => $this->payload()['applications'],
         ], $this->payload());
+    }
+
+    #[Test]
+    public function dice_a_que_aplicaciones_puede_ir_para_saltar_de_una_a_otra(): void
+    {
+        $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin'], 'listados' => ['usuario']]);
+
+        $this->access('fichajes', $this->tokenFor('tesoreria@ampasainzvicuna.com'));
+
+        $applications = $this->payload()['applications'];
+        self::assertSame(['fichajes', 'listados'], array_column($applications, 'code'));
+        self::assertSame(['code', 'name', 'url'], array_keys($applications[0]));
     }
 
     #[Test]

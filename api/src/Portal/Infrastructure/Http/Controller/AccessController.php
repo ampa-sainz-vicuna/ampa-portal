@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Portal\Infrastructure\Http\Controller;
 
+use App\Portal\Domain\Suite\Application;
 use App\Portal\Domain\Suite\ApplicationCatalog;
 use App\Portal\Domain\User\EmailAddress;
 use App\Portal\Infrastructure\Security\BearerUser;
@@ -26,8 +27,10 @@ use Symfony\Component\Routing\Attribute\Route;
  * Respuestas (son el contrato con el cliente; cambiarlas sube la segunda
  * cifra de la versión):
  *
- *   200 {"email", "name", "roles": [...], "notificationEmails": [...]}
- *       roles vacío = no entra en esa aplicación
+ *   200 {"email", "name", "roles": [...], "notificationEmails": [...],
+ *        "applications": [{"code", "name", "url"}]}
+ *       roles vacío = no entra en esa aplicación; applications = a cuáles
+ *       puede ir (desde el cliente 0.1.4: el selector de la barra)
  *   401 {"error"}  sin token, token que no vale, o persona desactivada
  *   404 {"error"}  la aplicación no está en el catálogo
  */
@@ -64,6 +67,14 @@ final readonly class AccessController
             'notificationEmails' => array_map(
                 static fn (EmailAddress $email): string => $email->getValue(),
                 $user->getNotificationEmails(),
+            ),
+            'applications' => array_map(
+                static fn (Application $reachable): array => [
+                    'code' => $reachable->getCode(),
+                    'name' => $reachable->getName(),
+                    'url' => $reachable->getUrl(),
+                ],
+                $this->catalog->reachableWith($user->getGrants()),
             ),
         ]);
     }

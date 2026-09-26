@@ -7,6 +7,7 @@ namespace Ampa\PortalCliente\Testing;
 use Ampa\PortalCliente\Portal\Member;
 use Ampa\PortalCliente\Portal\Portal;
 use Ampa\PortalCliente\Portal\PortalAccess;
+use Ampa\PortalCliente\Portal\ReachableApplication;
 use Ampa\PortalCliente\Portal\Recipient;
 use Ampa\PortalCliente\Portal\SessionRejected;
 
@@ -39,15 +40,17 @@ final class FakePortal implements Portal
 
     /**
      * @param list<string> $roles              los roles del portal en la aplicación ("usuario", "admin"…)
-     * @param list<string> $notificationEmails vacío = el propio correo
+     * @param list<string>                                    $notificationEmails vacío = el propio correo
+     * @param list<array{code: string, name: string, url: string}> $applications   a qué aplicaciones puede ir
      */
-    public static function session(string $email, string $name, array $roles, array $notificationEmails = []): string
+    public static function session(string $email, string $name, array $roles, array $notificationEmails = [], array $applications = []): string
     {
         return self::PREFIX.base64_encode((string) json_encode([
             'email' => $email,
             'name' => $name,
             'roles' => $roles,
             'notificationEmails' => [] === $notificationEmails ? [$email] : $notificationEmails,
+            'applications' => $applications,
         ]));
     }
 
@@ -85,10 +88,13 @@ final class FakePortal implements Portal
             throw new SessionRejected('Token que el portal de pruebas no reconoce.');
         }
 
-        /** @var array{email: string, name: string, roles: list<string>, notificationEmails: list<string>} $data */
+        /** @var array{email: string, name: string, roles: list<string>, notificationEmails: list<string>, applications?: list<array{code: string, name: string, url: string}>} $data */
         $data = json_decode((string) base64_decode(substr($token, strlen(self::PREFIX)), true), true, 512, \JSON_THROW_ON_ERROR);
 
-        return new PortalAccess($data['email'], $data['name'], $data['roles'], $data['notificationEmails']);
+        return new PortalAccess($data['email'], $data['name'], $data['roles'], $data['notificationEmails'], array_map(
+            static fn (array $application): ReachableApplication => new ReachableApplication($application['code'], $application['name'], $application['url']),
+            $data['applications'] ?? [],
+        ));
     }
 
     public function recipients(string $token, string $role): array

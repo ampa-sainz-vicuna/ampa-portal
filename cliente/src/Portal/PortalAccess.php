@@ -12,14 +12,22 @@ final readonly class PortalAccess
 {
     /**
      * @param list<string> $roles              los roles del portal en ESTA aplicación ("admin", "usuario"…); vacía si no tiene ninguno
-     * @param list<string> $notificationEmails a dónde quiere que le lleguen los avisos
+     * @param list<string>               $notificationEmails a dónde quiere que le lleguen los avisos
+     * @param list<ReachableApplication> $applications       a qué aplicaciones de la suite puede ir (vacía con un portal anterior)
      */
     public function __construct(
         private string $email,
         private string $name,
         private array $roles,
         private array $notificationEmails,
+        private array $applications = [],
     ) {
+    }
+
+    /** @return list<ReachableApplication> */
+    public function getApplications(): array
+    {
+        return $this->applications;
     }
 
     public function getEmail(): string

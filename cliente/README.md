@@ -16,7 +16,7 @@ son las dos mitades del mismo contrato. El porqué del diseño, en el
 | | |
 |---|---|
 | `PortalAuthenticator` | El autenticador del cortafuegos. Cookie → pregunta al portal → usuario con sus roles. **401** sin sesión (y borra la cookie si no valía), **403** si la sesión vale pero no tiene ningún rol aquí, **503** si el portal no contesta. |
-| `GET /api/me` | `{ name, email, …lo que añada la aplicación }`. Lo pide el front al abrirse. Lanza el evento `ApplicationOpened`. |
+| `GET /api/me` | `{ name, email, applications, …lo que añada la aplicación }`. Lo pide el front al abrirse. Lanza el evento `ApplicationOpened`. `applications` (desde la 0.1.4) son las aplicaciones de la suite a las que puede ir, `[{ code, name, url }]`: con ellas la barra de `@ampa/ui` (0.2.2) pinta el selector para saltar de una a otra. Con un portal anterior, vacía. |
 | `POST /api/auth/salir` | Borra la cookie: sale de toda la suite. |
 | `PortalUser` | El usuario de Symfony: `getUserIdentifier()` es el correo, `getName()`, `getPortalRoles()`, `getNotificationEmails()`. |
 | `SuiteRecipients` | A quién avisar: `emailsWithRole('admin')` da los correos de quienes tienen ese rol aquí, cada uno en el que eligió (el de la cuenta, el personal o los dos). |

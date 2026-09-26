@@ -44,7 +44,25 @@ final readonly class HttpPortal implements Portal
             (string) ($data['name'] ?? ''),
             self::strings($data['roles'] ?? []),
             self::strings($data['notificationEmails'] ?? []),
+            self::applications($data['applications'] ?? []),
         );
+    }
+
+    /** @return list<ReachableApplication> */
+    private static function applications(mixed $values): array
+    {
+        $applications = [];
+        foreach (is_array($values) ? $values : [] as $application) {
+            if (is_array($application)) {
+                $applications[] = new ReachableApplication(
+                    (string) ($application['code'] ?? ''),
+                    (string) ($application['name'] ?? ''),
+                    (string) ($application['url'] ?? ''),
+                );
+            }
+        }
+
+        return $applications;
     }
 
     public function recipients(string $token, string $role): array

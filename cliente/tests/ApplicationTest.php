@@ -42,7 +42,21 @@ final class ApplicationTest extends WebTestCase
         $this->client->request('GET', '/api/me');
 
         self::assertResponseIsSuccessful();
-        self::assertSame(['name' => 'Admin', 'email' => 'admin@ampasainzvicuna.com'], $this->payload());
+        self::assertSame(['name' => 'Admin', 'email' => 'admin@ampasainzvicuna.com', 'applications' => []], $this->payload());
+    }
+
+    #[Test]
+    public function dice_al_front_a_que_otras_aplicaciones_puede_ir(): void
+    {
+        $tareas = ['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test'];
+        $this->client->getCookieJar()->set(new BrowserCookie(
+            PortalSession::COOKIE,
+            FakePortal::session('admin@ampasainzvicuna.com', 'Admin', ['usuario'], [], [$tareas]),
+        ));
+
+        $this->client->request('GET', '/api/me');
+
+        self::assertSame([$tareas], $this->payload()['applications']);
     }
 
     #[Test]

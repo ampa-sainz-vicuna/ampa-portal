@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ampa\PortalCliente\Security;
 
 use Ampa\PortalCliente\Portal\PortalAccess;
+use Ampa\PortalCliente\Portal\ReachableApplication;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -51,6 +52,12 @@ final readonly class PortalUser implements UserInterface
     public function getNotificationEmails(): array
     {
         return $this->access->getNotificationEmails();
+    }
+
+    /** @return list<ReachableApplication> a qué aplicaciones de la suite puede ir */
+    public function getApplications(): array
+    {
+        return $this->access->getApplications();
     }
 
     /**

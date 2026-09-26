@@ -24,7 +24,13 @@ final class HttpPortalTest extends TestCase
     #[Test]
     public function pregunta_por_esta_aplicacion_con_el_token_en_la_cabecera(): void
     {
-        $response = new JsonMockResponse(['email' => 'a@b.com', 'name' => 'A', 'roles' => ['usuario'], 'notificationEmails' => ['a@gmail.com']]);
+        $response = new JsonMockResponse([
+            'email' => 'a@b.com',
+            'name' => 'A',
+            'roles' => ['usuario'],
+            'notificationEmails' => ['a@gmail.com'],
+            'applications' => [['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test']],
+        ]);
         $portal = new HttpPortal(new MockHttpClient($response), 'http://portal:8083/', 'listados');
 
         $access = $portal->access('el-token');
@@ -35,6 +41,18 @@ final class HttpPortalTest extends TestCase
         self::assertSame('a@b.com', $access->getEmail());
         self::assertSame(['usuario'], $access->getRoles());
         self::assertSame(['a@gmail.com'], $access->getNotificationEmails());
+        self::assertSame(
+            [['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test']],
+            array_map(static fn ($application) => $application->toArray(), $access->getApplications()),
+        );
+    }
+
+    #[Test]
+    public function un_portal_anterior_sin_aplicaciones_da_la_lista_vacia(): void
+    {
+        $response = new JsonMockResponse(['email' => 'a@b.com', 'name' => 'A', 'roles' => [], 'notificationEmails' => []]);
+
+        self::assertSame([], $this->portal($response)->access('t')->getApplications());
     }
 
     #[Test]

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ampa\PortalCliente\Http;
 
 use Ampa\PortalCliente\Event\ApplicationOpened;
+use Ampa\PortalCliente\Portal\ReachableApplication;
 use Ampa\PortalCliente\Security\PortalUser;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,6 +43,11 @@ final readonly class MeController
         return new JsonResponse([
             'name' => $user->getName(),
             'email' => $user->getUserIdentifier(),
+            // Para el selector de aplicaciones de la barra (@ampa/ui 0.2.2).
+            'applications' => array_map(
+                static fn (ReachableApplication $application): array => $application->toArray(),
+                $user->getApplications(),
+            ),
             ...$this->extension->describe($user),
         ]);
     }
