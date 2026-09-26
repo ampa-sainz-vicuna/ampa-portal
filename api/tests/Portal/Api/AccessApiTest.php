@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Portal\Api;
 
 use App\Portal\Domain\User\NotificationTarget;
+use App\Tests\Double\FakeServiceAccountVerifier;
 use App\Tests\Support\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -158,6 +159,34 @@ final class AccessApiTest extends ApiTestCase
 
         $this->request('GET', '/api/personas?aplicacion=quiniela');
         self::assertSame(404, $this->responseStatus());
+    }
+
+    #[Test]
+    public function el_servidor_de_una_aplicacion_sin_nadie_detras_pregunta_con_su_cuenta_de_servicio(): void
+    {
+        // El resumen diario de tareas, a las 5:00: no hay sesión de nadie.
+        $this->given('alberto@ampasainzvicuna.com', ['tareas' => ['miembro']], secondaryEmail: 'alberto@gmail.com', notify: NotificationTarget::Secondary);
+        $this->given('presidencia@ampasainzvicuna.com', ['tareas' => ['miembro', 'admin']]);
+        $service = ['HTTP_AUTHORIZATION' => 'Bearer '.FakeServiceAccountVerifier::TOKEN];
+
+        $this->request('GET', '/api/personas?aplicacion=tareas', server: $service);
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame(['alberto@ampasainzvicuna.com', 'presidencia@ampasainzvicuna.com'], array_column($this->payload(), 'email'));
+
+        $this->request('GET', '/api/avisos?aplicacion=tareas&rol=admin', server: $service);
+        self::assertSame(200, $this->responseStatus());
+        self::assertSame([['name' => 'Presidencia', 'emails' => ['presidencia@ampasainzvicuna.com']]], $this->payload());
+    }
+
+    #[Test]
+    public function una_cuenta_de_servicio_no_es_una_persona_para_el_acceso(): void
+    {
+        $this->access('tareas', FakeServiceAccountVerifier::TOKEN);
+        self::assertSame(401, $this->responseStatus());
+
+        // Y un token que no es ni sesión ni de la suite, tampoco vale para lo demás.
+        $this->request('GET', '/api/personas?aplicacion=tareas', server: ['HTTP_AUTHORIZATION' => 'Bearer cuenta-de-servicio:otra@example.com']);
+        self::assertSame(401, $this->responseStatus());
     }
 
     private function access(string $application, string $token): void

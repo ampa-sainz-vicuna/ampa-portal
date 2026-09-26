@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Ampa\PortalCliente\Tests;
 
+use Ampa\PortalCliente\Portal\Member;
 use Ampa\PortalCliente\Portal\Recipient;
+use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\PortalSession;
 use Ampa\PortalCliente\Testing\FakePortal;
@@ -161,6 +163,22 @@ final class ApplicationTest extends WebTestCase
 
         // Sin repetir: el mismo correo personal en dos fichas llega una vez.
         self::assertSame(['presidencia@ampasainzvicuna.com', 'presi@gmail.com'], $emails);
+    }
+
+    #[Test]
+    public function sin_nadie_detras_se_pregunta_con_el_token_de_este_servidor(): void
+    {
+        // Una tarea programada: ninguna petición con cookie.
+        FakePortal::membersAre([new Member('alberto@ampasainzvicuna.com', 'Alberto', ['miembro'])]);
+        FakePortal::recipientsFor('admin', [new Recipient('Presidencia', ['presidencia@ampasainzvicuna.com'])]);
+
+        /** @var SuiteMembers $members */
+        $members = self::getContainer()->get('test.suite_members');
+        /** @var SuiteRecipients $recipients */
+        $recipients = self::getContainer()->get('test.suite_recipients');
+
+        self::assertTrue($members->has('Alberto@ampasainzvicuna.com'));
+        self::assertSame(['presidencia@ampasainzvicuna.com'], $recipients->emailsWithRole('admin'));
     }
 
     /**

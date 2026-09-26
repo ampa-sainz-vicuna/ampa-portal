@@ -28,6 +28,7 @@ services:
     # donde las dos capas se tocan.
     App\Portal\Domain\User\UserRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     App\Portal\Infrastructure\Security\IdentityVerifier: '@App\Portal\Infrastructure\Security\GoogleIdTokenVerifier'
+    App\Portal\Infrastructure\Security\ServiceAccountVerifier: '@App\Portal\Infrastructure\Security\GoogleServiceAccountVerifier'
 
     App\Portal\Domain\Suite\ApplicationCatalog:
         factory: ['App\Portal\Infrastructure\Suite\ApplicationCatalogFactory', 'fromConfig']
@@ -37,6 +38,11 @@ services:
         arguments:
             $clientId: '%env(GOOGLE_CLIENT_ID)%'
             $hostedDomain: '%env(GOOGLE_HOSTED_DOMAIN)%'
+
+    App\Portal\Infrastructure\Security\GoogleServiceAccountVerifier:
+        arguments:
+            $audience: '%env(SUITE_TOKEN_AUDIENCE)%'
+            $accounts: '%env(SUITE_SERVICE_ACCOUNTS)%'
 
     App\Portal\Infrastructure\Security\SessionTokens:
         arguments:
@@ -54,3 +60,7 @@ when@test:
         # los tests, el token ES el correo (ver FakeIdentityVerifier).
         App\Portal\Infrastructure\Security\IdentityVerifier:
             class: App\Tests\Double\FakeIdentityVerifier
+
+        # Ni el de las cuentas de servicio (ver FakeServiceAccountVerifier).
+        App\Portal\Infrastructure\Security\ServiceAccountVerifier:
+            class: App\Tests\Double\FakeServiceAccountVerifier

@@ -8,7 +8,7 @@ use App\Portal\Domain\Suite\ApplicationCatalog;
 use App\Portal\Domain\User\EmailAddress;
 use App\Portal\Domain\User\User;
 use App\Portal\Domain\User\UserRepository;
-use App\Portal\Infrastructure\Security\BearerUser;
+use App\Portal\Infrastructure\Security\BearerCaller;
 use App\Portal\Infrastructure\Security\InvalidSessionToken;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +23,8 @@ use Symfony\Component\Routing\Attribute\Route;
  * Como /api/acceso, la llama el servidor de la aplicación con el token de
  * quien está haciendo la petición. Solo contesta si ESA persona tiene algún
  * rol en la aplicación: con una sesión de listados no se pueden sacar los
- * correos de los administradores de fichajes.
+ * correos de los administradores de fichajes. Desde el cliente 0.1.3,
+ * también al servidor de una aplicación sin nadie detrás (BearerCaller).
  *
  *   GET /api/avisos?aplicacion=fichajes&rol=admin
  *   200 [{"name", "emails": [...]}]   por nombre; solo personas activas
@@ -32,7 +33,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final readonly class NotificationRecipientsController
 {
     public function __construct(
-        private BearerUser $bearerUser,
+        private BearerCaller $bearerCaller,
         private UserRepository $users,
         private ApplicationCatalog $catalog,
     ) {
@@ -52,12 +53,12 @@ final readonly class NotificationRecipientsController
         }
 
         try {
-            $caller = $this->bearerUser->from($request);
+            $caller = $this->bearerCaller->from($request);
         } catch (InvalidSessionToken $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
         }
 
-        if ([] === $caller->rolesIn($code)) {
+        if (!$caller->mayAskAbout($code)) {
             return new JsonResponse(['error' => 'No tienes acceso a esa aplicación.'], Response::HTTP_FORBIDDEN);
         }
 

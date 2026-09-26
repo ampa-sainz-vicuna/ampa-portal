@@ -166,12 +166,31 @@ despliegues y demás")**
   verde. Commit `8489707`, release `v0.1.2` (sha1
   `c166abdecf2044e0724ff1bd6abfb006ef4cd3e5`), revisión
   `ampa-portal-00006-5h6`.
-- **Siguiente para tareas: cliente 0.1.3** (decidido por el usuario el
-  26/09/2026, camino (a) del `CLAUDE.md` de tareas): el resumen diario de
-  las 5:00 corre sin persona con sesión, así que `/api/personas` y
-  `/api/avisos` tienen que aceptar también el token de identidad de Google
-  de la cuenta de servicio de la suite. Por eso *saltar entre aplicaciones*
-  (pendiente 5) pasa a ser la **0.1.4**.
+- **Cliente 0.1.3 (26/09/2026, desde la sesión de tareas, "hazlo tú"):
+  escrito y probado, SIN publicar ni desplegar** (camino (a) del `CLAUDE.md`
+  de tareas: el resumen diario de las 5:00 corre sin persona con sesión).
+  - Portal: `/api/personas` y `/api/avisos` aceptan, además de la sesión de
+    una persona, el **token de identidad de Google de la cuenta de servicio
+    de la suite** (`BearerCaller` → `Caller::person()` o
+    `Caller::application()`; `GoogleServiceAccountVerifier` comprueba firma,
+    audiencia `SUITE_TOKEN_AUDIENCE` = la dirección fija del portal, y
+    cuenta en `SUITE_SERVICE_ACCOUNTS` = la de Compute por defecto). Una
+    aplicación puede preguntar por cualquier aplicación (todas corren con
+    la misma cuenta; el portal no distingue cuál llama). `/api/acceso` no
+    lo acepta. Las claves de Google, en `GooglePublicKeys` (compartidas con
+    `GoogleIdTokenVerifier`). En desarrollo las dos variables van vacías y
+    no se acepta ninguno. `deploy/desplegar.sh` las pone.
+  - Cliente: `ApplicationIdentity` (`MetadataServerIdentity`: el servidor
+    de metadatos de Cloud Run, audiencia `portal_url`, `format=full`) y
+    `CallerToken`: `SuiteMembers` y `SuiteRecipients` usan la cookie de la
+    petición y, si no hay, el token del servidor. `FakeApplicationIdentity`
+    para los tests (FakePortal lo acepta en `members()`/`recipients()`).
+    Solo añade: tercera cifra.
+  - 31 unitarios y 43 de integración de PHP, 24 del cliente, en verde.
+  - **Falta** (con permiso del usuario): commit, etiqueta `v0.1.3` (la
+    Action cuelga el zip) y `deploy/desplegar.sh`. Después, tareas pasa su
+    `composer.json` a la 0.1.3 con el sha1 de la release.
+  - *Saltar entre aplicaciones* (pendiente 5) pasa a ser la **0.1.4**.
 
 **Pendiente, en este orden**
 

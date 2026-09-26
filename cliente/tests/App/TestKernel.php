@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Ampa\PortalCliente\Tests\App;
 
 use Ampa\PortalCliente\AmpaPortalClienteBundle;
+use Ampa\PortalCliente\Portal\ApplicationIdentity;
 use Ampa\PortalCliente\Portal\Portal;
+use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\Security\JsonAccessDeniedHandler;
 use Ampa\PortalCliente\Security\PortalAuthenticator;
 use Ampa\PortalCliente\Security\PortalUserProvider;
+use Ampa\PortalCliente\Testing\FakeApplicationIdentity;
 use Ampa\PortalCliente\Testing\FakePortal;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -90,6 +93,7 @@ final class TestKernel extends Kernel
 
         // Lo que pone cada aplicación en el when@test de su services.yaml.
         $services->set(Portal::class, FakePortal::class);
+        $services->set(ApplicationIdentity::class, FakeApplicationIdentity::class);
 
         $services->set(PrivateController::class)->public()->tag('controller.service_arguments');
         $services->set(OpenedListener::class)->public();
@@ -97,6 +101,7 @@ final class TestKernel extends Kernel
         // Nadie lo inyecta en esta aplicación de pruebas, y Symfony lo
         // quitaría al compilar; el test lo pide al contenedor.
         $services->alias('test.suite_recipients', SuiteRecipients::class)->public();
+        $services->alias('test.suite_members', SuiteMembers::class)->public();
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void

@@ -6,7 +6,10 @@ use Ampa\PortalCliente\Http\MeController;
 use Ampa\PortalCliente\Http\MeExtension;
 use Ampa\PortalCliente\Http\NoMeExtension;
 use Ampa\PortalCliente\Http\SignOutController;
+use Ampa\PortalCliente\Portal\ApplicationIdentity;
+use Ampa\PortalCliente\Portal\CallerToken;
 use Ampa\PortalCliente\Portal\HttpPortal;
+use Ampa\PortalCliente\Portal\MetadataServerIdentity;
 use Ampa\PortalCliente\Portal\Portal;
 use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
@@ -41,6 +44,15 @@ return static function (ContainerConfigurator $container): void {
             param('ampa_portal_cliente.aplicacion'),
         ]);
     $services->alias(Portal::class, HttpPortal::class);
+
+    // El token de este servidor, para preguntar sin nadie detrás (0.1.3).
+    $services->set(MetadataServerIdentity::class)
+        ->args([
+            service('http_client'),
+            param('ampa_portal_cliente.portal_url'),
+        ]);
+    $services->alias(ApplicationIdentity::class, MetadataServerIdentity::class);
+    $services->set(CallerToken::class);
 
     $services->set(SuiteCookie::class)
         ->args([

@@ -93,7 +93,8 @@ final class FakePortal implements Portal
 
     public function recipients(string $token, string $role): array
     {
-        if ([] === $this->access($token)->getRoles()) {
+        // El de este servidor (FakeApplicationIdentity) vale, como en el portal.
+        if (FakeApplicationIdentity::TOKEN !== $token && [] === $this->access($token)->getRoles()) {
             throw new SessionRejected('Sin rol en esta aplicación, el portal no da los correos.');
         }
 
@@ -102,7 +103,7 @@ final class FakePortal implements Portal
 
     public function members(string $token): array
     {
-        if ([] === $this->access($token)->getRoles()) {
+        if (FakeApplicationIdentity::TOKEN !== $token && [] === $this->access($token)->getRoles()) {
             throw new SessionRejected('Sin rol en esta aplicación, el portal no dice quién hay.');
         }
 

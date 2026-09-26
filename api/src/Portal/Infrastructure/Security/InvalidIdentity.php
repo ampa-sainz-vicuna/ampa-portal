@@ -34,4 +34,9 @@ final class InvalidIdentity extends \RuntimeException
     {
         return new self('Esa cuenta no pertenece a la organización.');
     }
+
+    public static function notASuiteAccount(string $account): self
+    {
+        return new self(sprintf('La cuenta de servicio "%s" no es de la suite.', $account));
+    }
 }

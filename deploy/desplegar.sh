@@ -63,6 +63,13 @@ ENV_VARS+=",URL_LISTADOS=https://listados.ampasainzvicuna.com"
 ENV_VARS+=",URL_FACTURACION=https://facturacion.ampasainzvicuna.com"
 # Tareas aún no está desplegada: es la dirección prevista.
 ENV_VARS+=",URL_TAREAS=https://tareas.ampasainzvicuna.com"
+# Las llamadas del servidor de una aplicación sin nadie detrás (el resumen
+# diario de tareas; cliente 0.1.3): el token de identidad de Google de la
+# cuenta de servicio con la que corren todas (la de Compute Engine por
+# defecto), emitido para la dirección fija del portal. Una sola cuenta: con
+# varias, la coma chocaría con la de --set-env-vars.
+ENV_VARS+=",SUITE_TOKEN_AUDIENCE=${RUN_URL}"
+ENV_VARS+=",SUITE_SERVICE_ACCOUNTS=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 echo "Desplegando el portal en $PROJECT ($REGION). Tarda unos 5 minutos..."
 echo

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Ampa\PortalCliente\Portal;
 
-use Ampa\PortalCliente\Security\SuiteCookie;
-use Symfony\Component\HttpFoundation\RequestStack;
-
 /**
  * Quién hay en esta aplicación, para usar desde un caso de uso o un
  * controlador:
@@ -15,33 +12,27 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * Por ejemplo, tareas lo usa para elegir a quién se asigna una tarea. Como
  * SuiteRecipients, pregunta al portal con el token de quien hace la petición
- * en curso, así que solo funciona dentro de una petición con sesión.
+ * en curso; sin nadie detrás (una tarea programada), desde la 0.1.3, con el de
+ * este servidor (CallerToken).
  */
 final readonly class SuiteMembers
 {
     public function __construct(
         private Portal $portal,
-        private SuiteCookie $cookie,
-        private RequestStack $requests,
+        private CallerToken $token,
     ) {
     }
 
     /**
      * @return list<Member>
      *
-     * @throws SessionRejected   si no hay sesión en la petición en curso
-     * @throws PortalUnavailable si el portal no contesta
+     * @throws SessionRejected   si el portal no acepta el token
+     * @throws PortalUnavailable si el portal no contesta, o no hay sesión y
+     *                           este servidor no tiene token (en desarrollo)
      */
     public function all(): array
     {
-        $request = $this->requests->getMainRequest();
-        $token = null === $request ? null : $this->cookie->tokenFrom($request);
-
-        if (null === $token) {
-            throw new SessionRejected('No hay sesión en esta petición: sin ella no se puede preguntar al portal.');
-        }
-
-        return $this->portal->members($token);
+        return $this->portal->members($this->token->current());
     }
 
     /** Si ese correo (el de la cuenta, sin mirar mayúsculas) es de alguien de aquí. */
