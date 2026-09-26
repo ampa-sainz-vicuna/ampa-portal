@@ -19,7 +19,8 @@ final readonly class UserPresenter
      *     active: bool,
      *     grants: object,
      *     secondaryEmail: string|null,
-     *     notify: string
+     *     notify: string,
+     *     lastSeenAt: string|null
      * }
      */
     public function __invoke(User $user): array
@@ -33,6 +34,8 @@ final readonly class UserPresenter
             'grants' => (object) $user->getGrants()->toArray(),
             'secondaryEmail' => $user->getSecondaryEmail()?->getValue(),
             'notify' => $user->getNotify()->value,
+            // ISO 8601; null si todavía no ha entrado nunca.
+            'lastSeenAt' => $user->getLastSeenAt()?->format(\DateTimeInterface::ATOM),
         ];
     }
 }

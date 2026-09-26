@@ -30,6 +30,7 @@ export function suiteUser(overrides: Partial<SuiteUser> = {}): SuiteUser {
     grants: { fichajes: ['admin'] },
     secondaryEmail: null,
     notify: 'primary',
+    lastSeenAt: '2026-09-26T09:00:00+02:00',
     ...overrides,
   }
 }

@@ -14,6 +14,7 @@ import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 import { useCallback, useEffect, useState } from 'react'
 import type { CatalogApplication, PortalUser, SuiteUser } from '../types'
+import { describeLastSeen } from './lastSeen'
 import { UserDialog } from './UserDialog'
 
 interface Props {
@@ -124,11 +125,18 @@ export function Permissions({ me, onUnauthorized }: Props) {
             >
               <ListItemText
                 primary={user.name}
-                secondary={user.email}
+                secondary={
+                  user.lastSeenAt === null ? user.email : `${user.email} · Última entrada: ${describeLastSeen(user.lastSeenAt)}`
+                }
                 slotProps={{ primary: { sx: { color: user.active ? 'text.primary' : 'text.disabled' } } }}
               />
               <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 1, ml: 2 }}>
                 {!user.active && <Chip size="small" label="Desactivado" />}
+                {/* Si no entra nunca, lo más probable es que el correo del alta
+                    no sea el de su cuenta de Google: la ficha se busca por él. */}
+                {user.active && user.lastSeenAt === null && (
+                  <Chip size="small" color="warning" variant="outlined" label="Nunca ha entrado" />
+                )}
                 {Object.entries(user.grants).flatMap(([application, roles]) =>
                   roles.map((role) => (
                     <Chip key={`${application}-${role}`} size="small" variant="outlined" label={roleName(application, role)} />

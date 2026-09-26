@@ -20,11 +20,13 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function entrar_pone_la_cookie_de_sesion_y_dice_a_donde_puede_ir(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario'], 'portal' => ['admin']]);
+        $admin = $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario'], 'portal' => ['admin']]);
 
         $this->request('POST', '/api/auth/google', ['credential' => 'admin@ampasainzvicuna.com']);
 
         self::assertSame(200, $this->responseStatus());
+        // Y queda apuntado que ha entrado.
+        self::assertNotNull($this->reload($admin)->getLastSeenAt());
         $payload = $this->payload();
         self::assertSame('admin@ampasainzvicuna.com', $payload['email']);
         self::assertTrue($payload['isAdmin']);

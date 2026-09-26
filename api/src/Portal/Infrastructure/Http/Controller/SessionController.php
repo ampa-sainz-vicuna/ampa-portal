@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Portal\Infrastructure\Http\Controller;
 
 use App\Portal\Application\User\ChangeOwnContact;
+use App\Portal\Application\User\RecordVisit;
 use App\Portal\Domain\User\EmailAddress;
 use App\Portal\Domain\User\UserRepository;
 use App\Portal\Infrastructure\Http\ContactPayload;
@@ -26,6 +27,7 @@ final readonly class SessionController
         private UserRepository $users,
         private SessionPresenter $presenter,
         private ChangeOwnContact $changeOwnContact,
+        private RecordVisit $recordVisit,
     ) {
     }
 
@@ -35,6 +37,7 @@ final readonly class SessionController
         $me = $this->me();
         $user = $this->users->findByEmail($me)
             ?? throw new \LogicException(sprintf('"%s" ha entrado pero no está en la base de datos.', $me->getValue()));
+        ($this->recordVisit)($user);
 
         return new JsonResponse(($this->presenter)($user));
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Portal\Infrastructure\Http\Controller;
 
+use App\Portal\Application\User\RecordVisit;
 use App\Portal\Domain\Suite\Application;
 use App\Portal\Domain\Suite\ApplicationCatalog;
 use App\Portal\Domain\User\EmailAddress;
@@ -39,6 +40,7 @@ final readonly class AccessController
     public function __construct(
         private BearerUser $bearerUser,
         private ApplicationCatalog $catalog,
+        private RecordVisit $recordVisit,
     ) {
     }
 
@@ -59,6 +61,10 @@ final readonly class AccessController
         } catch (InvalidSessionToken $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
         }
+
+        // Casi nadie pasa por el portal: se entra directo en cada aplicación
+        // con la cookie. Es aquí donde se sabe que alguien sigue usando la suite.
+        ($this->recordVisit)($user);
 
         return new JsonResponse([
             'email' => $user->getEmail()->getValue(),

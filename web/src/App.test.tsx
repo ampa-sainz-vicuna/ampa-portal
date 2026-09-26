@@ -151,6 +151,25 @@ describe('Permisos', () => {
     expect(within(list).getByText('Listados: Usuario')).toBeTruthy()
   })
 
+  it('dice quién no ha entrado nunca: seguramente el correo del alta no es el de su cuenta', async () => {
+    withAdmin(
+      jsonResponse(200, [
+        suiteUser(),
+        suiteUser({ id: '2', name: 'Nueva', email: 'nueva@ampasainzvicuna.com', lastSeenAt: null }),
+        // Desactivada: que no entre es lo normal, no se avisa.
+        suiteUser({ id: '3', name: 'Antigua', email: 'antigua@ampasainzvicuna.com', active: false, lastSeenAt: null }),
+      ]),
+    )
+
+    renderInPortal(<App />)
+    await userEvent.click(await screen.findByRole('tab', { name: 'Permisos' }))
+
+    const list = await screen.findByRole('list', { name: 'Personas' })
+    expect(within(list).getAllByText('Nunca ha entrado')).toHaveLength(1)
+    expect(within(list).getByText(/^tesoreria@ampasainzvicuna\.com · Última entrada: /)).toBeTruthy()
+    expect(within(list).getByText('nueva@ampasainzvicuna.com')).toBeTruthy()
+  })
+
   it('da de alta a alguien con sus permisos y su segundo correo', async () => {
     const fetchMock = withAdmin(jsonResponse(200, []), jsonResponse(201, suiteUser()), jsonResponse(200, [suiteUser()]))
 

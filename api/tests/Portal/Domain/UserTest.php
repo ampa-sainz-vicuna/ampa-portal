@@ -101,6 +101,21 @@ final class UserTest extends TestCase
         $this->user()->rename('   ');
     }
 
+    #[Test]
+    public function la_ultima_entrada_se_apunta_como_mucho_una_vez_por_hora(): void
+    {
+        $user = $this->user();
+        self::assertNull($user->getLastSeenAt());
+
+        self::assertTrue($user->recordVisit(new \DateTimeImmutable('2026-09-26 10:00:00+00:00')));
+        // Las aplicaciones preguntan en cada petición: no se escribe cada vez.
+        self::assertFalse($user->recordVisit(new \DateTimeImmutable('2026-09-26 10:59:59+00:00')));
+        self::assertEquals(new \DateTimeImmutable('2026-09-26 10:00:00+00:00'), $user->getLastSeenAt());
+
+        self::assertTrue($user->recordVisit(new \DateTimeImmutable('2026-09-26 11:00:00+00:00')));
+        self::assertEquals(new \DateTimeImmutable('2026-09-26 11:00:00+00:00'), $user->getLastSeenAt());
+    }
+
     private function user(): User
     {
         return User::register(

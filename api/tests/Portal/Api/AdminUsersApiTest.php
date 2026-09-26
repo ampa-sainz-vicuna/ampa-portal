@@ -40,6 +40,24 @@ final class AdminUsersApiTest extends ApiTestCase
     }
 
     #[Test]
+    public function dice_cuando_entro_cada_uno_por_ultima_vez_y_quien_no_ha_entrado_nunca(): void
+    {
+        $zoe = $this->given('zoe@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $this->given('alvaro@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        // Zoe abre listados: su servidor pregunta al portal con su sesión.
+        $this->request('GET', '/api/acceso?aplicacion=listados', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('zoe@ampasainzvicuna.com')]);
+        self::assertSame(200, $this->responseStatus());
+        self::assertNotNull($this->reload($zoe)->getLastSeenAt());
+
+        $this->request('GET', '/api/admin/users');
+
+        $users = array_column($this->payload(), null, 'email');
+        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', (string) $users['zoe@ampasainzvicuna.com']['lastSeenAt']);
+        self::assertNull($users['alvaro@ampasainzvicuna.com']['lastSeenAt']);
+    }
+
+    #[Test]
     public function da_de_alta_a_alguien_con_sus_permisos(): void
     {
         $this->request('POST', '/api/admin/users', [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Portal\Infrastructure\Http\Controller;
 
+use App\Portal\Application\User\RecordVisit;
 use App\Portal\Domain\User\EmailAddress;
 use App\Portal\Domain\User\UserRepository;
 use App\Portal\Infrastructure\Http\SessionPresenter;
@@ -32,6 +33,7 @@ final readonly class AuthController
         private SessionCookie $cookie,
         private SessionPresenter $presenter,
         private ClockInterface $clock,
+        private RecordVisit $recordVisit,
     ) {
     }
 
@@ -72,6 +74,8 @@ final readonly class AuthController
                 Response::HTTP_FORBIDDEN,
             );
         }
+
+        ($this->recordVisit)($user);
 
         // El token va SOLO en la cookie (HttpOnly), no en el cuerpo: así el
         // JavaScript de ninguna página llega a tenerlo.

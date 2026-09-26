@@ -65,7 +65,10 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
   )
 
   return (
-    <AppShell userName={me.name} onSignOut={onSignOut} tabs={tabs} maxWidth={section === 'permissions' ? 'md' : 'sm'}>
+    // md (900 px) en todas las secciones: a 600 px, en el ordenador todo va
+    // en una columna estrecha y apelotonada (decidido con el usuario el
+    // 26/09/2026, para toda la suite).
+    <AppShell userName={me.name} onSignOut={onSignOut} tabs={tabs} maxWidth="md">
       {target !== null && (
         <Alert
           severity="info"

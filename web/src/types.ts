@@ -32,6 +32,8 @@ export interface SuiteUser {
   grants: Grants
   secondaryEmail: string | null
   notify: NotificationTarget
+  /** ISO 8601. null: todavía no ha entrado nunca (¿correo mal escrito al darle de alta?). */
+  lastSeenAt: string | null
 }
 
 /** Una aplicación del catálogo con sus roles, para las casillas (`/api/admin/applications`). */

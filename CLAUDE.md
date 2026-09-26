@@ -138,11 +138,15 @@ despliegues y demás")**
   raíz del dominio es la web estática de Firebase y no se toca.
 - `gcloud` del portal usa el volumen de sesión de listados
   (`ampa-listados_gcloud_config`, ver `docker-compose.yml`).
-- Secret Manager: **11 versiones activas** el 25/09/2026 (6 gratis por cuenta
-  de facturación, 0,06 $ al mes cada una de más). Fichajes y listados ya no
-  usan sus claves de firma; destruirlas (`jwt-private-key`, `jwt-public-key`,
-  `jwt-passphrase` y `listados-jwt-key`) lo deja en 7. Instrucciones en el
-  `docs/despliegue.md` de cada una, *Pasar al portal*.
+- Secret Manager: las claves de firma viejas de fichajes y listados
+  (`jwt-private-key`, `jwt-public-key`, `jwt-passphrase`, `listados-jwt-key`)
+  **ya no existen**: comprobado el 26/09/2026 con `docker compose run --rm
+  gcloud gcloud secrets list`. Quedan 8 secretos con una versión activa cada
+  uno (`app-secret`, `database-url`, `facturacion-database-url`,
+  `listados-database-url`, `mailer-dsn`, `portal-database-url`,
+  `portal-jwt-key`, `tareas-database-url`): 6 gratis por cuenta de
+  facturación y ~0,12 $ al mes por los otros dos. Para ver las versiones
+  activas de uno: `gcloud secrets versions list NOMBRE --filter=state=ENABLED`.
 
 **Tareas (25/09/2026, desde la sesión de `ampa-tareas`; publicado y desplegado con permiso del usuario)**
 
@@ -198,10 +202,8 @@ despliegues y demás")**
 **Pendiente, en este orden**
 
 1. ~~Certificado~~ de `portal.ampasainzvicuna.com`: **funciona** desde el
-   24/09/2026 (tardó ~50 minutos tras el CNAME). Queda que el usuario
-   compruebe que entra con Google; si el botón da error de origen, falta
-   `https://portal.ampasainzvicuna.com` (y `http://localhost:5176`) en los
-   orígenes del cliente de OAuth.
+   24/09/2026 (tardó ~50 minutos tras el CNAME), y **se entra con Google**
+   por ahí (confirmado por el usuario el 26/09/2026).
 2. ~~El primer administrador~~ **Hecho** con `deploy/dar-permisos.sh`:
    **Admin** (`admin@`: portal·admin, fichajes·admin, listados·usuario;
    segundo correo el personal del usuario, avisos a los dos) y **Alberto**
@@ -211,8 +213,8 @@ despliegues y demás")**
    fichajes, el 25/09/2026 por la tarde** (Claude, "hazlo tú"), con tests en
    verde y probados contra este portal en local; **desplegados el 25/09/2026**
    (`docs/despliegue.md` de cada una, *Pasar al portal*). El usuario comprobó
-   ese día que **la sesión viaja entre aplicaciones**; queda destruir los
-   secretos viejos (arriba). Fichajes se desplegó con
+   ese día que **la sesión viaja entre aplicaciones**; los secretos viejos
+   ya están destruidos (arriba). Fichajes se desplegó con
    la sesión de gcloud de listados (`docker run -v ampa-listados_gcloud_config:…`):
    la de su propio volumen había caducado. En listados,
    `APP_ALLOWED_EMAILS` desapareció. En fichajes, **decidido con el usuario:
@@ -223,8 +225,11 @@ despliegues y demás")**
    (`FichajesRoles`); `RunScheduledWork` cuelga de `ApplicationOpened`.
    Consecuencia para quien administra: dar de alta a un empleado son **dos
    pasos**, el permiso aquí y el alta con contrato en fichajes.
-4. **Cuentas que no son del Workspace** (pedido por el usuario el 25/09/2026,
-   "importante"): dar entrada a gente sin pagarle una cuenta del Workspace,
+4. ~~**Cuentas que no son del Workspace**~~ **Hecho** (confirmado por el
+   usuario el 26/09/2026): Cloud Identity Free montado y funcionando en
+   producción, con sus usuarios dados de alta en el portal. Lo que sigue es
+   el porqué, por si hay que repetirlo.
+   (Pedido por el usuario el 25/09/2026, "importante"): dar entrada a gente sin pagarle una cuenta del Workspace,
    que hoy es una prueba de Business Starter y **pasa a cobrar por usuario
    hacia el 29/09/2026** (Google for Nonprofits sigue sin aprobarse).
 
@@ -293,8 +298,42 @@ despliegues y demás")**
    `FakePortal::session(…, $applications)`. El front del portal, en
    `@ampa/ui` 0.2.2, con el selector también en su barra y los iconos de las
    tarjetas de `ApplicationIcon`. 26 tests del cliente, 75 de PHP y 14 del
-   front. Las aplicaciones, cada una en su `CLAUDE.md`.
+   front. Las aplicaciones, cada una en su `CLAUDE.md`. **En producción en
+   todas y funcionando** (confirmado por el usuario el 26/09/2026).
 6. ~~Tareas: su repositorio en GitHub y su despliegue~~ Hecho.
+7. ~~**Última entrada de cada persona en *Permisos***~~ **Hecho el
+   26/09/2026 por Claude** ("hazlo tú"; **sin commit ni despliegue**).
+   Sirve para ver quién se dio de alta con un correo mal escrito (la ficha
+   se busca por el correo exacto y esa persona no llega a entrar nunca).
+   - `User::recordVisit($now)` guarda `lastSeenAt` **como mucho una vez por
+     hora** (las aplicaciones preguntan en cada petición); lo llama
+     `RecordVisit` (aplicación) al entrar con Google, en `/api/me` del portal
+     y en **`/api/acceso`**, que es donde se ve de verdad: casi nadie pasa
+     por el portal, se entra directo en cada aplicación. Si guardar falla, se
+     anota en el registro y la petición sigue: nunca impide entrar.
+   - Columna `last_seen_at TIMESTAMP(0) WITH TIME ZONE` (migración
+     `Version20260926180000`; se aplica sola al arrancar en Cloud Run).
+     `/api/admin/users` añade `lastSeenAt` (ISO 8601 o null). **No toca el
+     contrato con las aplicaciones** (ni el cliente ni `/api/acceso` cambian
+     de forma).
+   - En *Permisos*: «correo · Última entrada: hoy / ayer / hace 5 días / el 3
+     de junio de 2026» (días de Madrid, `permissions/lastSeen.ts`) y la
+     etiqueta **«Nunca ha entrado»** en las fichas activas sin entrada.
+   - 32 unitarios y 45 de integración de PHP, 17 del front, lint y build en
+     verde; visto en el navegador con la API simulada.
+8. **Ancho 900 px** (26/09/2026, pedido por el usuario "para toda la
+   suite"): el portal pasa a `md` en todas las secciones (antes `sm`, y `md`
+   solo en *Permisos*). La regla, en el `CLAUDE.md` de
+   [`ampa-ui`](../ampa-ui/CLAUDE.md), *Reglas del código*.
+
+**Propuestas del 26/09/2026 que el usuario dejó sin prioridad** (no hacerlas
+sin que lo pida):
+- Avisar en la ficha si una cuenta del dominio (quizá de Cloud Identity, sin
+  buzón) deja los avisos en *principal*: "a priori no me preocupa".
+- Recordar en la ficha el alta con contrato al marcar *Fichajes: empleado*:
+  **descartado**, no debería haber más empleados.
+- Que el diálogo de la ficha no se cierre al pulsar fuera perdiendo lo
+  escrito, y un buscador en *Permisos*: cero prioridad.
 
 ---
 

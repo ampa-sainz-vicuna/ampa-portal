@@ -32,12 +32,13 @@ final class User
         private Grants $grants,
         private ?EmailAddress $secondaryEmail,
         private NotificationTarget $notify,
+        private ?\DateTimeImmutable $lastSeenAt,
     ) {
     }
 
     public static function register(UserId $id, EmailAddress $email, string $name, Grants $grants): self
     {
-        return new self($id, $email, self::validateName($name), true, $grants, null, NotificationTarget::Primary);
+        return new self($id, $email, self::validateName($name), true, $grants, null, NotificationTarget::Primary, null);
     }
 
     public function rename(string $name): void
@@ -70,6 +71,28 @@ final class User
 
         $this->secondaryEmail = $secondaryEmail;
         $this->notify = $notify;
+    }
+
+    /**
+     * Apunta que ha pasado por la suite: al entrar con Google, al abrir el
+     * portal o cuando una aplicación pregunta por su sesión.
+     *
+     * Como mucho una vez por hora: las aplicaciones preguntan en CADA
+     * petición, y escribir en la base cada vez sería caro para nada. Para lo
+     * que sirve (ver quién no ha entrado nunca, o hace mucho) basta con la
+     * hora.
+     *
+     * @return bool si ha cambiado (y hay que guardarla)
+     */
+    public function recordVisit(\DateTimeImmutable $now): bool
+    {
+        if (null !== $this->lastSeenAt && $now < $this->lastSeenAt->modify('+1 hour')) {
+            return false;
+        }
+
+        $this->lastSeenAt = $now;
+
+        return true;
     }
 
     public function deactivate(): void
@@ -150,6 +173,12 @@ final class User
     public function getNotify(): NotificationTarget
     {
         return $this->notify;
+    }
+
+    /** null: todavía no ha entrado nunca. */
+    public function getLastSeenAt(): ?\DateTimeImmutable
+    {
+        return $this->lastSeenAt;
     }
 
     private static function validateName(string $name): string
