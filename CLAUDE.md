@@ -166,9 +166,9 @@ despliegues y demás")**
   verde. Commit `8489707`, release `v0.1.2` (sha1
   `c166abdecf2044e0724ff1bd6abfb006ef4cd3e5`), revisión
   `ampa-portal-00006-5h6`.
-- **Cliente 0.1.3 (26/09/2026, desde la sesión de tareas, "hazlo tú"):
-  escrito y probado, SIN publicar ni desplegar** (camino (a) del `CLAUDE.md`
-  de tareas: el resumen diario de las 5:00 corre sin persona con sesión).
+- **Cliente 0.1.3 (26/09/2026, desde la sesión de tareas; publicado y
+  desplegado con permiso del usuario)** (camino (a) del `CLAUDE.md` de
+  tareas: el resumen diario de las 5:00 corre sin persona con sesión).
   - Portal: `/api/personas` y `/api/avisos` aceptan, además de la sesión de
     una persona, el **token de identidad de Google de la cuenta de servicio
     de la suite** (`BearerCaller` → `Caller::person()` o
@@ -187,9 +187,12 @@ despliegues y demás")**
     para los tests (FakePortal lo acepta en `members()`/`recipients()`).
     Solo añade: tercera cifra.
   - 31 unitarios y 43 de integración de PHP, 24 del cliente, en verde.
-  - **Falta** (con permiso del usuario): commit, etiqueta `v0.1.3` (la
-    Action cuelga el zip) y `deploy/desplegar.sh`. Después, tareas pasa su
-    `composer.json` a la 0.1.3 con el sha1 de la release.
+  - **Publicado y desplegado el 26/09/2026**: commit `9aa0ae0`, release
+    `v0.1.3` (sha1 `69a8a60c52408baa80a4750b7331718489114f61`, comprobado
+    descargando el zip), revisión `ampa-portal-00007-88t` con las dos
+    variables. **Comprobado en producción**: el trabajo de Cloud Scheduler
+    de tareas hizo `/api/personas` con el token del servidor y el portal
+    contestó 200. Tareas ya está en la 0.1.3.
   - *Saltar entre aplicaciones* (pendiente 5) pasa a ser la **0.1.4**.
 
 **Pendiente, en este orden**
