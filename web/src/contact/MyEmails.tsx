@@ -1,6 +1,9 @@
-import { ApiError, apiRequest, messageOf } from '@ampa/ui'
+import { ApiError, apiRequest, CardTitle, messageOf } from '@ampa/ui'
+import AlternateEmailRounded from '@mui/icons-material/AlternateEmailRounded'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useState, type FormEvent } from 'react'
@@ -46,28 +49,34 @@ export function MyEmails({ user, onSaved, onUnauthorized }: Props) {
   }
 
   return (
-    <Stack component="form" spacing={3} onSubmit={save} noValidate>
-      <Typography variant="body2" color="text.secondary">
-        Entras con <strong>{user.email}</strong>. Las aplicaciones del AMPA te mandan los avisos (una solicitud de
-        vacaciones, por ejemplo) al correo que elijas aquí.
-      </Typography>
+    <Card>
+      <CardContent sx={{ p: 3 }}>
+        <CardTitle icon={<AlternateEmailRounded />}>Mis correos</CardTitle>
 
-      <ContactFields
-        primaryEmail={user.email}
-        value={value}
-        onChange={(next) => {
-          setValue(next)
-          setSaved(false)
-        }}
-        disabled={busy}
-      />
+        <Stack component="form" spacing={3} onSubmit={save} noValidate sx={{ mt: 1.5 }}>
+          <Typography variant="body2" color="text.secondary">
+            Entras con <strong>{user.email}</strong>. Las aplicaciones del AMPA te mandan los avisos (una solicitud de
+            vacaciones, por ejemplo) al correo que elijas aquí.
+          </Typography>
 
-      {error && <Alert severity="error">{error}</Alert>}
-      {saved && <Alert severity="success">Guardado.</Alert>}
+          <ContactFields
+            primaryEmail={user.email}
+            value={value}
+            onChange={(next) => {
+              setValue(next)
+              setSaved(false)
+            }}
+            disabled={busy}
+          />
 
-      <Button type="submit" variant="contained" disabled={busy} sx={{ alignSelf: 'flex-start' }}>
-        Guardar
-      </Button>
-    </Stack>
+          {error && <Alert severity="error">{error}</Alert>}
+          {saved && <Alert severity="success">Guardado.</Alert>}
+
+          <Button type="submit" variant="contained" disabled={busy} sx={{ alignSelf: 'flex-start' }}>
+            Guardar
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   )
 }

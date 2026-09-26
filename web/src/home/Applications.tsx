@@ -55,15 +55,16 @@ export function Applications({ applications }: Props) {
         return (
           <Card
             key={application.code}
-            variant="outlined"
             sx={(theme) => ({
               borderRadius: 3,
               // La franja de arriba, del color de la aplicación.
               borderTop: `4px solid ${theme.palette[look.color].main}`,
               transition: 'box-shadow 150ms, transform 150ms, border-color 150ms',
+              // Al pasar por encima se levanta, con la sombra teñida de su
+              // color como el resto de la suite, no gris.
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: theme.shadows[4],
+                boxShadow: `0 8px 24px ${alpha(theme.palette[look.color].main, 0.18)}`,
                 borderColor: theme.palette[look.color].main,
               },
               '&:hover .arrow': { transform: 'translateX(4px)', color: theme.palette[look.color].main },

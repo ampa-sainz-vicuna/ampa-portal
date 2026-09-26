@@ -1,8 +1,11 @@
-import { ApiError, apiRequest, messageOf } from '@ampa/ui'
+import { ApiError, apiRequest, CardTitle, messageOf } from '@ampa/ui'
+import GroupOutlined from '@mui/icons-material/GroupOutlined'
 import PersonAddRounded from '@mui/icons-material/PersonAddRounded'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 import List from '@mui/material/List'
@@ -97,35 +100,45 @@ export function Permissions({ me, onUnauthorized }: Props) {
   }
 
   return (
-    <Stack spacing={2}>
-      <Button
-        variant="contained"
-        startIcon={<PersonAddRounded />}
-        onClick={() => setEditing({ kind: 'new' })}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        Dar de alta
-      </Button>
+    <Card>
+      <CardContent sx={{ p: 3 }}>
+        <CardTitle
+          icon={<GroupOutlined />}
+          subtitle={users.length === 1 ? '1 persona' : `${users.length} personas`}
+          action={
+            <Button variant="outlined" startIcon={<PersonAddRounded />} onClick={() => setEditing({ kind: 'new' })}>
+              Dar de alta
+            </Button>
+          }
+        >
+          Personas
+        </CardTitle>
 
-      <List aria-label="Personas">
-        {users.map((user) => (
-          <ListItemButton key={user.id} onClick={() => setEditing({ kind: 'existing', user })} divider>
-            <ListItemText
-              primary={user.name}
-              secondary={user.email}
-              slotProps={{ primary: { sx: { color: user.active ? 'text.primary' : 'text.disabled' } } }}
-            />
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 1, ml: 2 }}>
-              {!user.active && <Chip size="small" label="Desactivado" />}
-              {Object.entries(user.grants).flatMap(([application, roles]) =>
-                roles.map((role) => (
-                  <Chip key={`${application}-${role}`} size="small" variant="outlined" label={roleName(application, role)} />
-                )),
-              )}
-            </Stack>
-          </ListItemButton>
-        ))}
-      </List>
+        <List aria-label="Personas" sx={{ mt: 1, pb: 0 }}>
+          {users.map((user) => (
+            <ListItemButton
+              key={user.id}
+              onClick={() => setEditing({ kind: 'existing', user })}
+              divider
+              sx={{ '&:last-of-type': { borderBottom: 0 } }}
+            >
+              <ListItemText
+                primary={user.name}
+                secondary={user.email}
+                slotProps={{ primary: { sx: { color: user.active ? 'text.primary' : 'text.disabled' } } }}
+              />
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 1, ml: 2 }}>
+                {!user.active && <Chip size="small" label="Desactivado" />}
+                {Object.entries(user.grants).flatMap(([application, roles]) =>
+                  roles.map((role) => (
+                    <Chip key={`${application}-${role}`} size="small" variant="outlined" label={roleName(application, role)} />
+                  )),
+                )}
+              </Stack>
+            </ListItemButton>
+          ))}
+        </List>
+      </CardContent>
 
       {editing !== null && (
         <UserDialog
@@ -140,6 +153,6 @@ export function Permissions({ me, onUnauthorized }: Props) {
           onUnauthorized={onUnauthorized}
         />
       )}
-    </Stack>
+    </Card>
   )
 }
