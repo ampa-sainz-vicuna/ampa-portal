@@ -47,7 +47,7 @@ con `#[Test]`. Sin lexik. Todo en Docker; **no hay PHP en Windows**.
 
 | | |
 |---|---|
-| Web (Vite) | **5176** (React 19, MUI 9, `@ampa/ui` 0.2.0, Vitest) |
+| Web (Vite) | **5176** (React 19, MUI 9, `@ampa/ui` 0.2.2, Vitest) |
 | API (nginx) | **8083** |
 | PostgreSQL | **5435** (base `suite`, tests en `suite_test`) |
 
@@ -285,7 +285,16 @@ despliegues y demás")**
    mismo que ya calcula `SessionPresenter`), el cliente lo pasa a `/api/me`
    (0.1.4, porque la 0.1.2 y la 0.1.3 son de tareas: solo añade) y `@ampa/ui` lo pinta en `AppShell`. Después, cada
    aplicación sube de versión y se redespliega.
-6. Tareas: su repositorio en GitHub y su despliegue (ver su `CLAUDE.md`).
+   **Hecho el 26/09/2026 por Claude** (el usuario fuera, "siempre acabando
+   en commit y despliegue"): commit `2651c3e`, release **`v0.1.4`** (sha1
+   `5a5d5a2f271fe497fb8402ef4218db9a008a9db1`, comprobado descargando el
+   zip). `ReachableApplication`, `PortalAccess::getApplications()` (vacía
+   con un portal anterior), `PortalUser::getApplications()`,
+   `FakePortal::session(…, $applications)`. El front del portal, en
+   `@ampa/ui` 0.2.2, con el selector también en su barra y los iconos de las
+   tarjetas de `ApplicationIcon`. 26 tests del cliente, 75 de PHP y 14 del
+   front. Las aplicaciones, cada una en su `CLAUDE.md`.
+6. ~~Tareas: su repositorio en GitHub y su despliegue~~ Hecho.
 
 ---
 

@@ -1,10 +1,5 @@
-import type { ReactNode } from 'react'
-import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded'
-import AccountBalanceWalletRounded from '@mui/icons-material/AccountBalanceWalletRounded'
-import AppsRounded from '@mui/icons-material/AppsRounded'
+import { ApplicationIcon } from '@ampa/ui'
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded'
-import FactCheckRounded from '@mui/icons-material/FactCheckRounded'
-import ViewKanbanRounded from '@mui/icons-material/ViewKanbanRounded'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
@@ -18,24 +13,24 @@ interface Props {
 }
 
 interface Look {
-  icon: ReactNode
   description: string
   color: 'primary' | 'secondary'
 }
 
 /**
  * Cómo se ve cada aplicación. Va aquí y no en el catálogo del servidor porque
- * es solo presentación; una aplicación nueva que no esté se ve con el icono
- * genérico hasta que se le ponga el suyo.
+ * es solo presentación; una aplicación nueva que no esté se ve con la
+ * descripción genérica hasta que se le ponga la suya. El icono es el de
+ * @ampa/ui (ApplicationIcon), el mismo que en el selector de la barra.
  */
 const LOOKS: Record<string, Look> = {
-  fichajes: { icon: <AccessTimeRounded />, description: 'Registro de jornada y bolsa de horas', color: 'primary' },
-  listados: { icon: <FactCheckRounded />, description: 'Listados de las extraescolares para los monitores', color: 'secondary' },
-  facturacion: { icon: <AccountBalanceWalletRounded />, description: 'Contabilidad y tesorería: caja, banco y cierres', color: 'primary' },
-  tareas: { icon: <ViewKanbanRounded />, description: 'Tablero de tareas de la junta y Alberto', color: 'secondary' },
+  fichajes: { description: 'Registro de jornada y bolsa de horas', color: 'primary' },
+  listados: { description: 'Listados de las extraescolares para los monitores', color: 'secondary' },
+  facturacion: { description: 'Contabilidad y tesorería: caja, banco y cierres', color: 'primary' },
+  tareas: { description: 'Tablero de tareas de la junta y Alberto', color: 'secondary' },
 }
 
-const DEFAULT_LOOK: Look = { icon: <AppsRounded />, description: 'Aplicación del AMPA', color: 'secondary' }
+const DEFAULT_LOOK: Look = { description: 'Aplicación del AMPA', color: 'secondary' }
 
 /**
  * Una tarjeta por aplicación a la que puede ir. Entrar en ella no pide nada
@@ -89,7 +84,7 @@ export function Applications({ applications }: Props) {
                   '& svg': { fontSize: 30 },
                 })}
               >
-                {look.icon}
+                <ApplicationIcon code={application.code} />
               </Box>
               <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 <Typography variant="h6" component="h2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
