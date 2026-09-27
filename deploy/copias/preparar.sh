@@ -75,11 +75,22 @@ gcloud run jobs deploy "$JOB" \
     --quiet >/dev/null
 
 echo "3/3  Permiso para que el portal lo lance (Invocador de Cloud Run, solo sobre este job)..."
-gcloud run jobs add-iam-policy-binding "$JOB" \
-    --region="$REGION" \
-    --member="serviceAccount:$SERVICE_ACCOUNT" \
-    --role=roles/run.invoker \
-    --quiet >/dev/null
+# Justo después de crear el job, Google a veces contesta "concurrent policy
+# changes" (pasó el 27/09/2026): se reintenta unas veces.
+for attempt in 1 2 3 4 5; do
+    if gcloud run jobs add-iam-policy-binding "$JOB" \
+        --region="$REGION" \
+        --member="serviceAccount:$SERVICE_ACCOUNT" \
+        --role=roles/run.invoker \
+        --quiet >/dev/null 2>&1; then
+        break
+    fi
+    if [ "$attempt" -eq 5 ]; then
+        echo "     No se ha podido dar el permiso. Repite el script."
+        exit 1
+    fi
+    sleep $((attempt * 5))
+done
 
 echo
 echo "Listo. Pruébalo ya (tarda un minuto):"

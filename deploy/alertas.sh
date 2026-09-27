@@ -78,8 +78,12 @@ fi
 # El filtro, en el lenguaje de Cloud Logging. Ver arriba qué recoge cada línea.
 # Los corchetes de "[error]" van como [[] y []] (una clase con un solo
 # carácter) para no depender de cómo escapa la barra el lenguaje del filtro.
+# Fuera los registros de auditoría: son lo que hace quien administra (un
+# permiso que no se pudo dar a la primera, el 27/09/2026, mandó un correo),
+# no un fallo de la suite.
 read -r -d '' FILTER <<'EOF' || true
 resource.type=("cloud_run_revision" OR "cloud_run_job" OR "cloud_scheduler_job")
+AND NOT logName:"cloudaudit.googleapis.com"
 AND (
   textPayload=~"[[](error|critical|alert|emergency)[]]"
   OR (severity>=ERROR AND (httpRequest.status>=500 OR resource.type="cloud_run_job" OR resource.type="cloud_scheduler_job"))

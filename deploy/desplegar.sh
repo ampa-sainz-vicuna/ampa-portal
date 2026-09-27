@@ -77,7 +77,7 @@ ENV_VARS+=",SUITE_SERVICE_ACCOUNTS=${PROJECT_NUMBER}-compute@developer.gservicea
 #   - el cómputo de Neon, si existe el secreto neon-api-key y está puesto el
 #     ID del proyecto de Neon aquí debajo (Neon → proyecto ampa → Settings →
 #     General → Project ID; no es secreto).
-NEON_PROJECT_ID=""
+NEON_PROJECT_ID="small-pond-03723796"
 if gcloud run jobs describe ampa-copias --region="$REGION" >/dev/null 2>&1; then
     ENV_VARS+=",COPIAS_JOB=projects/${PROJECT}/locations/${REGION}/jobs/ampa-copias"
 else
