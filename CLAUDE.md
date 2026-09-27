@@ -15,6 +15,13 @@ el detalle de cada pieza, en [README.md](README.md) y
 [cliente/README.md](cliente/README.md). Este fichero es el resumen para
 arrancar.
 
+**Lo que NO hace la suite, porque ya lo hace MiAmpa** (recordado por el
+usuario el 27/09/2026): las **cuotas de socios**, las **extraescolares**
+(inscripciones, recibos y remesas) y las **notificaciones a las familias**.
+MiAmpa no tiene API; la suite solo lee sus exportaciones (listados, alumnos de
+facturación). Antes de proponer algo para las familias, mirar si MiAmpa ya lo
+da.
+
 Repositorio **público**: `https://github.com/ampa-sainz-vicuna/ampa-portal`
 (las aplicaciones descargan el cliente de la release sin credenciales). Nada
 de correos reales en el código, en las migraciones ni en los tests.
@@ -259,7 +266,8 @@ despliegues y demás")**
    automática de licencias del Workspace** al añadir Cloud Identity (casilla
    *Switch off Auto-Assign*); si no, cada usuario nuevo se lleva una
    licencia de pago. Comprobar en la ficha de cada usuario nuevo que solo
-   tiene *Cloud Identity Free*.
+   tiene *Cloud Identity Free*. (Comprobado por el usuario el 27/09/2026,
+   antes de que acabe la prueba del Workspace: todo correcto.)
    **Aceptado por el usuario el 25/09/2026**: los que se den de alta así no
    van a mirar ningún correo del AMPA y no tienen que recibir nada en esa
    dirección. Ojo con tareas: sus avisos (asignaciones, vencimientos,
@@ -400,11 +408,16 @@ despliegues y demás")**
        de auditoría de ese permiso fallido: ahora se excluyen
        (`NOT logName:"cloudaudit.googleapis.com"`).
      - Revisión **`ampa-portal-00011-rtg`** con `COPIAS_JOB`, `NEON_*`.
-   - **Falta, del usuario**: cargar el curso 2026/27 en *Calendario*. La base
-     propia de fichajes queda **pendiente por decisión suya**.
-   - Después, en cada aplicación: subir a la 0.1.5 y, fichajes y tareas, el
-     latido (paso 8 del README del cliente); tareas puede pasar su resumen
-     al latido y borrar su trabajo de Cloud Scheduler.
+   - El curso 2026/27 **ya está cargado** en *Calendario* (el usuario, el
+     27/09/2026 por la mañana). La base propia de fichajes queda **pendiente
+     por decisión suya** ("no corre prisa", 27/09/2026).
+   - **Subir las aplicaciones a la 0.1.5** (27/09/2026 por la tarde, Claude,
+     "hazlo tú", **sin commit ni despliegue**): las cuatro al cliente 0.1.5, y
+     fichajes y tareas con el latido (paso 8 del README del cliente). Lo que
+     falta, cada una en su `CLAUDE.md`. **Orden**: desplegar la aplicación →
+     `latido: true` en `suite.yaml` → redesplegar el portal → `gcloud
+     scheduler jobs run suite-latido --location=europe-west1` y mirar los
+     registros. Tareas, después, borra su trabajo `tareas-resumen-diario`.
 
 10. **Entrar sin ventana emergente y la alerta sin robots** (27/09/2026,
     Claude, "hazlo tú y commitea y despliega").
@@ -440,17 +453,18 @@ despliegues y demás")**
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra
   trabajo"), **leer los justificantes** con la API de Claude, y el **informe
   de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**:
-  **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`); falta revisar las
-  141 filas, importar 2025/26 y meter el presupuesto 2026/27. **Las 141 se
-  van a atacar en una sesión de facturación** (con otra cuenta de Claude y el
-  disco externo de cursos pasados): el plan, en su `CLAUDE.md`, punto 4 de
-  *Pendiente*, «SIGUIENTE SESIÓN».
+  **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`). La hoja de 2025/26
+  **está revisada entera** (662 filas) **e importada en producción** (el
+  usuario, 27/09/2026). Falta **cerrar los meses** en *Cuadrante*, de agosto
+  de 2025 en adelante (agosto de 2026, después del arqueo con Carmen), y el
+  presupuesto de 2026/27: **no tienen presupuesto como tal**; sin él, el
+  informe imprime «Sin presupuesto propuesto».
   El aviso de presupuesto le importa menos ("lo calculamos a ojo").
-- Tareas: **tareas recurrentes**: aprobado el diseño propuesto y **hecho el
-  27/09/2026** en la rama `recurrentes` (worktree `../ampa-tareas-recurrentes`,
-  porque otra sesión tenía las menciones sin commit en `main`), desplegado
-  desde el worktree. **Falta juntarla en `main`** (choca en
-  `TaskDetailDialog.tsx`): se le pidió a la sesión de las menciones.
+  **Traspaso con Carmen**: guía para Alberto publicada como artefacto el
+  27/09/2026 (<https://claude.ai/artifact/RYCc1pbQMVR9p8FF3sFNfi>, privada).
+- Tareas: **tareas recurrentes**: **hechas el 27/09/2026 y ya juntadas en
+  `main`** (commit `1a643cd`, *Merge remote-tracking branch
+  'origin/recurrentes'*).
 - Listados: **resaltar los cambios de alergias** entre un listado y el
   siguiente.
 - Documentos: **protección de menores** (certificados de monitores, LOPIVI,

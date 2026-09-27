@@ -16,6 +16,9 @@ parameters:
         fichajes:
             name: 'Fichajes'
             url: '%env(URL_FICHAJES)%'
+            # El latido de las 4:00 la despierta (POST {url}/api/latido): cierra
+            # el día y avisa de los días sin fichar aunque nadie entre.
+            latido: true
             roles:
                 # Además, fichajes exige un contrato en vigor: eso es suyo.
                 empleado: 'Empleado'
@@ -33,6 +36,9 @@ parameters:
         tareas:
             name: 'Tareas'
             url: '%env(URL_TAREAS)%'
+            # El latido de las 4:00 la despierta: recurrentes, avisos de
+            # vencimiento y resumen diario.
+            latido: true
             roles:
                 miembro: 'Miembro'
                 # Además de miembro, no en su lugar: sin miembro no entra.

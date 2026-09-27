@@ -27,7 +27,9 @@ final class HeartbeatApiTest extends ApiTestCase
 
         self::assertSame(200, $this->responseStatus());
         self::assertSame(1, $backups->getLaunches());
-        self::assertSame(['neon', 'copias'], array_column($this->payload()['steps'], 'step'));
+        // Después de Neon y las copias, las aplicaciones con `latido: true` en
+        // config/packages/suite.yaml, en el orden del catálogo.
+        self::assertSame(['neon', 'copias', 'fichajes', 'tareas'], array_column($this->payload()['steps'], 'step'));
         self::assertSame(['step', 'outcome', 'detail'], array_keys($this->payload()['steps'][0]));
     }
 
