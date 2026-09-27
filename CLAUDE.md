@@ -387,10 +387,21 @@ despliegues y demás")**
      zip), revisión **`ampa-portal-00010-bh9`** (migración del calendario
      aplicada en Neon). Trabajo de Cloud Scheduler **`suite-latido`** creado
      y lanzado a mano: **200** (Neon y copias, "saltado": sin montar).
-   - **Falta, del usuario** (README, *El latido, las copias y las alertas*):
-     la unidad de Drive de las copias (y entonces `deploy/copias/preparar.sh`
-     y redesplegar), la clave de Neon, `deploy/alertas.sh CORREO`, cargar el
-     curso 2026/27 en *Calendario*, y la base propia de fichajes.
+   - **Montado el 27/09/2026** con los datos del usuario:
+     - Copias: unidad compartida `0AOiXVV5m11pCUk9PVA`, job `ampa-copias`
+       (Invocador del portal sobre el job; hubo que reintentarlo por
+       "concurrent policy changes" y el script ya reintenta solo). Primera
+       ejecución a mano y otra lanzada por el latido: **5 `.dump` en Drive**.
+     - Neon: secreto `neon-api-key` (lo creó el usuario) y proyecto
+       `small-pond-03723796`. Primera lectura: **1,6 de 100 CU-horas**. Parece
+       poco: **pendiente de que el usuario lo compare con la consola** (quizá
+       `compute_time_seconds` son segundos de CPU y no CU-horas).
+     - Alerta a `admin@ampasainzvicuna.com`. Saltó una vez con los registros
+       de auditoría de ese permiso fallido: ahora se excluyen
+       (`NOT logName:"cloudaudit.googleapis.com"`).
+     - Revisión **`ampa-portal-00011-rtg`** con `COPIAS_JOB`, `NEON_*`.
+   - **Falta, del usuario**: cargar el curso 2026/27 en *Calendario*. La base
+     propia de fichajes queda **pendiente por decisión suya**.
    - Después, en cada aplicación: subir a la 0.1.5 y, fichajes y tareas, el
      latido (paso 8 del README del cliente); tareas puede pasar su resumen
      al latido y borrar su trabajo de Cloud Scheduler.
