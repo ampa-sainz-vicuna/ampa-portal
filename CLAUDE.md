@@ -406,13 +406,45 @@ despliegues y demás")**
      latido (paso 8 del README del cliente); tareas puede pasar su resumen
      al latido y borrar su trabajo de Cloud Scheduler.
 
+10. **Entrar sin ventana emergente y la alerta sin robots** (27/09/2026,
+    Claude, "hazlo tú y commitea y despliega").
+    - **Por qué**: a alguien con Android, al pulsar el botón de Google se le
+      abría una pestaña que se quedaba en `about:blank` y no podía entrar
+      (vídeo que le mandaron al usuario). Las cabeceras del portal no tenían
+      la culpa (sin COOP ni CSP): era la ventana emergente de GIS en ese
+      móvil.
+    - **Modo redirección** (`@ampa/ui` **0.2.3**): la página va a Google y
+      Google vuelve con un POST de formulario a **`POST
+      /api/auth/google/vuelta`** (`AuthController::signInReturn`), que
+      comprueba la cookie `g_csrf_token` de Google contra el campo del mismo
+      nombre (Google la pone para 5 minutos, `SameSite=None`), el token, y
+      lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada` (+
+      `&volver=` con el `state` de GIS). `CrossSiteRequestGuard` deja pasar
+      solo esa ruta (el POST viene de accounts.google.com). `/api/auth/google`
+      (JSON) se queda para páginas abiertas con la versión anterior.
+    - **Requisito en Google Cloud**: la ruta en los *URI de redirección
+      autorizados* del cliente OAuth (README, *Desplegar* paso 6 y
+      *Desarrollo*). Sin eso Google contesta `redirect_uri_mismatch`.
+    - **404/405 como `warning`** en `framework.yaml` de las cinco: Symfony
+      anota cualquier 4xx como `[error]` y los robots que buscan `/.env`
+      disparaban la alerta (llegó un correo a las 17:48). En producción el
+      registro de Symfony solo escribe de `error` para arriba, así que ya ni
+      aparecen. `/.env` y `/.git/config` devuelven la portada (el
+      *fallback* del front), no el fichero: comprobado. Commits y
+      despliegues de fichajes, listados, facturación (desde un worktree:
+      había otra sesión trabajando) y tareas (ídem; subió también su
+      `ee0178e`, que ya estaba desplegado).
+
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra
   trabajo"), **leer los justificantes** con la API de Claude, y el **informe
   de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**:
-  **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`); falta que el usuario
-  revise las 141 filas, importar 2025/26 y meter el presupuesto 2026/27.
+  **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`); falta revisar las
+  141 filas, importar 2025/26 y meter el presupuesto 2026/27. **Las 141 se
+  van a atacar en una sesión de facturación** (con otra cuenta de Claude y el
+  disco externo de cursos pasados): el plan, en su `CLAUDE.md`, punto 4 de
+  *Pendiente*, «SIGUIENTE SESIÓN».
   El aviso de presupuesto le importa menos ("lo calculamos a ojo").
 - Tareas: **tareas recurrentes**: aprobado el diseño propuesto y **hecho el
   27/09/2026** en la rama `recurrentes` (worktree `../ampa-tareas-recurrentes`,

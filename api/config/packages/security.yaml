@@ -12,7 +12,8 @@ security:
 
         # Sin cortafuegos:
         #   - entrar (canjea la identidad de Google; la comprueba el
-        #     verificador) y salir (borrar una cookie no pide nada);
+        #     verificador), también a la vuelta de Google en modo redirección,
+        #     y salir (borrar una cookie no pide nada);
         #   - /api/acceso, /api/avisos y /api/personas, que no los llama un
         #     navegador sino el servidor de cada aplicación, con el token en
         #     la cabecera; lo comprueba el propio controlador (BearerUser).
@@ -21,7 +22,7 @@ security:
         #   - /api/latido, que lo llama Cloud Scheduler con el token de la
         #     cuenta de servicio de la suite (HeartbeatController).
         public:
-            pattern: ^/api/(auth/google|auth/salir|acceso|avisos|personas|calendario|latido)$
+            pattern: ^/api/(auth/google|auth/google/vuelta|auth/salir|acceso|avisos|personas|calendario|latido)$
             stateless: true
             security: false
 

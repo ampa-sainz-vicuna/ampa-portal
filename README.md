@@ -214,8 +214,11 @@ elegidos para convivir con las demás aplicaciones:
 | PostgreSQL | 5432 | 5433 | 5434 | **5435** |
 
 El origen `http://localhost:5176` tiene que estar en los *orígenes de
-JavaScript autorizados* del cliente de OAuth para que el botón de Google
-funcione en desarrollo.
+JavaScript autorizados* del cliente de OAuth, y
+`http://localhost:5176/api/auth/google/vuelta` en sus *URI de redirección
+autorizados*, para que el botón de Google funcione en desarrollo. (Desde
+`@ampa/ui` 0.2.3 el botón va en modo redirección: la página va a Google y
+Google la devuelve con un POST a esa ruta; ver `AuthController::signInReturn`.)
 
 **En desarrollo, el portal tiene que estar levantado para probar cualquier
 aplicación** que ya use el cliente: es quien da la sesión. La cookie de
@@ -292,8 +295,11 @@ El orden, la primera vez:
 5. **Dominio**: `portal.ampasainzvicuna.com` asignado al servicio y el CNAME
    en CDmon (el comando, en `desplegar.sh`). **Tiene que ser en el dominio del
    AMPA**: la cookie es de `.ampasainzvicuna.com` y desde `*.run.app` no vale.
-6. **OAuth**: añadir `https://portal.ampasainzvicuna.com` a los orígenes
-   autorizados del cliente de Google.
+6. **OAuth**: añadir `https://portal.ampasainzvicuna.com` a los *orígenes de
+   JavaScript autorizados* del cliente de Google, y
+   `https://portal.ampasainzvicuna.com/api/auth/google/vuelta` a sus *URI de
+   redirección autorizados* (sin él, Google contesta `redirect_uri_mismatch`
+   al pulsar el botón).
 7. **El primer administrador** y los accesos que ya había (fichajes y
    listados):
 

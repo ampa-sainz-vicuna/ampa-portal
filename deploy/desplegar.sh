@@ -146,5 +146,6 @@ echo "Para los servidores de las aplicaciones (PORTAL_URL):"
 echo "  $RUN_URL"
 echo
 echo "Si es la primera vez:"
-echo "  - añade $URL a los orígenes autorizados de JavaScript del cliente OAuth;"
+echo "  - añade $URL a los orígenes autorizados de JavaScript del cliente OAuth,"
+echo "    y $URL/api/auth/google/vuelta a sus URI de redirección autorizados;"
 echo "  - da el primer administrador (README, \"Primer arranque\")."

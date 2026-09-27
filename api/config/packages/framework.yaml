@@ -2,6 +2,15 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    # Los 404 y 405 son casi siempre robots probando /.env, /wp-admin…
+    # Symfony los anota como [error] y eso dispararía la alerta de la suite
+    # (deploy/alertas.sh del portal) cada vez: se anotan como aviso.
+    exceptions:
+        Symfony\Component\HttpKernel\Exception\NotFoundHttpException:
+            log_level: warning
+        Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException:
+            log_level: warning
+
     # Sin sesiones de PHP: la sesión de la suite es la cookie firmada del
     # portal (SessionCookie), y cada petición se comprueba sola.
     session: false

@@ -26,15 +26,26 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * Sin cabecera se deja pasar: no es un navegador (curl, un test, el servidor
  * de una aplicación), o es uno tan viejo que no la manda; ahí queda SameSite.
+ *
+ * La única excepción es la vuelta de Google al entrar (AuthController::
+ * signInReturn): ese POST lo manda por definición otra web, accounts.google.com.
+ * No cambia nada con la sesión de nadie salvo abrir una nueva, y lleva su
+ * propia barrera contra CSRF (la cookie `g_csrf_token` de Google).
  */
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 256)]
 final class CrossSiteRequestGuard
 {
+    private const string GOOGLE_RETURN = '/api/auth/google/vuelta';
+
     public function __invoke(RequestEvent $event): void
     {
         $request = $event->getRequest();
 
         if (!$event->isMainRequest() || $request->isMethodSafe() || !str_starts_with($request->getPathInfo(), '/api/')) {
+            return;
+        }
+
+        if (self::GOOGLE_RETURN === $request->getPathInfo()) {
             return;
         }
 

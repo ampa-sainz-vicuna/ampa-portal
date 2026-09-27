@@ -103,6 +103,75 @@ final class SignInApiTest extends ApiTestCase
     }
 
     #[Test]
+    public function a_la_vuelta_de_google_pone_la_cookie_y_lleva_a_la_portada_con_el_volver(): void
+    {
+        $admin = $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com', 'state' => 'http://localhost:5174/grupos?id=3']);
+
+        self::assertSame(303, $this->responseStatus());
+        self::assertSame('/?entrada=ok&volver=http%3A%2F%2Flocalhost%3A5174%2Fgrupos%3Fid%3D3', $this->location());
+        self::assertTrue($this->sessionCookie()->isHttpOnly());
+        self::assertNotNull($this->reload($admin)->getLastSeenAt());
+
+        // Y la cookie vale: ya sabe quién soy.
+        $this->request('GET', '/api/me');
+        self::assertSame('admin@ampasainzvicuna.com', $this->payload()['email']);
+    }
+
+    #[Test]
+    public function sin_volver_lleva_solo_a_la_portada(): void
+    {
+        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com', 'state' => '']);
+
+        self::assertSame('/?entrada=ok', $this->location());
+    }
+
+    #[Test]
+    public function a_la_vuelta_sin_la_cookie_de_google_no_entra(): void
+    {
+        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        // La cookie g_csrf_token dura 5 minutos: o ha tardado más, o el POST no
+        // lo empezó el botón de esta página (CSRF).
+        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com'], csrfCookie: null);
+
+        self::assertSame('/?entrada=caducada', $this->location());
+        self::assertNull($this->sessionCookieOrNull());
+    }
+
+    #[Test]
+    public function a_la_vuelta_con_otra_cookie_de_google_no_entra(): void
+    {
+        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+
+        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com'], csrfCookie: 'otra');
+
+        self::assertSame('/?entrada=caducada', $this->location());
+        self::assertNull($this->sessionCookieOrNull());
+    }
+
+    #[Test]
+    public function a_la_vuelta_si_google_no_lo_confirma_lo_dice_la_portada(): void
+    {
+        $this->googleReturn(['credential' => FakeIdentityVerifier::INVALID, 'state' => 'http://localhost:5174']);
+
+        self::assertSame('/?entrada=no-valida&volver=http%3A%2F%2Flocalhost%3A5174', $this->location());
+        self::assertNull($this->sessionCookieOrNull());
+    }
+
+    #[Test]
+    public function a_la_vuelta_quien_no_tiene_acceso_no_entra(): void
+    {
+        $this->googleReturn(['credential' => 'desconocido@gmail.com']);
+
+        self::assertSame('/?entrada=sin-acceso', $this->location());
+        self::assertNull($this->sessionCookieOrNull());
+    }
+
+    #[Test]
     public function sin_cookie_hay_que_entrar(): void
     {
         $this->request('GET', '/api/me');
@@ -169,6 +238,31 @@ final class SignInApiTest extends ApiTestCase
         $this->request('POST', '/api/auth/salir', null, ['HTTP_SEC_FETCH_SITE' => 'same-origin']);
 
         self::assertSame(204, $this->responseStatus());
+    }
+
+    /**
+     * El POST de formulario con el que Google devuelve a la persona al portal:
+     * viene de accounts.google.com y trae la cookie que puso su script aquí.
+     *
+     * @param array<string, string> $fields
+     */
+    private function googleReturn(array $fields, ?string $csrfCookie = 'abc123'): void
+    {
+        if (null !== $csrfCookie) {
+            $this->client->getCookieJar()->set(new BrowserCookie('g_csrf_token', $csrfCookie));
+        }
+
+        $this->client->request(
+            'POST',
+            '/api/auth/google/vuelta',
+            ['g_csrf_token' => 'abc123', ...$fields],
+            server: ['HTTP_SEC_FETCH_SITE' => 'cross-site', 'HTTP_ORIGIN' => 'https://accounts.google.com'],
+        );
+    }
+
+    private function location(): ?string
+    {
+        return $this->client->getResponse()->headers->get('Location');
     }
 
     private function sessionCookie(): Cookie
