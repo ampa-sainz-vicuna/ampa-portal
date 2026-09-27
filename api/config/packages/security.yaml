@@ -16,8 +16,12 @@ security:
         #   - /api/acceso, /api/avisos y /api/personas, que no los llama un
         #     navegador sino el servidor de cada aplicación, con el token en
         #     la cabecera; lo comprueba el propio controlador (BearerUser).
+        #   - /api/calendario, que también lo llama el servidor de cada
+        #     aplicación (CalendarController, con BearerCaller);
+        #   - /api/latido, que lo llama Cloud Scheduler con el token de la
+        #     cuenta de servicio de la suite (HeartbeatController).
         public:
-            pattern: ^/api/(auth/google|auth/salir|acceso|avisos|personas)$
+            pattern: ^/api/(auth/google|auth/salir|acceso|avisos|personas|calendario|latido)$
             stateless: true
             security: false
 

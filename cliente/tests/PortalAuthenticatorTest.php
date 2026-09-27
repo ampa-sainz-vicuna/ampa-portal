@@ -7,6 +7,7 @@ namespace Ampa\PortalCliente\Tests;
 use Ampa\PortalCliente\Portal\Portal;
 use Ampa\PortalCliente\Portal\PortalAccess;
 use Ampa\PortalCliente\Portal\PortalUnavailable;
+use Ampa\PortalCliente\Portal\SchoolCalendar;
 use Ampa\PortalCliente\PortalSession;
 use Ampa\PortalCliente\Security\PortalAuthenticator;
 use Ampa\PortalCliente\Security\PortalRolesAsSymfonyRoles;
@@ -37,6 +38,11 @@ final class PortalAuthenticatorTest extends TestCase
             public function members(string $token): array
             {
                 return [];
+            }
+
+            public function calendar(string $token, string $schoolYear): ?SchoolCalendar
+            {
+                return null;
             }
         }, new PortalRolesAsSymfonyRoles());
 

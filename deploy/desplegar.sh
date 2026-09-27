@@ -71,6 +71,25 @@ ENV_VARS+=",URL_TAREAS=https://tareas.ampasainzvicuna.com"
 ENV_VARS+=",SUITE_TOKEN_AUDIENCE=${RUN_URL}"
 ENV_VARS+=",SUITE_SERVICE_ACCOUNTS=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
+# El latido diario (POST /api/latido; deploy/programar.sh). Cada paso que no
+# esté montado se salta sin error:
+#   - las copias de seguridad, si existe el job (deploy/copias/preparar.sh);
+#   - el cómputo de Neon, si existe el secreto neon-api-key y está puesto el
+#     ID del proyecto de Neon aquí debajo (Neon → proyecto ampa → Settings →
+#     General → Project ID; no es secreto).
+NEON_PROJECT_ID=""
+if gcloud run jobs describe ampa-copias --region="$REGION" >/dev/null 2>&1; then
+    ENV_VARS+=",COPIAS_JOB=projects/${PROJECT}/locations/${REGION}/jobs/ampa-copias"
+else
+    echo "Sin job de copias (deploy/copias/preparar.sh): el latido no las lanzará."
+fi
+if [ -n "$NEON_PROJECT_ID" ] && gcloud secrets describe neon-api-key >/dev/null 2>&1; then
+    ENV_VARS+=",NEON_PROJECT_ID=${NEON_PROJECT_ID}"
+    SECRETS+=",NEON_API_KEY=neon-api-key:latest"
+else
+    echo "Sin NEON_PROJECT_ID o sin el secreto neon-api-key: el latido no mirará Neon."
+fi
+
 echo "Desplegando el portal en $PROJECT ($REGION). Tarda unos 5 minutos..."
 echo
 
@@ -85,6 +104,10 @@ echo
 # --memory=512Mi: el portal no hace nada pesado.
 # --no-invoker-iam-check: la web es pública (el control de acceso lo hace la
 #   propia aplicación). Igual que fichajes y listados.
+# --timeout=300: lo más que puede durar una petición. Las normales tardan
+#   milisegundos; el latido espera a que cada aplicación despierte y haga su
+#   trabajo (hasta 1 minuto cada una, una detrás de otra). Con 60 s, Cloud
+#   Run lo cortaría a la primera aplicación lenta.
 gcloud run deploy "$SERVICE" \
     --source . \
     --region "$REGION" \
@@ -93,7 +116,7 @@ gcloud run deploy "$SERVICE" \
     --min-instances=0 \
     --memory=512Mi \
     --cpu=1 \
-    --timeout=60 \
+    --timeout=300 \
     --set-secrets="$SECRETS" \
     --set-env-vars="$ENV_VARS" \
     --quiet

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Ampa\PortalCliente\Tests;
 
+use Ampa\PortalCliente\Portal\CalendarPeriod;
 use Ampa\PortalCliente\Portal\Member;
+use Ampa\PortalCliente\Portal\SchoolCalendar;
+use Ampa\PortalCliente\Portal\SuiteCalendar;
 use Ampa\PortalCliente\Portal\Recipient;
 use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\PortalSession;
+use Ampa\PortalCliente\Testing\FakeHeartbeatVerifier;
 use Ampa\PortalCliente\Testing\FakePortal;
+use Ampa\PortalCliente\Tests\App\HeartbeatListener;
 use Ampa\PortalCliente\Tests\App\OpenedListener;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -31,6 +36,8 @@ final class ApplicationTest extends WebTestCase
     {
         $this->client = self::createClient();
         OpenedListener::$opened = [];
+        HeartbeatListener::$beats = 0;
+        HeartbeatListener::$failing = false;
         FakePortal::reset();
     }
 
@@ -193,6 +200,61 @@ final class ApplicationTest extends WebTestCase
 
         self::assertTrue($members->has('Alberto@ampasainzvicuna.com'));
         self::assertSame(['presidencia@ampasainzvicuna.com'], $recipients->emailsWithRole('admin'));
+    }
+
+    #[Test]
+    public function el_calendario_escolar_se_pide_por_el_dia_y_sin_curso_cargado_es_null(): void
+    {
+        FakePortal::calendarIs(new SchoolCalendar('2026-2027', '2026-09-08', '2027-06-18', [
+            new CalendarPeriod('2026-10-12', '2026-10-12', CalendarPeriod::HOLIDAY, 'Día de la Hispanidad'),
+        ]));
+
+        /** @var SuiteCalendar $calendar */
+        $calendar = self::getContainer()->get('test.suite_calendar');
+
+        self::assertTrue($calendar->forDay(new \DateTimeImmutable('2026-10-12'))?->isHoliday(new \DateTimeImmutable('2026-10-12')));
+        self::assertNull($calendar->forDay(new \DateTimeImmutable('2027-10-12')));
+    }
+
+    #[Test]
+    public function el_latido_del_portal_despierta_a_la_aplicacion(): void
+    {
+        $this->client->request('POST', '/api/latido', server: ['HTTP_AUTHORIZATION' => 'Bearer '.FakeHeartbeatVerifier::TOKEN]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['ok' => true], $this->payload());
+        self::assertSame(1, HeartbeatListener::$beats);
+    }
+
+    #[Test]
+    public function el_latido_sin_el_token_de_la_suite_es_un_401_y_no_despierta_a_nadie(): void
+    {
+        $this->client->request('POST', '/api/latido', server: ['HTTP_AUTHORIZATION' => 'Bearer otro']);
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame(0, HeartbeatListener::$beats);
+    }
+
+    #[Test]
+    public function el_latido_no_lo_puede_lanzar_una_persona_con_su_cookie(): void
+    {
+        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario', 'admin']);
+
+        $this->client->request('POST', '/api/latido');
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame(0, HeartbeatListener::$beats);
+    }
+
+    #[Test]
+    public function si_el_trabajo_programado_falla_el_latido_contesta_500_para_que_el_portal_lo_registre(): void
+    {
+        HeartbeatListener::$failing = true;
+
+        $this->client->request('POST', '/api/latido', server: ['HTTP_AUTHORIZATION' => 'Bearer '.FakeHeartbeatVerifier::TOKEN]);
+
+        self::assertResponseStatusCodeSame(500);
+        self::assertSame(['error' => 'El cierre del día ha fallado.'], $this->payload());
     }
 
     /**

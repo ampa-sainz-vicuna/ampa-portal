@@ -94,12 +94,40 @@ final readonly class HttpPortal implements Portal
         return $members;
     }
 
+    public function calendar(string $token, string $schoolYear): ?SchoolCalendar
+    {
+        $data = $this->get('/api/calendario', ['curso' => $schoolYear], $token, nullIfNotFound: true);
+
+        if (null === $data) {
+            return null;
+        }
+
+        $periods = [];
+        foreach (is_array($data['periods'] ?? null) ? $data['periods'] : [] as $period) {
+            if (is_array($period)) {
+                $periods[] = new CalendarPeriod(
+                    (string) ($period['from'] ?? ''),
+                    (string) ($period['to'] ?? ''),
+                    (string) ($period['kind'] ?? ''),
+                    (string) ($period['name'] ?? ''),
+                );
+            }
+        }
+
+        return new SchoolCalendar(
+            (string) ($data['schoolYear'] ?? $schoolYear),
+            (string) ($data['classesStart'] ?? ''),
+            (string) ($data['classesEnd'] ?? ''),
+            $periods,
+        );
+    }
+
     /**
      * @param array<string, string> $query
      *
-     * @return array<mixed>
+     * @return ($nullIfNotFound is true ? array<mixed>|null : array<mixed>)
      */
-    private function get(string $path, array $query, string $token): array
+    private function get(string $path, array $query, string $token, bool $nullIfNotFound = false): ?array
     {
         try {
             $response = $this->httpClient->request('GET', rtrim($this->portalUrl, '/').$path, [
@@ -115,6 +143,11 @@ final readonly class HttpPortal implements Portal
             // dos son "no".
             if (401 === $status || 403 === $status) {
                 throw new SessionRejected('El portal no acepta la sesión.');
+            }
+
+            // Solo /api/calendario: ese curso no está cargado.
+            if (404 === $status && $nullIfNotFound) {
+                return null;
             }
 
             if (200 !== $status) {

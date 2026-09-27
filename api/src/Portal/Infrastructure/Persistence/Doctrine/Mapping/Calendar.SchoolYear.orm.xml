@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Portal\Domain\Calendar\SchoolYear" table="school_years">
+
+        <!-- "2026-2027": el curso es su propio identificador -->
+        <id name="code" type="string" column="code" length="9">
+            <generator strategy="NONE"/>
+        </id>
+
+        <!-- AAAA-MM-DD, como texto también en la base: son días del calendario,
+             sin hora ni zona, y nadie los consulta con SQL (igual que las
+             fechas de dentro de "periods") -->
+        <field name="classesStart" type="string" column="classes_start" length="10"/>
+        <field name="classesEnd"   type="string" column="classes_end"   length="10"/>
+
+        <!-- Los días sin clase: pocos, y siempre se leen y guardan juntos -->
+        <field name="periods" type="json" column="periods">
+            <options>
+                <option name="jsonb">true</option>
+            </options>
+        </field>
+
+    </entity>
+</doctrine-mapping>

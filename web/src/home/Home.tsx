@@ -6,6 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import { useEffect, useState } from 'react'
+import { Calendar } from '../calendar/Calendar'
 import { MyEmails } from '../contact/MyEmails'
 import { goTo } from '../navigation'
 import { Permissions } from '../permissions/Permissions'
@@ -13,7 +14,7 @@ import type { PortalUser } from '../types'
 import { Applications } from './Applications'
 import { returnTarget } from './returnTo'
 
-type Section = 'applications' | 'emails' | 'permissions'
+type Section = 'applications' | 'emails' | 'permissions' | 'calendar'
 
 interface Props {
   user: PortalUser
@@ -23,7 +24,7 @@ interface Props {
 
 /**
  * Dentro del portal: a qué aplicaciones puede ir, sus correos y, si gestiona
- * los permisos, la pantalla de permisos.
+ * los permisos, la pantalla de permisos y el calendario escolar.
  */
 export function Home({ user, onUnauthorized, onSignOut }: Props) {
   const { epoch } = useAuth()
@@ -61,6 +62,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
       <Tab value="applications" label="Aplicaciones" />
       <Tab value="emails" label="Mis correos" />
       {me.isAdmin && <Tab value="permissions" label="Permisos" />}
+      {me.isAdmin && <Tab value="calendar" label="Calendario" />}
     </Tabs>
   )
 
@@ -86,6 +88,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
       {section === 'applications' && <Applications applications={me.applications} />}
       {section === 'emails' && <MyEmails user={me} onSaved={setMe} onUnauthorized={onUnauthorized} />}
       {section === 'permissions' && me.isAdmin && <Permissions me={me} onUnauthorized={onUnauthorized} />}
+      {section === 'calendar' && me.isAdmin && <Calendar onUnauthorized={onUnauthorized} />}
     </AppShell>
   )
 }

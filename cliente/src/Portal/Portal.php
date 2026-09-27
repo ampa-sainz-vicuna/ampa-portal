@@ -44,4 +44,13 @@ interface Portal
      * @throws PortalUnavailable si no se ha podido preguntar
      */
     public function members(string $token): array;
+
+    /**
+     * El calendario escolar común de ese curso ("2026-2027"), o null si el
+     * portal no lo tiene cargado. Basta con ser alguien de la suite (0.1.5).
+     *
+     * @throws SessionRejected   si el token no vale
+     * @throws PortalUnavailable si no se ha podido preguntar
+     */
+    public function calendar(string $token, string $schoolYear): ?SchoolCalendar;
 }

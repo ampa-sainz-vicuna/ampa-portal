@@ -15,13 +15,16 @@ namespace App\Portal\Domain\Suite;
 final readonly class Application
 {
     /**
-     * @param array<string, string> $roles código → nombre para la pantalla
+     * @param array<string, string> $roles     código → nombre para la pantalla
+     * @param bool                  $heartbeat si el latido diario la despierta (POST {url}/api/latido,
+     *                                         cliente 0.1.5): solo las que ya lo tienen instalado
      */
     public function __construct(
         private string $code,
         private string $name,
         private string $url,
         private array $roles,
+        private bool $heartbeat = false,
     ) {
         if ([] === $roles) {
             throw new \InvalidArgumentException(sprintf('La aplicación "%s" no tiene ningún rol.', $code));
@@ -48,6 +51,12 @@ final readonly class Application
     public function getRoles(): array
     {
         return $this->roles;
+    }
+
+    /** Si el latido diario del portal la despierta (ver RunHeartbeat). */
+    public function receivesHeartbeat(): bool
+    {
+        return $this->heartbeat && '' !== $this->url;
     }
 
     public function hasRole(string $role): bool

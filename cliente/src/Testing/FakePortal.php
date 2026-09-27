@@ -9,6 +9,7 @@ use Ampa\PortalCliente\Portal\Portal;
 use Ampa\PortalCliente\Portal\PortalAccess;
 use Ampa\PortalCliente\Portal\ReachableApplication;
 use Ampa\PortalCliente\Portal\Recipient;
+use Ampa\PortalCliente\Portal\SchoolCalendar;
 use Ampa\PortalCliente\Portal\SessionRejected;
 
 /**
@@ -22,7 +23,8 @@ use Ampa\PortalCliente\Portal\SessionRejected;
  *   ));
  *
  * y los avisos se preparan con FakePortal::recipientsFor('admin', [...]), y
- * quién hay en la aplicación, con FakePortal::membersAre([...]).
+ * quién hay en la aplicación, con FakePortal::membersAre([...]), y el
+ * calendario escolar, con FakePortal::calendarIs(new SchoolCalendar(...)).
  * Se activa en el `when@test` de services.yaml de la aplicación:
  *
  *   Ampa\PortalCliente\Portal\Portal:
@@ -37,6 +39,9 @@ final class FakePortal implements Portal
 
     /** @var list<Member> */
     private static array $members = [];
+
+    /** @var array<string, SchoolCalendar> */
+    private static array $calendars = [];
 
     /**
      * @param list<string> $roles              los roles del portal en la aplicación ("usuario", "admin"…)
@@ -76,10 +81,20 @@ final class FakePortal implements Portal
         self::$members = $members;
     }
 
+    /**
+     * El calendario que saldrá en `calendar()` para su curso (0.1.5). Estático
+     * por lo mismo que recipientsFor().
+     */
+    public static function calendarIs(SchoolCalendar $calendar): void
+    {
+        self::$calendars[$calendar->getSchoolYear()] = $calendar;
+    }
+
     public static function reset(): void
     {
         self::$recipients = [];
         self::$members = [];
+        self::$calendars = [];
     }
 
     public function access(string $token): PortalAccess
@@ -114,5 +129,15 @@ final class FakePortal implements Portal
         }
 
         return self::$members;
+    }
+
+    public function calendar(string $token, string $schoolYear): ?SchoolCalendar
+    {
+        // Como en el portal, basta con ser alguien de la suite (o este servidor).
+        if (FakeApplicationIdentity::TOKEN !== $token) {
+            $this->access($token);
+        }
+
+        return self::$calendars[$schoolYear] ?? null;
     }
 }

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Ampa\PortalCliente\Tests\App;
 
 use Ampa\PortalCliente\AmpaPortalClienteBundle;
+use Ampa\PortalCliente\Heartbeat\HeartbeatVerifier;
+use Ampa\PortalCliente\Testing\FakeHeartbeatVerifier;
 use Ampa\PortalCliente\Portal\ApplicationIdentity;
 use Ampa\PortalCliente\Portal\Portal;
+use Ampa\PortalCliente\Portal\SuiteCalendar;
 use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\Security\JsonAccessDeniedHandler;
@@ -84,6 +87,7 @@ final class TestKernel extends Kernel
             ],
             'access_control' => [
                 ['path' => '^/api/auth/salir$', 'roles' => 'PUBLIC_ACCESS'],
+                ['path' => '^/api/latido$', 'roles' => 'PUBLIC_ACCESS'],
                 ['path' => '^/api/admin', 'roles' => 'ROLE_ADMIN'],
                 ['path' => '^/api', 'roles' => 'IS_AUTHENTICATED'],
             ],
@@ -94,14 +98,17 @@ final class TestKernel extends Kernel
         // Lo que pone cada aplicación en el when@test de su services.yaml.
         $services->set(Portal::class, FakePortal::class);
         $services->set(ApplicationIdentity::class, FakeApplicationIdentity::class);
+        $services->set(HeartbeatVerifier::class, FakeHeartbeatVerifier::class);
 
         $services->set(PrivateController::class)->public()->tag('controller.service_arguments');
         $services->set(OpenedListener::class)->public();
+        $services->set(HeartbeatListener::class)->public();
 
         // Nadie lo inyecta en esta aplicación de pruebas, y Symfony lo
         // quitaría al compilar; el test lo pide al contenedor.
         $services->alias('test.suite_recipients', SuiteRecipients::class)->public();
         $services->alias('test.suite_members', SuiteMembers::class)->public();
+        $services->alias('test.suite_calendar', SuiteCalendar::class)->public();
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void

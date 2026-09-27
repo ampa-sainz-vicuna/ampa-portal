@@ -61,9 +61,12 @@ Por qué así, en corto:
 ## Qué hay
 
 ```
-api/        el servicio (Symfony 7.4): entrar, sesión, permisos, pantalla de permisos
+api/        el servicio (Symfony 7.4): entrar, sesión, permisos, pantalla de permisos,
+            calendario escolar y el latido diario
 web/        el front (React + @ampa/ui 0.2): entrar con Google, las tarjetas de las
-            aplicaciones, "Mis correos" y la pantalla de permisos
+            aplicaciones, "Mis correos", la pantalla de permisos y el calendario
+deploy/     desplegar, dar permisos, el latido (programar.sh), las alertas y las
+            copias de seguridad (deploy/copias/)
 cliente/    el bundle que instala cada aplicación (ampa/portal-cliente); su README
             explica cómo
 scripts/    empaquetar el cliente
@@ -90,6 +93,45 @@ El estado del despliegue, en el [`CLAUDE.md`](CLAUDE.md).
   cada persona, con una casilla por rol de cada aplicación. En su propia
   ficha no se puede quitar la gestión ni desactivarse (el servidor también lo
   impide).
+- **Calendario** (solo quien gestiona los permisos): el calendario escolar
+  común de cada curso (abajo).
+
+### El calendario escolar común
+
+Un curso por fila (`school_years`, del 1 de septiembre al 31 de agosto,
+"2026-2027"): el primer y el último día de clase y los **días sin clase**, en
+JSON, cada uno **festivo** (ni hay clase ni se trabaja) o **no lectivo** (sin
+clase, pero laborable: vacaciones escolares, días no lectivos del colegio).
+Los fines de semana no se apuntan.
+
+**Por qué en el portal:** hacía falta en tres sitios. Fichajes metía los
+festivos a mano, uno a uno; facturación no puede pagar los desayunos de Cutasa
+sin los días lectivos (cobra por alumno y día); listados los necesitará para
+los desayunos sueltos. Se carga una vez por curso en la pestaña *Calendario* y
+cada aplicación lo pide con el cliente (`SuiteCalendar`, 0.1.5). Las reglas
+(qué es día de clase, qué es festivo) están en `SchoolYear` y repetidas en el
+`SchoolCalendar` del cliente, con los mismos tests.
+
+### El latido, las copias y las alertas
+
+Lo que tiene que pasar cada noche aunque nadie use nada, con **un solo**
+trabajo de Cloud Scheduler para toda la suite (hay 3 gratis y tareas ya gasta
+uno):
+
+- **El latido** (`POST /api/latido`, `RunHeartbeat`): Cloud Scheduler lo llama
+  a las 4:00 (Madrid). El portal mira cuánto cómputo de Neon va gastado (aviso
+  al pasar del 80 % de las 100 CU-horas gratuitas: al llegar al 100 % se paran
+  **todas** las bases hasta el mes siguiente), lanza las copias y despierta a
+  las aplicaciones con `latido: true` en `suite.yaml` (cliente 0.1.5, paso 8
+  de su README). Cada paso va por su lado; los fallos van al registro como
+  `[error]`. A mano: `bin/console app:latido`.
+- **Las copias** (`deploy/copias/`): un job de Cloud Run que hace `pg_dump` de
+  cada base y lo sube a una unidad compartida de Drive; se guardan las 30
+  últimas. Su [README](deploy/copias/README.md) explica cómo montarlo y cómo
+  restaurar.
+- **Las alertas** (`deploy/alertas.sh`): un correo (como mucho uno por hora)
+  cuando cualquier aplicación escribe un `[error]`, contesta un 5xx, fallan
+  las copias o falla un trabajo de Cloud Scheduler.
 
 ### Las personas y sus permisos
 
@@ -134,6 +176,15 @@ rol `admin`: quien gestiona los permisos de toda la suite.
 | `GET /api/admin/applications` | cookie, admin | Las aplicaciones y sus roles, para pintar las casillas. |
 | `GET /api/acceso?aplicacion=X` | Bearer | **Contrato con el cliente.** `{ email, name, roles, notificationEmails }`; 401 si la sesión no vale o está desactivada. |
 | `GET /api/avisos?aplicacion=X&rol=Y` | Bearer | **Contrato con el cliente.** A quién avisar: `[{ name, emails }]`. Solo si quien pregunta tiene algún rol en X. |
+| `GET /api/personas?aplicacion=X` | Bearer | **Contrato con el cliente** (0.1.1). Quién hay en X: `[{ name, email, roles, notificationEmails }]`. |
+| `GET /api/calendario?curso=2026-2027` | Bearer | **Contrato con el cliente** (0.1.5). `{ schoolYear, classesStart, classesEnd, periods: [{ from, to, kind, name }] }`; 404 si ese curso no está cargado. Basta con ser alguien de la suite. |
+| `GET /api/admin/calendario` | cookie, admin | Los cursos cargados, del más nuevo al más viejo. |
+| `PUT /api/admin/calendario/{curso}` | cookie, admin | Guarda el curso entero: `{ classesStart, classesEnd, periods }`. 422 si algo no cuadra (con el motivo). |
+| `POST /api/latido` | token de Cloud Scheduler | El latido diario. Siempre 200 con cada paso (`hecho`, `saltado`, `fallo`), para que Cloud Scheduler no lo repita entero; 401 sin el token de la cuenta de servicio. |
+
+`Bearer` es la sesión de una persona o, sin nadie detrás (cliente 0.1.3), el
+token de Google de la cuenta de servicio de la suite; `/api/acceso` solo
+acepta lo primero.
 
 `notify` es `primary` (la cuenta), `secondary` o `both`.
 
@@ -258,6 +309,35 @@ El orden, la primera vez:
 Un secreto de firma para toda la suite y otro para la base: dos de los seis
 gratuitos, y fichajes y listados liberan los suyos de firma al adoptar el
 portal.
+
+### El latido, las copias y las alertas (una vez, preparado el 26/09/2026)
+
+Después de desplegar una versión con el latido, **en este orden**:
+
+1. **Las copias**: la unidad compartida de Drive y el job
+   (`deploy/copias/README.md`, *Montarlo*).
+2. **Neon** (opcional pero recomendado): una clave de la API en Neon
+   (*Account settings* → *API keys*; mejor una de proyecto, que solo ve `ampa`)
+   guardada como secreto, sin que salga en pantalla:
+
+   ```bash
+   docker compose run --rm gcloud bash -c 'read -rs k && printf %s "$k" | gcloud secrets create neon-api-key --replication-policy=automatic --data-file=- && gcloud secrets add-iam-policy-binding neon-api-key --member=serviceAccount:273203000301-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor'
+   ```
+
+   (pega la clave y Enter), y el ID del proyecto de Neon (*Settings* →
+   *General*; no es secreto) en `NEON_PROJECT_ID` de `deploy/desplegar.sh`.
+   Es un secreto más: ~0,06 $ al mes fuera de los 6 gratuitos.
+3. `deploy/desplegar.sh` otra vez: ve el job y el secreto y los conecta.
+4. `docker compose run --rm gcloud bash deploy/programar.sh`: el trabajo de
+   Cloud Scheduler de las 4:00.
+5. `docker compose run --rm gcloud bash deploy/alertas.sh TU_CORREO`: la
+   alerta de errores.
+6. Probar sin esperar a la noche:
+   `docker compose run --rm gcloud gcloud scheduler jobs run suite-latido --location=europe-west1`
+   y mirar la respuesta en los registros del portal: `neon` y `copias` con
+   `hecho` y, en la unidad de Drive, un `.dump` por base. La primera vez,
+   **comparar la cifra de Neon con la de su consola** (NeonDatabaseUsage
+   explica por qué).
 
 ---
 

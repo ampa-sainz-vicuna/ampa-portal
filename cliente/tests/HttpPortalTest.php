@@ -134,6 +134,38 @@ final class HttpPortalTest extends TestCase
         $this->portal(new JsonMockResponse(['error' => 'no'], ['http_code' => 403]))->recipients('t', 'admin');
     }
 
+    #[Test]
+    public function pide_el_calendario_de_un_curso_y_lo_entiende(): void
+    {
+        $response = new JsonMockResponse([
+            'schoolYear' => '2026-2027',
+            'classesStart' => '2026-09-08',
+            'classesEnd' => '2027-06-18',
+            'periods' => [['from' => '2026-10-12', 'to' => '2026-10-12', 'kind' => 'holiday', 'name' => 'Día de la Hispanidad']],
+        ]);
+
+        $calendar = $this->portal($response)->calendar('t', '2026-2027');
+
+        self::assertSame('http://portal/api/calendario?curso=2026-2027', $response->getRequestUrl());
+        self::assertNotNull($calendar);
+        self::assertSame('2026-09-08', $calendar->getClassesStart());
+        self::assertTrue($calendar->isHoliday(new \DateTimeImmutable('2026-10-12')));
+    }
+
+    #[Test]
+    public function un_curso_sin_cargar_en_el_portal_es_null_y_no_un_fallo(): void
+    {
+        self::assertNull($this->portal(new JsonMockResponse(['error' => 'no'], ['http_code' => 404]))->calendar('t', '2030-2031'));
+    }
+
+    #[Test]
+    public function un_404_en_otra_pregunta_sigue_siendo_que_el_portal_no_esta(): void
+    {
+        $this->expectException(PortalUnavailable::class);
+
+        $this->portal(new JsonMockResponse(['error' => 'no'], ['http_code' => 404]))->members('t');
+    }
+
     private function portal(MockResponse $response): HttpPortal
     {
         return new HttpPortal(new MockHttpClient($response), 'http://portal', 'listados');

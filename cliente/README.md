@@ -22,6 +22,8 @@ son las dos mitades del mismo contrato. El porqué del diseño, en el
 | `SuiteRecipients` | A quién avisar: `emailsWithRole('admin')` da los correos de quienes tienen ese rol aquí, cada uno en el que eligió (el de la cuenta, el personal o los dos). |
 | `SuiteMembers` | Quién hay aquí: `all()` da las personas activas con algún rol en esta aplicación (`Member`: correo de la cuenta, nombre, roles y, desde la 0.1.2, `getNotificationEmails()`, a dónde avisarle), por nombre; `has($correo)` dice si alguien es de aquí. Desde la 0.1.1. |
 | `ApplicationIdentity` | Desde la 0.1.3. **Sin nadie detrás** (una tarea programada, un comando), `SuiteRecipients` y `SuiteMembers` preguntan al portal con el token de identidad de Google de la cuenta de servicio de este servidor (`MetadataServerIdentity`, pedido al servidor de metadatos de Cloud Run para la audiencia `portal_url`). El portal lo acepta en `/api/avisos` y `/api/personas`, no en `/api/acceso`. Fuera de Cloud Run no hay token: `PortalUnavailable`. |
+| `SuiteCalendar` | Desde la 0.1.5. El **calendario escolar común**, que se carga una vez por curso en el portal (pantalla *Calendario*): `forDay($día)` o `forSchoolYear('2026-2027')` dan un `SchoolCalendar` con `isHoliday($día)` (festivo: no se trabaja), `isSchoolDay($día)` (hay clase) y `schoolDaysBetween($desde, $hasta)` (los días de clase, p. ej. de un mes). **`null` si ese curso no está cargado**: la aplicación decide qué hacer. Como `SuiteMembers`, con la sesión o, sin nadie detrás, con el token del servidor. |
+| `POST /api/latido` | Desde la 0.1.5. El **latido diario** de la suite: el portal lo llama cada noche a las 4:00 (Madrid) en las aplicaciones que lo tengan activado, y el cliente lanza el evento `HeartbeatReceived` para que hagan su trabajo programado (lo que tiene que pasar aunque nadie abra la aplicación). Solo lo acepta con el token de Google de la cuenta de servicio de la suite para la dirección de esta aplicación (`GoogleTokenInfoVerifier`). Paso 8. |
 | `CrossSiteRequestGuard` | Rechaza cualquier petición que cambie algo y venga de otra web (cabecera `Sec-Fetch-Site`). Segunda barrera contra CSRF además de `SameSite=Lax`. |
 | `JsonAccessDeniedHandler` | Los 403 de `access_control` en JSON (`{"error"}`), no como página de Symfony. |
 | `FakePortal` | El portal en los tests de la aplicación, sin red. |
@@ -145,6 +147,9 @@ security:
 
     access_control:
         - { path: ^/api/auth/salir$, roles: PUBLIC_ACCESS }
+        # Desde la 0.1.5, si la aplicación usa el latido (paso 8): lo llama el
+        # portal, sin cookie; quién llama lo comprueba el propio cliente.
+        - { path: ^/api/latido$, roles: PUBLIC_ACCESS }
         # …las reglas de la aplicación (^/api/admin → ROLE_ADMIN, etc.)
         - { path: ^/api, roles: IS_AUTHENTICATED }
 ```
@@ -195,6 +200,51 @@ Se lanza **en cada `GET /api/me`**, es decir, cada vez que alguien carga la
 página, no una vez por sesión. Lo que se enganche tiene que ser barato de
 repetir, y un fallo no debe impedir abrir la aplicación.
 
+### 8. El latido diario (solo si hace falta; desde la 0.1.5)
+
+Para lo que tiene que pasar **aunque nadie abra la aplicación** (en fichajes,
+cerrar el día y avisar de los días sin fichar; en tareas, los vencimientos y
+el resumen). Sustituye a tener un trabajo propio de Cloud Scheduler: solo hay
+3 gratis para toda la suite.
+
+1. La regla `^/api/latido$` → `PUBLIC_ACCESS` de `security.yaml` (paso 5).
+2. En `ampa_portal_cliente.yaml`:
+
+   ```yaml
+   ampa_portal_cliente:
+       # …
+       latido_audiencia: '%env(LATIDO_AUDIENCIA)%'  # su dirección pública
+       latido_cuentas: '%env(LATIDO_CUENTAS)%'      # la cuenta de servicio de la suite
+   ```
+
+   En `.env`, las dos **vacías** (en desarrollo no llega ningún latido; se
+   prueba con el test). En producción, en su `deploy/desplegar.sh`:
+   `LATIDO_AUDIENCIA` = **la misma dirección que tiene en el catálogo del
+   portal** (`URL_…` del portal, p. ej. `https://tareas.ampasainzvicuna.com`,
+   sin barra final) y `LATIDO_CUENTAS` =
+   `${PROJECT_NUMBER}-compute@developer.gserviceaccount.com`.
+3. El oyente:
+
+   ```php
+   #[AsEventListener]
+   final readonly class RunScheduledWorkOnHeartbeat
+   {
+       public function __invoke(HeartbeatReceived $event): void { ($this->scheduledWork)(); }
+   }
+   ```
+
+   Debería llegar una vez al día, pero tiene que aguantar dos (alguien lo lanza
+   a mano) o ninguna (el portal no pudo): mejor "hacer lo que falte" que "hacer
+   lo de hoy". Si lanza una excepción, la ruta contesta 500 y el portal lo
+   registra como error (y llega en el correo de las alertas).
+4. En el portal, `latido: true` en la aplicación (`config/packages/suite.yaml`)
+   y redesplegar el portal. **En este orden**: si el portal la despierta antes
+   de que tenga la ruta, cada noche habrá un error.
+
+Probarlo en producción sin esperar a las 4:00:
+`gcloud scheduler jobs run suite-latido --location=europe-west1` y mirar los
+registros del portal (cada aplicación sale con "hecho" o "fallo").
+
 ---
 
 ## Tests de la aplicación
@@ -226,8 +276,19 @@ $client->getCookieJar()->set(new Cookie(
 ```
 
 Los avisos se preparan con `FakePortal::recipientsFor('admin', [new Recipient(…)])`, quién
-hay en la aplicación con `FakePortal::membersAre([new Member(…)])`,
-y se limpian con `FakePortal::reset()` en el `setUp()`.
+hay en la aplicación con `FakePortal::membersAre([new Member(…)])`, el
+calendario escolar con `FakePortal::calendarIs(new SchoolCalendar('2026-2027', '2026-09-08', '2027-06-18', [new CalendarPeriod(…)]))`
+(0.1.5), y se limpian con `FakePortal::reset()` en el `setUp()`.
+
+El latido (0.1.5), con el verificador de pruebas en el `when@test`:
+
+```yaml
+        Ampa\PortalCliente\Heartbeat\HeartbeatVerifier:
+            class: Ampa\PortalCliente\Testing\FakeHeartbeatVerifier
+```
+
+y en el test, `POST /api/latido` con la cabecera
+`Authorization: Bearer ` + `FakeHeartbeatVerifier::TOKEN`.
 
 ---
 

@@ -43,6 +43,26 @@ export interface CatalogApplication {
   roles: { code: string; name: string }[]
 }
 
+/** Festivo (ni clase ni se trabaja) o no lectivo (sin clase, pero laborable). */
+export type DayKind = 'holiday' | 'non_school'
+
+/** Uno o varios días seguidos sin clase. Fechas AAAA-MM-DD. */
+export interface CalendarPeriod {
+  from: string
+  to: string
+  kind: DayKind
+  name: string
+}
+
+/** El calendario de un curso (`/api/admin/calendario`). */
+export interface SchoolYear {
+  /** "2026-2027". */
+  schoolYear: string
+  classesStart: string
+  classesEnd: string
+  periods: CalendarPeriod[]
+}
+
 /** Lo que se manda al guardar los correos de alguien. */
 export interface Contact {
   secondaryEmail: string | null

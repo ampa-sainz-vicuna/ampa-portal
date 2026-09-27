@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Ampa\PortalCliente\Heartbeat\GoogleTokenInfoVerifier;
+use Ampa\PortalCliente\Heartbeat\HeartbeatVerifier;
+use Ampa\PortalCliente\Http\HeartbeatController;
 use Ampa\PortalCliente\Http\MeController;
 use Ampa\PortalCliente\Http\MeExtension;
 use Ampa\PortalCliente\Http\NoMeExtension;
@@ -11,6 +14,7 @@ use Ampa\PortalCliente\Portal\CallerToken;
 use Ampa\PortalCliente\Portal\HttpPortal;
 use Ampa\PortalCliente\Portal\MetadataServerIdentity;
 use Ampa\PortalCliente\Portal\Portal;
+use Ampa\PortalCliente\Portal\SuiteCalendar;
 use Ampa\PortalCliente\Portal\SuiteMembers;
 use Ampa\PortalCliente\Portal\SuiteRecipients;
 use Ampa\PortalCliente\Security\ApplicationRoles;
@@ -29,7 +33,8 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 /*
  * Los servicios del cliente. Los que una aplicación puede sustituir en su
  * services.yaml son los dos puntos de extensión (ApplicationRoles y
- * MeExtension) y, en los tests, Portal (por FakePortal).
+ * MeExtension) y, en los tests, Portal (por FakePortal), ApplicationIdentity
+ * y HeartbeatVerifier.
  */
 return static function (ContainerConfigurator $container): void {
     $services = $container->services()
@@ -71,12 +76,24 @@ return static function (ContainerConfigurator $container): void {
     $services->set(JsonAccessDeniedHandler::class);
     $services->set(SuiteRecipients::class);
     $services->set(SuiteMembers::class);
+    $services->set(SuiteCalendar::class);
 
     $services->set(CrossSiteRequestGuard::class)
         // Prioridad alta: antes que el cortafuegos, para no preguntar al
         // portal por una petición que se va a rechazar igualmente.
         ->tag('kernel.event_listener', ['event' => KernelEvents::REQUEST, 'priority' => 256]);
 
+    // Quién puede llamar a /api/latido: la suite, con el token de su cuenta
+    // de servicio para la dirección de esta aplicación (0.1.5).
+    $services->set(GoogleTokenInfoVerifier::class)
+        ->args([
+            service('http_client'),
+            param('ampa_portal_cliente.latido_audiencia'),
+            param('ampa_portal_cliente.latido_cuentas'),
+        ]);
+    $services->alias(HeartbeatVerifier::class, GoogleTokenInfoVerifier::class);
+
     $services->set(MeController::class)->public()->tag('controller.service_arguments');
+    $services->set(HeartbeatController::class)->public()->tag('controller.service_arguments');
     $services->set(SignOutController::class)->public()->tag('controller.service_arguments');
 };

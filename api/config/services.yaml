@@ -27,6 +27,7 @@ services:
     # Cada puerto apunta a su implementación. Es el único sitio del proyecto
     # donde las dos capas se tocan.
     App\Portal\Domain\User\UserRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
+    App\Portal\Domain\Calendar\SchoolYearRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineSchoolYearRepository'
     App\Portal\Infrastructure\Security\IdentityVerifier: '@App\Portal\Infrastructure\Security\GoogleIdTokenVerifier'
     App\Portal\Infrastructure\Security\ServiceAccountVerifier: '@App\Portal\Infrastructure\Security\GoogleServiceAccountVerifier'
 
@@ -43,6 +44,21 @@ services:
         arguments:
             $audience: '%env(SUITE_TOKEN_AUDIENCE)%'
             $accounts: '%env(SUITE_SERVICE_ACCOUNTS)%'
+
+    # El latido diario (RunHeartbeat): cada paso, sin configurar, se salta.
+    App\Portal\Application\Heartbeat\ApplicationWaker: '@App\Portal\Infrastructure\Heartbeat\HttpApplicationWaker'
+    App\Portal\Application\Heartbeat\BackupLauncher: '@App\Portal\Infrastructure\Heartbeat\CloudRunBackupLauncher'
+    App\Portal\Application\Heartbeat\DatabaseUsage: '@App\Portal\Infrastructure\Heartbeat\NeonDatabaseUsage'
+
+    App\Portal\Infrastructure\Heartbeat\CloudRunBackupLauncher:
+        arguments:
+            $job: '%env(COPIAS_JOB)%'
+
+    App\Portal\Infrastructure\Heartbeat\NeonDatabaseUsage:
+        arguments:
+            $projectId: '%env(NEON_PROJECT_ID)%'
+            $apiKey: '%env(NEON_API_KEY)%'
+            $hoursAllowed: '%env(float:NEON_COMPUTE_HOURS)%'
 
     App\Portal\Infrastructure\Security\SessionTokens:
         arguments:
@@ -64,3 +80,15 @@ when@test:
         # Ni el de las cuentas de servicio (ver FakeServiceAccountVerifier).
         App\Portal\Infrastructure\Security\ServiceAccountVerifier:
             class: App\Tests\Double\FakeServiceAccountVerifier
+
+        # El latido no sale a la calle en los tests: ni Neon, ni Cloud Run, ni
+        # las aplicaciones (ver los dobles). public: los tests los configuran.
+        App\Portal\Application\Heartbeat\DatabaseUsage:
+            class: App\Tests\Double\FakeDatabaseUsage
+            public: true
+        App\Portal\Application\Heartbeat\BackupLauncher:
+            class: App\Tests\Double\FakeBackupLauncher
+            public: true
+        App\Portal\Application\Heartbeat\ApplicationWaker:
+            class: App\Tests\Double\FakeApplicationWaker
+            public: true

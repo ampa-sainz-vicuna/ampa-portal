@@ -15,7 +15,7 @@ use App\Portal\Domain\Suite\ApplicationCatalog;
 final class ApplicationCatalogFactory
 {
     /**
-     * @param array<string, array{name: string, url?: string, roles: array<string, string>}> $config
+     * @param array<string, array{name: string, url?: string, roles: array<string, string>, latido?: bool}> $config
      */
     public static function fromConfig(array $config): ApplicationCatalog
     {
@@ -27,6 +27,7 @@ final class ApplicationCatalogFactory
                 $application['name'],
                 $application['url'] ?? '',
                 $application['roles'],
+                $application['latido'] ?? false,
             );
         }
 

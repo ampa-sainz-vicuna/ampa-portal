@@ -67,15 +67,22 @@ docker compose exec php bin/console app:permisos:dar <correo> <app:rol>... --nom
 api/src/Portal/
   Domain/User/       User (agregado: correo, nombre, activa, Grants, segundo correo,
                      NotificationTarget), Grants (JSON aplicación → roles), EmailAddress, UserId
-  Domain/Suite/      Application, ApplicationCatalog (de config/packages/suite.yaml)
+  Domain/Suite/      Application (con su latido), ApplicationCatalog (de config/packages/suite.yaml)
+  Domain/Calendar/   SchoolYear (un curso: clases y días sin clase), CalendarPeriod, DayKind
   Application/User/  RegisterUser, UpdateUser, ChangeOwnContact, GrantAccess (comando)
+  Application/Calendar/  DefineSchoolYear
+  Application/Heartbeat/ RunHeartbeat y sus puertos (Neon, copias, despertar aplicaciones)
   Infrastructure/
     Security/        Google, SessionTokens (HS256), SessionCookie, el autenticador de la
                      cookie, BearerUser (rutas que llaman las aplicaciones), CrossSiteRequestGuard
     Http/            controladores y presentadores
     Persistence/     Doctrine con mapeo XML y un tipo por value object
+    Heartbeat/, Google/  HttpApplicationWaker, CloudRunBackupLauncher, NeonDatabaseUsage, MetadataServer
 cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, SuiteRecipients,
-                     MeController, SignOutController, ApplicationRoles y MeExtension
+                     SuiteMembers, SuiteCalendar, MeController, SignOutController,
+                     HeartbeatController, ApplicationRoles y MeExtension
+deploy/              desplegar, preparar, dar-permisos, programar (latido), alertas,
+                     copias/ (el job de las copias de seguridad)
 ```
 
 ---
@@ -325,6 +332,81 @@ despliegues y demás")**
    suite"): el portal pasa a `md` en todas las secciones (antes `sm`, y `md`
    solo en *Permisos*). La regla, en el `CLAUDE.md` de
    [`ampa-ui`](../ampa-ui/CLAUDE.md), *Reglas del código*.
+
+9. **Mejoras para toda la suite** (26/09/2026, por la tarde; Claude, "hazlo
+   tú" con el usuario fuera; **sin commit ni despliegue**). Las propuso Claude
+   y el usuario eligió la 1, 2, 3, 5 y 6 de "para toda la suite" (la 4, el
+   resumen diario de toda la suite, "quiero revisarlo bien": **no hacer sin
+   que lo diga**).
+   - **Copias de seguridad** (`deploy/copias/`): job de Cloud Run
+     `ampa-copias` (postgres:16-alpine + curl + jq), `pg_dump` de las 5 bases
+     con sus secretos de siempre → unidad compartida de Drive, 30 por base, las
+     viejas a la papelera. Probado en local: copia, restauración en una base
+     nueva y que una base que falla no frena a las demás. **La subida a Drive
+     sin probar** (hace falta Google). Montarlo: su README.
+   - **Calendario escolar común**: `Domain/Calendar` (`SchoolYear`,
+     `CalendarPeriod`, `DayKind` festivo/no lectivo), tabla `school_years`
+     (migración `Version20260926200000`), `GET /api/calendario?curso=`
+     (sesión o cuenta de servicio, sin rol), `GET|PUT /api/admin/calendario`,
+     pestaña *Calendario* en el front (solo admin). Cliente: `SuiteCalendar`,
+     `SchoolCalendar`, `Portal::calendar()`, `FakePortal::calendarIs()`.
+     Visto en el navegador con una cookie de desarrollo: guardar un curso
+     (comprobado en la base) y el viaje real `HttpPortal::calendar()` contra
+     el portal levantado. **Sin datos**: el usuario carga el curso 2026/27.
+     Facturación (Cutasa) y fichajes (festivos) lo adoptan después, cada una
+     en su sesión.
+   - **Latido diario** (`POST /api/latido`, `RunHeartbeat`, `app:latido`):
+     un solo trabajo de Cloud Scheduler (`suite-latido`, 4:00, 
+     `deploy/programar.sh`) → Neon (aviso ≥ 80 % de 100 CU-horas;
+     `compute_time_seconds` del proyecto, **contrastar con la consola la
+     primera vez**), lanza `ampa-copias` y despierta a las aplicaciones con
+     `latido: true` en `suite.yaml` (**ninguna todavía**). Siempre 200; los
+     fallos, `[error]` en el registro. `--timeout` del portal de 60 a 300 s.
+     Cliente: `POST /api/latido` → evento `HeartbeatReceived`, comprobado con
+     `GoogleTokenInfoVerifier` (tokeninfo de Google: sin firebase/php-jwt en
+     el cliente), `latido_audiencia`/`latido_cuentas`,
+     `FakeHeartbeatVerifier`.
+   - **Alertas** (`deploy/alertas.sh CORREO`): una política de Cloud
+     Monitoring sobre los registros: `[error]` de cualquier aplicación (todas
+     usan el registro mínimo de Symfony, ninguna monolog), 5xx, fallos del
+     job de copias y de Cloud Scheduler; un correo por hora como mucho. Gratis
+     hasta, como pronto, el 1/9/2027. Con la API REST (sin `gcloud alpha`).
+   - **Usuario propio de fichajes** (punto 6; era la única que entraba con el
+     dueño de Neon): `ampa-fichajes/deploy/base-propia.sh` +
+     `copiar-base.sh` y la guía en su `docs/despliegue.md`, *Base y usuario
+     propios*. La copia, probada en local. Sin ejecutar: la base nueva la
+     crea el usuario en Neon.
+   - **Cliente 0.1.5** (solo añade: tercera cifra; ninguna aplicación tiene
+     que cambiar nada para subir). La interfaz `Portal` gana `calendar()`:
+     ninguna aplicación la implementa (comprobado con grep).
+   - 63 unitarios y 58 de integración de PHP, 43 del cliente, 24 del front,
+     lint, tipos y build en verde; shellcheck limpio en los scripts.
+   - **Para ponerlo en marcha** (con permiso del usuario): commit, etiqueta
+     `v0.1.5`, desplegar el portal, y README, *El latido, las copias y las
+     alertas*. Después, en cada aplicación: subir a la 0.1.5 y, fichajes y
+     tareas, el latido (paso 8 del README del cliente); tareas puede pasar
+     su resumen al latido y borrar su trabajo de Cloud Scheduler.
+
+**Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
+(apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
+- Facturación: **importar el extracto del banco** ("me encanta, ahorra
+  trabajo"), **leer los justificantes** con la API de Claude, y el **informe
+  de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**.
+  El aviso de presupuesto le importa menos ("lo calculamos a ojo").
+- Tareas: **tareas recurrentes** (ya lo había pensado; preguntó cómo se
+  harían).
+- Listados: **resaltar los cambios de alergias** entre un listado y el
+  siguiente.
+- Documentos: **protección de menores** (certificados de monitores, LOPIVI,
+  seguros, contratos con vencimientos).
+- Aplicación nueva: **buzón de las familias**, que además sirva para
+  **encuestas y votaciones**; y **voluntariado** para la fiesta de fin de
+  curso ("hay tiempo").
+- Fichajes: nada ("ok a fichajes como está").
+- Portal: registro de cambios de permisos y repaso anual, "me gustan pero no
+  corren prisa" (solo él gestiona permisos).
+- Descartado: lotería de Navidad como aplicación (la venderán en MiAmpa como
+  producto, con tarjeta); subvenciones, poco prioritario (una al año).
 
 **Propuestas del 26/09/2026 que el usuario dejó sin prioridad** (no hacerlas
 sin que lo pida):
