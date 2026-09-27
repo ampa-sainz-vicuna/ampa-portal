@@ -381,20 +381,33 @@ despliegues y demás")**
      ninguna aplicación la implementa (comprobado con grep).
    - 63 unitarios y 58 de integración de PHP, 43 del cliente, 24 del front,
      lint, tipos y build en verde; shellcheck limpio en los scripts.
-   - **Para ponerlo en marcha** (con permiso del usuario): commit, etiqueta
-     `v0.1.5`, desplegar el portal, y README, *El latido, las copias y las
-     alertas*. Después, en cada aplicación: subir a la 0.1.5 y, fichajes y
-     tareas, el latido (paso 8 del README del cliente); tareas puede pasar
-     su resumen al latido y borrar su trabajo de Cloud Scheduler.
+   - **Publicado y desplegado el 27/09/2026** (con permiso del usuario):
+     commit `a47434a`, release **`v0.1.5`** (sha1
+     `20260e590538aa64ccf8c56584df44c165c2d3c8`, comprobado descargando el
+     zip), revisión **`ampa-portal-00010-bh9`** (migración del calendario
+     aplicada en Neon). Trabajo de Cloud Scheduler **`suite-latido`** creado
+     y lanzado a mano: **200** (Neon y copias, "saltado": sin montar).
+   - **Falta, del usuario** (README, *El latido, las copias y las alertas*):
+     la unidad de Drive de las copias (y entonces `deploy/copias/preparar.sh`
+     y redesplegar), la clave de Neon, `deploy/alertas.sh CORREO`, cargar el
+     curso 2026/27 en *Calendario*, y la base propia de fichajes.
+   - Después, en cada aplicación: subir a la 0.1.5 y, fichajes y tareas, el
+     latido (paso 8 del README del cliente); tareas puede pasar su resumen
+     al latido y borrar su trabajo de Cloud Scheduler.
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra
   trabajo"), **leer los justificantes** con la API de Claude, y el **informe
-  de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**.
+  de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**:
+  **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`); falta que el usuario
+  revise las 141 filas, importar 2025/26 y meter el presupuesto 2026/27.
   El aviso de presupuesto le importa menos ("lo calculamos a ojo").
-- Tareas: **tareas recurrentes** (ya lo había pensado; preguntó cómo se
-  harían).
+- Tareas: **tareas recurrentes**: aprobado el diseño propuesto y **hecho el
+  27/09/2026** en la rama `recurrentes` (worktree `../ampa-tareas-recurrentes`,
+  porque otra sesión tenía las menciones sin commit en `main`), desplegado
+  desde el worktree. **Falta juntarla en `main`** (choca en
+  `TaskDetailDialog.tsx`): se le pidió a la sesión de las menciones.
 - Listados: **resaltar los cambios de alergias** entre un listado y el
   siguiente.
 - Documentos: **protección de menores** (certificados de monitores, LOPIVI,
