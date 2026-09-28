@@ -412,12 +412,19 @@ despliegues y demás")**
      27/09/2026 por la mañana). La base propia de fichajes queda **pendiente
      por decisión suya** ("no corre prisa", 27/09/2026).
    - **Subir las aplicaciones a la 0.1.5** (27/09/2026 por la tarde, Claude,
-     "hazlo tú", **sin commit ni despliegue**): las cuatro al cliente 0.1.5, y
-     fichajes y tareas con el latido (paso 8 del README del cliente). Lo que
-     falta, cada una en su `CLAUDE.md`. **Orden**: desplegar la aplicación →
-     `latido: true` en `suite.yaml` → redesplegar el portal → `gcloud
-     scheduler jobs run suite-latido --location=europe-west1` y mirar los
-     registros. Tareas, después, borra su trabajo `tareas-resumen-diario`.
+     "hazlo tú", y commit y despliegue con permiso del usuario): las cuatro al
+     cliente 0.1.5 y desplegadas (fichajes `00017-jvt`, tareas `00012-nr7`,
+     listados `00015-zzj`, facturación `00009-j9t`), y fichajes y tareas con
+     el latido. **Portal `12b9916`, revisión `ampa-portal-00013-cj9`**:
+     `latido: true` para fichajes y tareas (el test `HeartbeatApiTest` espera
+     ahora `neon`, `copias`, `fichajes` y `tareas`, porque lee el mismo
+     `suite.yaml`). Lanzado a mano el 27/09 a las 20:11: tareas bien; **fichajes
+     401** porque su Apache no pasaba `Authorization` (arreglado en fichajes
+     `2b21b3a`, **pendiente de desplegar**: la sesión de gcloud caducó el
+     28/09). Falta, por orden: `gcloud auth login` (el usuario), desplegar
+     fichajes, lanzar `suite-latido` otra vez y, si sale bien, borrar el
+     trabajo `tareas-resumen-diario` (sigue activo a las 5:00; no hace nada
+     porque el de las 4:00 ya lo ha hecho).
 
 10. **Entrar sin ventana emergente y la alerta sin robots** (27/09/2026,
     Claude, "hazlo tú y commitea y despliega").
