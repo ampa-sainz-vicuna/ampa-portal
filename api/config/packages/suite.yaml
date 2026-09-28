@@ -43,6 +43,9 @@ parameters:
                 miembro: 'Miembro'
                 # Además de miembro, no en su lugar: sin miembro no entra.
                 admin: 'Administración (borra tareas ajenas)'
+                # También además de miembro: ve y pone las de "solo la junta",
+                # que los demás (el empleado) no ven.
+                junta: 'Junta (ve las tareas de solo la junta)'
         # El propio portal: quien tiene "admin" gestiona los permisos de todas.
         portal:
             name: 'Portal'
