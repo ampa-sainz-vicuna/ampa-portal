@@ -495,6 +495,11 @@ despliegues y demás")**
       del mismo `Suspense`) y en este fichero.
     - Visto en el navegador (escritorio y móvil) con una API simulada; 28
       tests, lint, tipos y build en verde.
+    - **Desplegado**: commit `6c4e82e`, revisión **`ampa-portal-00016-99v`**
+      (comprobado que `portal.ampasainzvicuna.com` sirve el front nuevo). El
+      contenedor de gcloud se cayó a mitad (Docker Desktop) y la revisión
+      entró directa con el tráfico, sin pasar por `portal-migraciones`: no
+      había ninguna migración pendiente.
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
