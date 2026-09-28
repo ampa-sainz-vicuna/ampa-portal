@@ -278,9 +278,17 @@ dónde van los avisos.
 ## Desplegar
 
 Un contenedor en Cloud Run, como fichajes y listados: Apache sirve `/api`
-(Symfony) y el front compilado (`Dockerfile`, `docker/prod/`). Al arrancar
-aplica las migraciones. **En producción desde el 24/09/2026** (revisión
-vigente el 25/09/2026: `ampa-portal-00003-lm6`), con estos mismos scripts.
+(Symfony) y el front compilado (`Dockerfile`, `docker/prod/`). **En
+producción desde el 24/09/2026** (revisión vigente el 25/09/2026:
+`ampa-portal-00003-lm6`), con estos mismos scripts.
+
+Las migraciones **no** las aplica el contenedor al arrancar (desde el
+28/09/2026: alargaban 2-3 s cada arranque en frío, y el portal se apaga cuando
+no se usa). Las aplica `deploy/desplegar.sh`: crea la revisión nueva sin
+tráfico, lanza el job `portal-migraciones` con su imagen y solo si sale bien
+le pasa el tráfico. Si falla, se queda la versión anterior. Por eso una
+migración tiene que dejar funcionando la versión anterior mientras dura el
+despliegue (añadir antes que quitar), igual que antes.
 
 El orden, la primera vez:
 

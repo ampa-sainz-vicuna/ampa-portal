@@ -3,12 +3,12 @@
 #
 #   docker compose run --rm gcloud bash deploy/desplegar.sh
 #
-# SIN ESTRENAR (escrito el 24/09/2026, copiando el de listados, que sí está
-# probado). La imagen sí se ha construido y probado en local.
-#
 # Google construye la imagen con el Dockerfile de la raíz (Cloud Build), la
-# guarda (Artifact Registry) y la pone en marcha (Cloud Run). Al arrancar, el
-# contenedor aplica las migraciones pendientes.
+# guarda (Artifact Registry) y crea con ella una revisión nueva de Cloud Run,
+# todavía SIN tráfico. Con esa misma imagen, un job de Cloud Run aplica las
+# migraciones pendientes, y solo si salen bien pasa el tráfico a la revisión
+# nueva. (Hasta el 28/09/2026 las aplicaba el contenedor al arrancar, y eso
+# alargaba cada arranque en frío: ver docker/prod/entrypoint.sh.)
 #
 # Requiere haber ejecutado antes deploy/preparar.sh, y que web/package.json
 # instale @ampa/ui desde la URL de su release (con "file:" Cloud Build no lo
@@ -90,17 +90,27 @@ else
     echo "Sin NEON_PROJECT_ID o sin el secreto neon-api-key: el latido no mirará Neon."
 fi
 
+MIGRATIONS_JOB=portal-migraciones
+
+NO_TRAFFIC=()
+if gcloud run services describe "$SERVICE" --region="$REGION" >/dev/null 2>&1; then
+    NO_TRAFFIC=(--no-traffic)
+fi
+
 echo "Desplegando el portal en $PROJECT ($REGION). Tarda unos 5 minutos..."
 echo
 
-# --max-instances=1: nunca más de un contenedor. Basta de sobra para el AMPA,
-#   impide que dos arranques migren la base de datos a la vez y pone techo al
-#   gasto.
+# --max-instances=1: nunca más de un contenedor. Basta de sobra para el AMPA y
+#   pone techo al gasto.
 # --min-instances=0: sin uso se apaga del todo y no cuesta nada. OJO: el
 #   portal está en el camino de CADA petición de cada aplicación. Si está
-#   dormido, la primera petición de una aplicación espera a que arranque
-#   (unos segundos). Normalmente no pasa, porque se acaba de pasar por él para
-#   entrar; si molesta, --min-instances=1 lo evita, y cuesta dinero.
+#   dormido, la primera petición espera a que arranque (unos segundos; menos
+#   desde que no migra al arrancar). --min-instances=1 lo evita, y cuesta unos
+#   10 $ al mes (1 vCPU y 512 MiB a la tarifa de inactividad, 0,0000025 $ por
+#   segundo cada uno; calculado el 28/09/2026): de momento, no.
+# --no-traffic: la revisión nueva no recibe a nadie hasta que se han aplicado
+#   las migraciones (abajo). Solo vale si el servicio ya existe: la primera
+#   vez no hay versión anterior que proteger.
 # --memory=512Mi: el portal no hace nada pesado.
 # --no-invoker-iam-check: la web es pública (el control de acceso lo hace la
 #   propia aplicación). Igual que fichajes y listados.
@@ -119,7 +129,50 @@ gcloud run deploy "$SERVICE" \
     --timeout=300 \
     --set-secrets="$SECRETS" \
     --set-env-vars="$ENV_VARS" \
+    "${NO_TRAFFIC[@]}" \
     --quiet
+
+# ---------------------------------------------------------------------------
+# Las migraciones, con la imagen que se acaba de construir y los mismos
+# secretos, dentro de Google (la contraseña de la base no sale de allí; el
+# mismo montaje que deploy/dar-permisos.sh). El job se queda creado: no guarda
+# nada de nadie, y el siguiente despliegue solo le cambia la imagen.
+#
+# Mientras corre, la versión anterior sigue atendiendo con la base ya migrada.
+# Era igual cuando migraba el contenedor al arrancar: las migraciones tienen
+# que dejar funcionando la versión anterior (añadir antes que quitar).
+# ---------------------------------------------------------------------------
+IMAGE=$(gcloud run services describe "$SERVICE" --region="$REGION" \
+    --format='value(spec.template.spec.containers[0].image)')
+REVISION=$(gcloud run services describe "$SERVICE" --region="$REGION" \
+    --format='value(status.latestCreatedRevisionName)')
+
+echo
+echo "Aplicando las migraciones de $REVISION..."
+
+gcloud run jobs deploy "$MIGRATIONS_JOB" \
+    --image="$IMAGE" \
+    --region="$REGION" \
+    --set-secrets=DATABASE_URL=portal-database-url:latest,JWT_KEY=portal-jwt-key:latest \
+    --command=php \
+    --args=bin/console,doctrine:migrations:migrate,--no-interaction,--allow-no-migration \
+    --max-retries=0 \
+    --task-timeout=300 \
+    --quiet >/dev/null
+
+if ! gcloud run jobs execute "$MIGRATIONS_JOB" --region="$REGION" --wait --quiet >/dev/null; then
+    echo
+    echo "Las migraciones han fallado: el tráfico SIGUE en la versión anterior."
+    echo "El porqué, en el registro del job:"
+    echo "  gcloud logging read 'resource.type=cloud_run_job AND resource.labels.job_name=$MIGRATIONS_JOB' --freshness=15m --format='value(textPayload)'"
+    exit 1
+fi
+echo "  Migraciones al día."
+
+# De vuelta a "la última revisión se lleva todo el tráfico" (con --no-traffic
+# el servicio se queda fijado a la anterior).
+gcloud run services update-traffic "$SERVICE" --region="$REGION" --to-latest --quiet >/dev/null
+echo "  Tráfico en $REVISION."
 
 echo
 echo "Limpieza automática, para no salir del nivel gratuito..."

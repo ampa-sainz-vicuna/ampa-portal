@@ -136,6 +136,18 @@ final readonly class AuthController
     }
 
     /**
+     * La misma dirección pedida con GET: no es Google devolviendo a nadie (eso
+     * siempre es un POST), sino un robot de Google que la visita justo después
+     * de entrar (visto en los registros el 28/09/2026) o alguien que la tiene
+     * en el historial. A la portada, que es donde quería ir, en vez de un 405.
+     */
+    #[Route('/api/auth/google/vuelta', name: 'api_auth_google_return_visited', methods: ['GET'])]
+    public function signInReturnVisited(): RedirectResponse
+    {
+        return new RedirectResponse('/', Response::HTTP_SEE_OTHER);
+    }
+
+    /**
      * Borra la cookie. Sale de toda la suite a la vez: la sesión es una sola.
      * No hace falta haber entrado (borrar una cookie que no hay no molesta).
      */

@@ -130,6 +130,16 @@ final class SignInApiTest extends ApiTestCase
     }
 
     #[Test]
+    public function la_vuelta_pedida_con_get_lleva_a_la_portada_sin_entrar(): void
+    {
+        $this->request('GET', '/api/auth/google/vuelta');
+
+        self::assertSame(303, $this->responseStatus());
+        self::assertSame('/', $this->location());
+        self::assertNull($this->sessionCookieOrNull());
+    }
+
+    #[Test]
     public function a_la_vuelta_sin_la_cookie_de_google_no_entra(): void
     {
         $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);

@@ -16,17 +16,14 @@ if [ -z "${APP_SECRET:-}" ] && [ -n "${JWT_KEY:-}" ]; then
     export APP_SECRET
 fi
 
-# Aplica las migraciones pendientes antes de aceptar peticiones. Si no hay
-# ninguna, no hace nada y tarda un instante.
+# Nada más antes de abrir la puerta: el portal se apaga cuando no se usa, y
+# cada arranque lo espera la primera persona que llega (y cada aplicación, que
+# le pregunta en cada petición).
 #
-# Es seguro porque Cloud Run está limitado a UNA instancia (--max-instances=1):
-# nunca habrá dos contenedores migrando a la vez. Si la base de datos no
-# responde, el contenedor no arranca y Cloud Run mantiene la versión anterior.
-php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
-
-# Este script corre como root, y la migración de arriba deja en var/cache
-# carpetas de root que Apache (www-data) ya no podría escribir. Se devuelven a
-# www-data antes de abrir la puerta. (Trampa heredada de fichajes.)
-chown -R www-data:www-data var
+# Hasta el 28/09/2026 aquí se aplicaban las migraciones, y eso (arrancar la
+# consola, despertar a Neon) más el chown de var/ que venía detrás eran 2-4 s
+# de cada arranque, aunque no hubiera ninguna migración nueva. Ahora las
+# aplica deploy/desplegar.sh, una vez por despliegue y antes de pasarle el
+# tráfico a la versión nueva.
 
 exec apache2-foreground

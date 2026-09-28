@@ -144,8 +144,8 @@ despliegues y demás")**
 - Base **`suite`** en Neon (proyecto `ampa`, usuario `suite`, la creó el
   usuario). Secretos `portal-jwt-key` y `portal-database-url`.
 - Servicio **`ampa-portal`** en Cloud Run, proyecto `ampa-fichajes-509408`
-  (el de toda la suite), `europe-west1`. Migraciones aplicadas en Neon al
-  arrancar. Dirección fija, la que usarán los servidores de las aplicaciones
+  (el de toda la suite), `europe-west1`. Migraciones aplicadas en Neon (al
+  desplegar, desde el 28/09/2026; antes al arrancar). Dirección fija, la que usarán los servidores de las aplicaciones
   (`PORTAL_URL`): **`https://ampa-portal-273203000301.europe-west1.run.app`**.
 - **`portal.ampasainzvicuna.com`** asociado al servicio (domain mapping). El
   CNAME `portal` → `ghs.googlehosted.com` en CDmon lo pone el usuario; la
@@ -453,6 +453,28 @@ despliegues y demás")**
       despliegues de fichajes, listados, facturación (desde un worktree:
       había otra sesión trabajando) y tareas (ídem; subió también su
       `ee0178e`, que ya estaba desplegado).
+
+11. **Arranque en frío más corto** (28/09/2026, Claude, "hazlo tú", con
+    commit y despliegue). El usuario, desde el móvil de alguien de la junta,
+    veía primero **la página de 404 de Chrome** y a los pocos segundos el
+    botón de Google. En los registros no hay ningún 404 del portal: coincide
+    con el **arranque en frío** (la portada tardó 4,4 y 4,7 s las dos veces
+    de ese día). La página de error no queda en los registros de Cloud Run
+    y no se sabe con certeza quién la pone; se ataca el arranque.
+    - `docker/prod/entrypoint.sh` ya **no migra ni hace `chown`**: solo
+      Apache. En local, de ~3,7 s a ~1,8 s hasta el primer 200.
+    - `deploy/desplegar.sh`: revisión nueva con `--no-traffic` → job
+      **`portal-migraciones`** (su imagen, `php bin/console
+      doctrine:migrations:migrate`) → `update-traffic --to-latest`. Si la
+      migración falla, el tráfico se queda en la anterior. Probado en local
+      el comando del job: base vacía, nada pendiente y base que no contesta
+      (sale con 7).
+    - `GET /api/auth/google/vuelta` → 303 a `/` (antes 405): la visitaban
+      robots de Google (Chrome/151, `Google-Read-Aloud`) ~5 s después de
+      cada entrada desde Android.
+    - `--min-instances=1` quitaría el arranque del todo: **~10 $ al mes**
+      (tarifa de inactividad, 0,0000025 $/s por vCPU y por GiB). **El usuario
+      lo deja para más adelante.**
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
