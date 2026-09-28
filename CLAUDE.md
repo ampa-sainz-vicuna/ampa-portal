@@ -420,11 +420,10 @@ despliegues y demás")**
      ahora `neon`, `copias`, `fichajes` y `tareas`, porque lee el mismo
      `suite.yaml`). Lanzado a mano el 27/09 a las 20:11: tareas bien; **fichajes
      401** porque su Apache no pasaba `Authorization` (arreglado en fichajes
-     `2b21b3a`, **pendiente de desplegar**: la sesión de gcloud caducó el
-     28/09). Falta, por orden: `gcloud auth login` (el usuario), desplegar
-     fichajes, lanzar `suite-latido` otra vez y, si sale bien, borrar el
-     trabajo `tareas-resumen-diario` (sigue activo a las 5:00; no hace nada
-     porque el de las 4:00 ya lo ha hecho).
+     `2b21b3a`, revisión `ampa-fichajes-00018-qlz`). **Comprobado el 28/09 a
+     las 19:07**: fichajes y tareas contestan 200 al latido. Trabajo
+     `tareas-resumen-diario` **borrado**: en Cloud Scheduler solo queda
+     `suite-latido` (2 de los 3 gratuitos libres).
 
 10. **Entrar sin ventana emergente y la alerta sin robots** (27/09/2026,
     Claude, "hazlo tú y commitea y despliega").
