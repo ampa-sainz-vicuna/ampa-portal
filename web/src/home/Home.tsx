@@ -5,14 +5,18 @@ import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
-import { useEffect, useState } from 'react'
-import { Calendar } from '../calendar/Calendar'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { MyEmails } from '../contact/MyEmails'
 import { goTo } from '../navigation'
-import { Permissions } from '../permissions/Permissions'
 import type { PortalUser } from '../types'
 import { Applications } from './Applications'
 import { returnTarget } from './returnTo'
+
+// Permisos y calendario, en su propio trozo: solo los abre quien gestiona los
+// permisos, y de vez en cuando. Con ellos dentro, el trozo principal pasaba de
+// los 600 kB de chunkSizeWarningLimit (vite.config.ts).
+const Permissions = lazy(() => import('../permissions/Permissions').then((module) => ({ default: module.Permissions })))
+const Calendar = lazy(() => import('../calendar/Calendar').then((module) => ({ default: module.Calendar })))
 
 type Section = 'applications' | 'emails' | 'permissions' | 'calendar'
 
@@ -85,10 +89,18 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
         </Alert>
       )}
 
-      {section === 'applications' && <Applications applications={me.applications} />}
+      {section === 'applications' && <Applications userName={me.name} applications={me.applications} />}
       {section === 'emails' && <MyEmails user={me} onSaved={setMe} onUnauthorized={onUnauthorized} />}
-      {section === 'permissions' && me.isAdmin && <Permissions me={me} onUnauthorized={onUnauthorized} />}
-      {section === 'calendar' && me.isAdmin && <Calendar onUnauthorized={onUnauthorized} />}
+      <Suspense
+        fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+            <CircularProgress aria-label="Cargando" />
+          </Box>
+        }
+      >
+        {section === 'permissions' && me.isAdmin && <Permissions me={me} onUnauthorized={onUnauthorized} />}
+        {section === 'calendar' && me.isAdmin && <Calendar onUnauthorized={onUnauthorized} />}
+      </Suspense>
     </AppShell>
   )
 }

@@ -476,6 +476,26 @@ despliegues y demás")**
       (tarifa de inactividad, 0,0000025 $/s por vCPU y por GiB). **El usuario
       lo deja para más adelante.**
 
+14. **Lavado de cara de toda la suite** (28/09/2026, Claude, pedido por el
+    usuario: «modernizar un poco la interfaz pero sin que pierda la
+    esencia», con commit y despliegue; el 12 y el 13 son de otras sesiones).
+    Casi todo está en **`@ampa/ui` 0.2.4** (tema, barra y entrada: su
+    `CLAUDE.md`, punto 12), que suben las cinco. Aquí, además:
+    - *Aplicaciones*: saludo arriba («LUNES, 28 DE SEPTIEMBRE / Hola,
+      Alberto»), y cada tarjeta con el icono en un cuadrado redondeado
+      relleno de su color, en vez de la franja de arriba (que cortaba la
+      esquina redonda); la flecha se enciende al pasar por encima.
+    - *Permisos*: las iniciales de cada persona en un círculo
+      (`permissions/initials.ts`), en gris si está desactivada.
+    - *Permisos* y *Calendario* se cargan aparte (`lazy`): con el tema nuevo
+      el trozo principal pasaba de los 600 kB del aviso; ahora 566 kB.
+    - **La Ayuda (punto 12) pasa a ser `@ampa/ui` 0.2.5**, acordado con la
+      sesión de tareas. Al juntarla con esto choca en `web/src/home/Home.tsx`
+      (las dos cargan secciones con `lazy`: la de la Ayuda puede ir dentro
+      del mismo `Suspense`) y en este fichero.
+    - Visto en el navegador (escritorio y móvil) con una API simulada; 28
+      tests, lint, tipos y build en verde.
+
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra

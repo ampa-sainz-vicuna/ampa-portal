@@ -8,12 +8,16 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import Avatar from '@mui/material/Avatar'
 import List from '@mui/material/List'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
+import { alpha } from '@mui/material/styles'
 import { useCallback, useEffect, useState } from 'react'
 import type { CatalogApplication, PortalUser, SuiteUser } from '../types'
+import { initials } from './initials'
 import { describeLastSeen } from './lastSeen'
 import { UserDialog } from './UserDialog'
 
@@ -123,6 +127,23 @@ export function Permissions({ me, onUnauthorized }: Props) {
               divider
               sx={{ '&:last-of-type': { borderBottom: 0 } }}
             >
+              {/* Las iniciales, para encontrar a alguien de un vistazo; en gris
+                  si está desactivado, como su nombre. */}
+              <ListItemAvatar sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
+                <Avatar
+                  aria-hidden
+                  sx={(theme) => ({
+                    width: 40,
+                    height: 40,
+                    fontSize: '0.9375rem',
+                    fontWeight: 500,
+                    color: user.active ? theme.palette.secondary.main : theme.palette.text.disabled,
+                    bgcolor: alpha(user.active ? theme.palette.secondary.main : theme.palette.text.disabled, 0.12),
+                  })}
+                >
+                  {initials(user.name)}
+                </Avatar>
+              </ListItemAvatar>
               <ListItemText
                 primary={user.name}
                 secondary={
