@@ -407,7 +407,7 @@ despliegues y demás")**
        **No cuadra con la consola**: el 29/09/2026 la consola de Neon decía
        **9,94 CU-horas** «Since Sep 22» (64 MB de almacenamiento). El latido
        se queda corto, así que el aviso del 80 % llegaría tarde o nunca.
-       **Arreglado el 29/09/2026** (Claude, con commit y despliegue):
+       **Arreglado el 29/09/2026** (Claude; commit `7b4746a`, revisión `ampa-portal-00018-7nw`):
        `compute_time_seconds` es la CPU usada de verdad (vale lo mismo que
        `cpu_used_sec`: 5.611 s), y Neon cobra la CU **asignada** × el tiempo
        encendida (`active_time_seconds`: 21.272 s; la base escala de 0,25 a
