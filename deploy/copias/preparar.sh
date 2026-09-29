@@ -43,6 +43,8 @@ BASES=(
     "BASE_LISTADOS=listados-database-url"
     "BASE_FACTURACION=facturacion-database-url"
     "BASE_TAREAS=tareas-database-url"
+    # Proveedores (crm): hasta que exista su secreto, se salta con un aviso.
+    "BASE_CRM=crm-database-url"
 )
 
 SECRETS=""

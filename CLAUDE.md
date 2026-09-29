@@ -635,6 +635,26 @@ despliegues y demás")**
     - El **fallo del latido con Neon** (arriba, punto 9): arreglado ese mismo
       día.
 
+16. **Alta de Proveedores (`crm`)** (29/09/2026, Claude, "hazlo tú. empezamos
+    ampa-crm"; **sin commit ni despliegue**). La aplicación, hecha en local en
+    [`ampa-crm`](../ampa-crm/CLAUDE.md). Aquí:
+    - `crm` en `suite.yaml`, con el nombre **«Proveedores»** (el que ve la
+      junta) y los roles `miembro` y `admin` (borra proveedores y mantiene las
+      categorías). Sin `latido`: no hace nada programado.
+    - `URL_CRM` (`http://localhost:5178` en `api/.env`;
+      `https://proveedores.ampasainzvicuna.com` en `deploy/desplegar.sh`, la
+      dirección prevista), la tarjeta en `web/src/home/Applications.tsx`, el
+      5178 en `HELP_ALLOWED_ORIGINS` y `BASE_CRM=crm-database-url` en
+      `deploy/copias/preparar.sh` (se salta con un aviso hasta que exista el
+      secreto; después, volver a lanzar ese `preparar.sh`).
+    - `HelpApiTest` cuenta también `crm` (lee el mismo `suite.yaml`).
+    - No toca el cliente ni el contrato con las aplicaciones.
+    - En la base de desarrollo, `admin.prueba@example.com` tiene además
+      `crm:miembro` y `crm:admin`, y `vocal.prueba@example.com`, `crm:miembro`.
+    - 99 unitarios y 79 de integración de PHP en verde. El icono de la
+      tarjeta sale genérico hasta la próxima `@ampa/ui` (el suyo,
+      `StorefrontRounded`, está en su código sin publicar).
+
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra
@@ -668,6 +688,26 @@ despliegues y demás")**
   29/09/2026).
 - Descartado: lotería de Navidad como aplicación (la venderán en MiAmpa como
   producto, con tarjeta); subvenciones, poco prioritario (una al año).
+
+**Ideas del 29/09/2026** (pedidas por el usuario; ninguna empezada):
+- Tareas: **subtareas** dentro de cada tarea. **Decidido el 29/09/2026**:
+  tareas hijas independientes (su responsable, su fecha, sus avisos) que se
+  van marcando como hechas desde la madre. El detalle y lo que queda por
+  confirmar, en el [`CLAUDE.md` de tareas](../ampa-tareas/CLAUDE.md), *Estado*.
+- **Proveedores y contactos**: una agenda de a quién se llama para cada
+  cosa (el hielo de la fiesta, el DJ, el hinchable…), **siempre con
+  comentarios** que vayan quedando con los años: «este DJ nos costó X en
+  2024 y funcionó bien», «este salió más caro pero la gente flipó». Es la
+  memoria de la junta: cuando cambia, no se pierde a quién llamar ni cómo
+  fue. MiAmpa no lo hace (es de familias, no de proveedores).
+  **Decidido por el usuario el 29/09/2026: aplicación nueva, `ampa-crm`**
+  («más un CRM sencillo que otra cosa»), con roles `miembro` y `admin`,
+  catálogo de categorías (varias por proveedor), varias personas de contacto,
+  comentarios con importe, evento y año aparte y **estrellas de 1 a 5 en cada
+  comentario** (el proveedor enseña la media), y adjuntos a Drive. Todo lo
+  decidido, lo que queda por confirmar y lo que hay que tocar aquí para darla
+  de alta (`suite.yaml`, `URL_CRM`, tarjeta, `HELP_ALLOWED_ORIGINS`, copias),
+  en su [`CLAUDE.md`](../ampa-crm/CLAUDE.md).
 
 **Propuestas del 26/09/2026 que el usuario dejó sin prioridad** (no hacerlas
 sin que lo pida):

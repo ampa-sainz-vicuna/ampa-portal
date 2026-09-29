@@ -30,6 +30,7 @@ const LOOKS: Record<string, Look> = {
   listados: { description: 'Listados de las extraescolares para los monitores', color: 'secondary' },
   facturacion: { description: 'Contabilidad y tesorería: caja, banco y cierres', color: 'primary' },
   tareas: { description: 'Tablero de tareas de la junta y Alberto', color: 'secondary' },
+  crm: { description: 'A quién se llama para cada cosa y cómo fue', color: 'primary' },
 }
 
 const DEFAULT_LOOK: Look = { description: 'Aplicación del AMPA', color: 'secondary' }

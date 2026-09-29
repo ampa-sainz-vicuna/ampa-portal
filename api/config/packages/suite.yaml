@@ -46,6 +46,14 @@ parameters:
                 # También además de miembro: ve y pone las de "solo la junta",
                 # que los demás (el empleado) no ven.
                 junta: 'Junta (ve las tareas de solo la junta)'
+        # El código es "crm"; para la junta, "Proveedores" (29/09/2026).
+        crm:
+            name: 'Proveedores'
+            url: '%env(URL_CRM)%'
+            roles:
+                miembro: 'Miembro'
+                # Además de miembro, no en su lugar: sin miembro no entra.
+                admin: 'Administración (borra proveedores y mantiene las categorías)'
         # El propio portal: quien tiene "admin" gestiona los permisos de todas.
         portal:
             name: 'Portal'

@@ -2,9 +2,10 @@
 
 Cada noche, a las 4:00, el latido del portal (`POST /api/latido`) lanza el
 job de Cloud Run **`ampa-copias`**. El job hace un `pg_dump` de cada base de
-Neon (portal, fichajes, listados, facturación y tareas) y lo sube a una
-**unidad compartida de Drive**. Se guardan las **30 últimas** de cada base;
-las más viejas van a la papelera de la unidad, que Drive vacía a los 30 días.
+Neon (portal, fichajes, listados, facturación, tareas y, cuando tenga base,
+proveedores) y lo sube a una **unidad compartida de Drive**. Se guardan las
+**30 últimas** de cada base; las más viejas van a la papelera de la unidad,
+que Drive vacía a los 30 días.
 
 **Por qué:** hasta ahora no había ninguna copia fuera de Neon. El historial de
 Neon gratuito es corto, y todo está en un solo proyecto de una sola cuenta: un

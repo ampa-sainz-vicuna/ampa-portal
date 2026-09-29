@@ -63,6 +63,9 @@ ENV_VARS+=",URL_LISTADOS=https://listados.ampasainzvicuna.com"
 ENV_VARS+=",URL_FACTURACION=https://facturacion.ampasainzvicuna.com"
 # Tareas aún no está desplegada: es la dirección prevista.
 ENV_VARS+=",URL_TAREAS=https://tareas.ampasainzvicuna.com"
+# Proveedores (código crm) aún no está desplegada: es la dirección prevista
+# (29/09/2026). Su tarjeta solo la ve quien tenga crm:miembro.
+ENV_VARS+=",URL_CRM=https://proveedores.ampasainzvicuna.com"
 # Las llamadas del servidor de una aplicación sin nadie detrás (el resumen
 # diario de tareas; cliente 0.1.3): el token de identidad de Google de la
 # cuenta de servicio con la que corren todas (la de Compute Engine por
