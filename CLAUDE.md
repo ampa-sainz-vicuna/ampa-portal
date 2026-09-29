@@ -561,8 +561,8 @@ despliegues y demás")**
     Commit `0446897`, solo ese fichero (lo de la Ayuda sigue sin commit), y
     **desplegado** desde un worktree limpio en `ampa-portal-00015-84b`. En la
     base local, `admin.prueba@example.com` tiene además `tareas:junta` y
-    `vocal.prueba@example.com` no. **Falta**: que el usuario dé
-    `tareas:junta` a la junta (no a Alberto).
+    `vocal.prueba@example.com` no. El usuario ya dio `tareas:junta` a la junta
+    (no a Alberto; confirmado el 29/09/2026).
 
 14. **Lavado de cara de toda la suite** (28/09/2026, Claude, pedido por el
     usuario: «modernizar un poco la interfaz pero sin que pierda la
