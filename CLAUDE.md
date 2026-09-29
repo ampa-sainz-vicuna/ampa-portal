@@ -636,7 +636,9 @@ despliegues y demás")**
       día.
 
 16. **Alta de Proveedores (`crm`)** (29/09/2026, Claude, "hazlo tú. empezamos
-    ampa-crm"; **sin commit ni despliegue**). La aplicación, hecha en local en
+    ampa-crm"; commit y despliegue ese día por la tarde, "haz lo que falta":
+    commit `68c1c69`, revisión **`ampa-portal-00019-4rp`**, sin migraciones;
+    comprobado que lleva `URL_CRM`). La aplicación, hecha en local en
     [`ampa-crm`](../ampa-crm/CLAUDE.md). Aquí:
     - `crm` en `suite.yaml`, con el nombre **«Proveedores»** (el que ve la
       junta) y los roles `miembro` y `admin` (borra proveedores y mantiene las
@@ -651,9 +653,9 @@ despliegues y demás")**
     - No toca el cliente ni el contrato con las aplicaciones.
     - En la base de desarrollo, `admin.prueba@example.com` tiene además
       `crm:miembro` y `crm:admin`, y `vocal.prueba@example.com`, `crm:miembro`.
-    - 99 unitarios y 79 de integración de PHP en verde. El icono de la
-      tarjeta sale genérico hasta la próxima `@ampa/ui` (el suyo,
-      `StorefrontRounded`, está en su código sin publicar).
+    - 99 unitarios y 79 de integración de PHP y 34 del front en verde.
+    - El front, en **`@ampa/ui` 0.2.6** (publicada ese día: el icono de
+      Proveedores, `StorefrontRounded`).
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
