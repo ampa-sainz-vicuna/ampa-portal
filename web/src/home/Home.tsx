@@ -12,13 +12,14 @@ import type { PortalUser } from '../types'
 import { Applications } from './Applications'
 import { returnTarget } from './returnTo'
 
-// Permisos y calendario, en su propio trozo: solo los abre quien gestiona los
-// permisos, y de vez en cuando. Con ellos dentro, el trozo principal pasaba de
+// Permisos, calendario y ayuda, en su propio trozo: solo los abre quien gestiona
+// los permisos, y de vez en cuando. Con ellos dentro, el trozo principal pasaba de
 // los 600 kB de chunkSizeWarningLimit (vite.config.ts).
 const Permissions = lazy(() => import('../permissions/Permissions').then((module) => ({ default: module.Permissions })))
 const Calendar = lazy(() => import('../calendar/Calendar').then((module) => ({ default: module.Calendar })))
+const Help = lazy(() => import('../help/Help').then((module) => ({ default: module.Help })))
 
-type Section = 'applications' | 'emails' | 'permissions' | 'calendar'
+type Section = 'applications' | 'emails' | 'permissions' | 'calendar' | 'help'
 
 interface Props {
   user: PortalUser
@@ -28,7 +29,7 @@ interface Props {
 
 /**
  * Dentro del portal: a qué aplicaciones puede ir, sus correos y, si gestiona
- * los permisos, la pantalla de permisos y el calendario escolar.
+ * los permisos, la pantalla de permisos, el calendario escolar y la ayuda.
  */
 export function Home({ user, onUnauthorized, onSignOut }: Props) {
   const { epoch } = useAuth()
@@ -67,6 +68,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
       <Tab value="emails" label="Mis correos" />
       {me.isAdmin && <Tab value="permissions" label="Permisos" />}
       {me.isAdmin && <Tab value="calendar" label="Calendario" />}
+      {me.isAdmin && <Tab value="help" label="Ayuda" />}
     </Tabs>
   )
 
@@ -100,6 +102,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
       >
         {section === 'permissions' && me.isAdmin && <Permissions me={me} onUnauthorized={onUnauthorized} />}
         {section === 'calendar' && me.isAdmin && <Calendar onUnauthorized={onUnauthorized} />}
+        {section === 'help' && me.isAdmin && <Help onUnauthorized={onUnauthorized} />}
       </Suspense>
     </AppShell>
   )

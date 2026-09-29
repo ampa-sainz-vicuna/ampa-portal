@@ -68,3 +68,23 @@ export interface Contact {
   secondaryEmail: string | null
   notify: NotificationTarget
 }
+
+/** Cuántas preguntas de la ayuda hay de una aplicación (o de "general"). */
+export interface HelpCount {
+  application: string
+  name: string
+  entries: number
+}
+
+/** Lo que hay cargado en la ayuda de la suite (`/api/admin/ayuda`). */
+export interface HelpSummary {
+  /** ISO 8601. null: todavía no se ha cargado nunca. */
+  loadedAt: string | null
+  /** AAAA-MM-DD: cuándo se revisó el fichero (lo dice el fichero). */
+  updatedAt: string | null
+  notebookUrl: string | null
+  contactEmail: string | null
+  total: number
+  /** Todas las aplicaciones de la suite, también las que no tienen ninguna. */
+  byApplication: HelpCount[]
+}

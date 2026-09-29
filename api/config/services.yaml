@@ -28,6 +28,7 @@ services:
     # donde las dos capas se tocan.
     App\Portal\Domain\User\UserRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     App\Portal\Domain\Calendar\SchoolYearRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineSchoolYearRepository'
+    App\Portal\Domain\Help\FaqRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineFaqRepository'
     App\Portal\Infrastructure\Security\IdentityVerifier: '@App\Portal\Infrastructure\Security\GoogleIdTokenVerifier'
     App\Portal\Infrastructure\Security\ServiceAccountVerifier: '@App\Portal\Infrastructure\Security\GoogleServiceAccountVerifier'
 
@@ -69,6 +70,13 @@ services:
         arguments:
             $domain: '%env(SESSION_COOKIE_DOMAIN)%'
             $secure: '%env(bool:SESSION_COOKIE_SECURE)%'
+
+    # Quién puede leer GET /api/ayuda desde otra web: las aplicaciones del
+    # catálogo, el propio portal y, en desarrollo, los Vite de cada una.
+    App\Portal\Infrastructure\Http\HelpCors:
+        arguments:
+            $portalUrl: '%env(DEFAULT_URI)%'
+            $extraOrigins: '%env(HELP_ALLOWED_ORIGINS)%'
 
 when@test:
     services:

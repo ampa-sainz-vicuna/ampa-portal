@@ -36,7 +36,8 @@ migraciones**.
    `.ampasainzvicuna.com`, con un token HS256 que solo lleva el correo y la
    caducidad (una semana).
 3. El navegador la manda sola a la API de cada aplicación (mismo origen, sin
-   CORS).
+   CORS). La única excepción es la ayuda (`GET /api/ayuda`), que el front de
+   cada aplicación pide directamente al portal (ver *La ayuda de la suite*).
 4. El **cliente** que lleva cada aplicación (`cliente/`) coge el token y le
    pregunta al portal, **en cada petición**, qué roles tiene esa persona allí.
    Quitar un permiso o desactivar a alguien surte efecto al momento.
@@ -62,9 +63,9 @@ Por qué así, en corto:
 
 ```
 api/        el servicio (Symfony 7.4): entrar, sesión, permisos, pantalla de permisos,
-            calendario escolar y el latido diario
+            calendario escolar, la ayuda de la suite y el latido diario
 web/        el front (React + @ampa/ui 0.2): entrar con Google, las tarjetas de las
-            aplicaciones, "Mis correos", la pantalla de permisos y el calendario
+            aplicaciones, "Mis correos", la pantalla de permisos, el calendario y la ayuda
 deploy/     desplegar, dar permisos, el latido (programar.sh), las alertas y las
             copias de seguridad (deploy/copias/)
 cliente/    el bundle que instala cada aplicación (ampa/portal-cliente); su README
@@ -95,6 +96,50 @@ El estado del despliegue, en el [`CLAUDE.md`](CLAUDE.md).
   impide).
 - **Calendario** (solo quien gestiona los permisos): el calendario escolar
   común de cada curso (abajo).
+- **Ayuda** (solo quien gestiona los permisos): cuándo se cargó la ayuda,
+  cuántas preguntas hay de cada aplicación, el enlace del cuaderno y el botón
+  *Cargar el fichero de preguntas* (abajo).
+
+### La ayuda de la suite
+
+El botón *Ayuda* de la barra de `@ampa/ui` (0.2.4), en todas las
+aplicaciones, enseña unas preguntas con su respuesta y un buscador; si no
+encuentra nada, ofrece el cuaderno de NotebookLM y el correo de contacto. El
+portal las **guarda y las sirve**: una sola ayuda para toda la suite, cargada
+en un sitio.
+
+- **De dónde salen**: de un fichero `faq.json` que se prepara **fuera de este
+  repositorio** (es público y la ayuda cuenta cosas del AMPA). Se carga
+  entero en la pestaña *Ayuda* (o con `bin/console app:ayuda:cargar
+  <fichero>`, para desarrollo) y **sustituye** lo que hubiera. Si algo no
+  vale, no cambia nada y el mensaje dice qué pregunta y por qué.
+- **Dónde se guarda**: una sola fila (`faq`), con las preguntas en JSON: se
+  leen siempre juntas (el buscador va en el navegador) y se sustituyen siempre
+  juntas, como los días de un curso.
+- **Quién ve qué**: cada pregunta es de una aplicación o `general`. Las
+  generales, cualquiera que haya entrado; las de una aplicación, quien tiene
+  algún rol en ella y, si la pregunta lleva `roles`, uno de esos
+  (`FaqEntry::isVisibleWith`). La ayuda de la administración de fichajes no
+  le sale al empleado.
+- **CORS**: es la única ruta del portal que se lee desde el navegador de OTRA
+  web (`facturacion.…` pide a `portal.…`). `HelpCors` solo se la deja leer a
+  las aplicaciones del catálogo (sus `URL_…`), al propio portal
+  (`DEFAULT_URI`) y a los orígenes de `HELP_ALLOWED_ORIGINS` (en desarrollo,
+  los Vite de la suite; en producción, vacía). La cookie va sola: es de
+  `.ampasainzvicuna.com` y todas son el mismo sitio.
+
+El formato de `faq.json`:
+
+```json
+{"version": 1, "updatedAt": "2026-09-28", "notebookUrl": "https://…", "contactEmail": "…",
+ "entries": [{"id": "facturacion-cerrar-mes", "application": "facturacion", "roles": [],
+              "question": "…", "answer": "texto plano con \n", "keywords": ["…"], "manual": "06"}]}
+```
+
+`version` 1; `id` único; `application` `general` o una de `suite.yaml` (las
+generales, sin roles); `roles`, de esa aplicación; pregunta (300 caracteres
+como mucho) y respuesta (10 000) no vacías; `notebookUrl` https o null.
+`roles`, `keywords`, `manual` y los datos generales son opcionales.
 
 ### El calendario escolar común
 
@@ -180,6 +225,9 @@ rol `admin`: quien gestiona los permisos de toda la suite.
 | `GET /api/calendario?curso=2026-2027` | Bearer | **Contrato con el cliente** (0.1.5). `{ schoolYear, classesStart, classesEnd, periods: [{ from, to, kind, name }] }`; 404 si ese curso no está cargado. Basta con ser alguien de la suite. |
 | `GET /api/admin/calendario` | cookie, admin | Los cursos cargados, del más nuevo al más viejo. |
 | `PUT /api/admin/calendario/{curso}` | cookie, admin | Guarda el curso entero: `{ classesStart, classesEnd, periods }`. 422 si algo no cuadra (con el motivo). |
+| `GET /api/ayuda` | cookie | **Contrato con `@ampa/ui`** (0.2.4). `{ notebookUrl, contactEmail, updatedAt, entries: [{ id, application, question, answer, keywords, manual }] }`: solo las preguntas que ve esa persona. Sin nada cargado, `entries: []` y lo demás null. La leen los fronts de las aplicaciones desde su web (CORS, arriba). |
+| `GET /api/admin/ayuda` | cookie, admin | Lo cargado: `{ loadedAt, updatedAt, notebookUrl, contactEmail, total, byApplication: [{ application, name, entries }] }` (todas las aplicaciones, también con 0). |
+| `PUT /api/admin/ayuda` | cookie, admin | El `faq.json` entero: sustituye toda la ayuda y devuelve lo mismo que el GET. 400 si no es JSON, 422 si no vale (con el motivo). |
 | `POST /api/latido` | token de Cloud Scheduler | El latido diario. Siempre 200 con cada paso (`hecho`, `saltado`, `fallo`), para que Cloud Scheduler no lo repita entero; 401 sin el token de la cuenta de servicio. |
 
 `Bearer` es la sesión de una persona o, sin nadie detrás (cliente 0.1.3), el
@@ -272,6 +320,21 @@ docker compose exec php bin/console app:permisos:dar tesoreria@ampasainzvicuna.c
 
 Solo suma permisos, nunca quita. `--avisos=primary|secondary|both` elige a
 dónde van los avisos.
+
+### La ayuda en desarrollo
+
+```bash
+docker compose exec php bin/console app:ayuda:cargar /ruta/dentro/del/contenedor/faq.json
+```
+
+Sustituye la ayuda, como el botón de la pestaña *Ayuda*. El fichero tiene que
+estar donde lo vea el contenedor (el repositorio está en `/var/www/html`, pero
+el `faq.json` de verdad **no** va en el repositorio: mejor copiarlo a `/tmp`
+con `docker compose cp`). Desde Git Bash, `MSYS_NO_PATHCONV=1` delante.
+
+Los orígenes que pueden leer `/api/ayuda` desde el navegador, además de las
+`URL_…` y `DEFAULT_URI`, van en `HELP_ALLOWED_ORIGINS` (`api/.env`: los Vite
+de la suite, 5173-5177). En producción `deploy/desplegar.sh` la deja vacía.
 
 ---
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Portal\Domain\Help\Faq" table="faq">
+
+        <!-- Siempre 1: hay una sola ayuda (ver Faq) -->
+        <id name="id" type="smallint" column="id">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="notebookUrl"  type="string" column="notebook_url"  length="500" nullable="true"/>
+        <field name="contactEmail" type="string" column="contact_email" length="180" nullable="true"/>
+
+        <!-- AAAA-MM-DD, como texto: es un día del calendario, lo dice el fichero -->
+        <field name="updatedAt" type="string" column="updated_at" length="10" nullable="true"/>
+
+        <!-- Con zona: el instante no depende de la zona horaria de PHP -->
+        <field name="loadedAt" type="datetimetz_immutable" column="loaded_at"/>
+
+        <!-- Las preguntas: se leen y se sustituyen siempre juntas -->
+        <field name="entries" type="json" column="entries">
+            <options>
+                <option name="jsonb">true</option>
+            </options>
+        </field>
+
+    </entity>
+</doctrine-mapping>

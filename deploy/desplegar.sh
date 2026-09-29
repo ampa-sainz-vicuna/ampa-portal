@@ -70,6 +70,11 @@ ENV_VARS+=",URL_TAREAS=https://tareas.ampasainzvicuna.com"
 # varias, la coma chocaría con la de --set-env-vars.
 ENV_VARS+=",SUITE_TOKEN_AUDIENCE=${RUN_URL}"
 ENV_VARS+=",SUITE_SERVICE_ACCOUNTS=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+# Quién puede leer la ayuda (GET /api/ayuda) desde otra web: en producción,
+# solo las aplicaciones del catálogo y el portal, que ya salen de las URL_… y
+# de DEFAULT_URI. Vacía y no sin definir: sin definir, Symfony usaría la de
+# api/.env, con los localhost de desarrollo.
+ENV_VARS+=",HELP_ALLOWED_ORIGINS="
 
 # El latido diario (POST /api/latido; deploy/programar.sh). Cada paso que no
 # esté montado se salta sin error:

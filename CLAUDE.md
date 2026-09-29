@@ -76,8 +76,10 @@ api/src/Portal/
                      NotificationTarget), Grants (JSON aplicación → roles), EmailAddress, UserId
   Domain/Suite/      Application (con su latido), ApplicationCatalog (de config/packages/suite.yaml)
   Domain/Calendar/   SchoolYear (un curso: clases y días sin clase), CalendarPeriod, DayKind
+  Domain/Help/       Faq (la ayuda de la suite, una sola), FaqEntry (quién ve cada pregunta)
   Application/User/  RegisterUser, UpdateUser, ChangeOwnContact, GrantAccess (comando)
   Application/Calendar/  DefineSchoolYear
+  Application/Help/  FaqFile (la forma de faq.json), LoadFaq
   Application/Heartbeat/ RunHeartbeat y sus puertos (Neon, copias, despertar aplicaciones)
   Infrastructure/
     Security/        Google, SessionTokens (HS256), SessionCookie, el autenticador de la
@@ -475,6 +477,71 @@ despliegues y demás")**
     - `--min-instances=1` quitaría el arranque del todo: **~10 $ al mes**
       (tarifa de inactividad, 0,0000025 $/s por vCPU y por GiB). **El usuario
       lo deja para más adelante.**
+
+12. **Ayuda de la suite (28/09/2026; terminada el 29/09/2026, abajo).**
+    Pedido por el usuario: FAQ con buscador en la barra de todas las
+    aplicaciones, gratis y sin IA; si no encuentra, «Preguntar al asistente»
+    abre el cuaderno de NotebookLM
+    (el enlace, en `../ampa-manuales/CLAUDE.md`: este repositorio es público)
+    (comprobado por el usuario) y da el correo de admin@. Tres piezas en
+    paralelo: (1) contenido en `ampa-manuales/ayuda/faq.json` (privado, fuera
+    de los repos públicos) y su PDF 07; (2) aquí, `GET /api/ayuda` (sesión,
+    filtrado por roles, CORS a los orígenes de la suite),
+    `PUT|GET /api/admin/ayuda`, `app:ayuda:cargar` y la pestaña *Ayuda*
+    (admin); (3) `@ampa/ui` 0.2.5 (era la 0.2.4; ver el punto 14): botón «Ayuda» y panel con buscador en
+    `AppShell`. Después, en orden: el usuario revisa las preguntas → publicar
+    `@ampa/ui` 0.2.5 → commit y despliegue del portal (migración nueva) →
+    cargar faq.json en la pestaña *Ayuda* → subir `@ampa/ui` a 0.2.5 en el
+    front del portal y de las cuatro aplicaciones y desplegarlas.
+    - **Pieza (2), el portal: HECHA** (Claude, 28/09/2026; commit y
+      despliegue el 29/09/2026). El detalle, en el README, *La ayuda de la suite*.
+      - Dominio `Domain/Help/`: `Faq` (una sola fila, tabla `faq`, con las
+        preguntas en JSONB; `publish`/`replace` sustituyen todo y comprueban
+        ids únicos, aplicación y roles contra el catálogo, `notebookUrl`
+        https, correo y fecha), `FaqEntry` (`isVisibleWith(Grants)`: las
+        `general` todos; las de una aplicación, quien tiene algún rol allí
+        y, con `roles`, uno de ellos), `FaqError`, `FaqRepository`.
+        `Application/Help/`: `FaqFile` (la forma de faq.json, `version` 1,
+        errores con el id o la posición de la pregunta) y `LoadFaq`.
+        Migración `Version20260928120000` (**solo añade** la tabla).
+      - Rutas: `GET /api/ayuda` (cookie, `HelpController`; contrato con
+        `@ampa/ui`: `{notebookUrl, contactEmail, updatedAt, entries: [{id,
+        application, question, answer, keywords, manual}]}`, sin `roles`),
+        `GET|PUT /api/admin/ayuda` (`AdminHelpController`; el PUT recibe el
+        faq.json entero, 400 si no es JSON, 422 con el motivo; los dos
+        devuelven `{loadedAt, updatedAt, notebookUrl, contactEmail, total,
+        byApplication: [{application, name, entries}]}`). Comando
+        `app:ayuda:cargar <fichero>` (`LoadFaqCommand`).
+      - **CORS** (`Infrastructure/Http/HelpCors`, un listener, sin bundle):
+        solo en `/api/ayuda`; `Access-Control-Allow-Origin: <origin>` +
+        `Allow-Credentials` a las `URL_…` del catálogo, `DEFAULT_URI` y
+        `HELP_ALLOWED_ORIGINS` (variable nueva: en `api/.env` los Vite
+        5173-5177; en `deploy/desplegar.sh`, **vacía**). `Vary: Origin`
+        siempre; también en el 401 (si no, el front vería un error de red).
+        OPTIONS se contesta con 204 antes del router y del cortafuegos.
+        `CrossSiteRequestGuard` no la frena (solo mira POST/PUT/…).
+        Comprobado con curl por nginx y por el Vite del portal.
+      - Front: pestaña **Ayuda** (`web/src/help/Help.tsx`, solo admin, en su
+        propio trozo con `lazy`: con ella dentro, el trozo principal pasaba
+        de los 600 kB del aviso de Vite; desde el 29/09/2026 va con *Permisos*
+        y *Calendario*, también aparte: el principal, en 375 kB). Visto en el navegador con una
+        cookie de desarrollo.
+      - Tests: 97 unitarios y 79 de integración de PHP, 43 del cliente, 30
+        del front, lint, tipos y build en verde.
+      - En la base de desarrollo, desde el 29/09/2026, las 88 preguntas de verdad
+        (`app:ayuda:cargar`, para comprobar que el fichero pasa).
+      - Comprobado de nuevo el 28/09/2026 (sesión de tareas): 97 unitarios y
+        79 de integración en verde, con el rol `junta` de abajo ya en
+        `suite.yaml`.
+
+13. **Rol `junta` de tareas** (28/09/2026, Claude, desde la sesión de
+    tareas): `junta: 'Junta (ve las tareas de solo la junta)'` en
+    `suite.yaml`, además de miembro. Qué hace, en el `CLAUDE.md` de tareas.
+    Commit `0446897`, solo ese fichero (lo de la Ayuda sigue sin commit), y
+    **desplegado** desde un worktree limpio en `ampa-portal-00015-84b`. En la
+    base local, `admin.prueba@example.com` tiene además `tareas:junta` y
+    `vocal.prueba@example.com` no. **Falta**: que el usuario dé
+    `tareas:junta` a la junta (no a Alberto).
 
 14. **Lavado de cara de toda la suite** (28/09/2026, Claude, pedido por el
     usuario: «modernizar un poco la interfaz pero sin que pierda la
