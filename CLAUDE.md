@@ -403,9 +403,16 @@ despliegues y demás")**
        "concurrent policy changes" y el script ya reintenta solo). Primera
        ejecución a mano y otra lanzada por el latido: **5 `.dump` en Drive**.
      - Neon: secreto `neon-api-key` (lo creó el usuario) y proyecto
-       `small-pond-03723796`. Primera lectura: **1,6 de 100 CU-horas**. Parece
-       poco: **pendiente de que el usuario lo compare con la consola** (quizá
-       `compute_time_seconds` son segundos de CPU y no CU-horas).
+       `small-pond-03723796`. Primera lectura (27/09): **1,6 de 100 CU-horas**.
+       **No cuadra con la consola**: el 29/09/2026 la consola de Neon decía
+       **9,94 CU-horas** «Since Sep 22» (64 MB de almacenamiento). El latido
+       se queda corto, así que el aviso del 80 % llegaría tarde o nunca.
+       **Pendiente de arreglar** en `NeonDatabaseUsage`. Sospecha:
+       `compute_time_seconds` son segundos de CPU usados de verdad, y la
+       consola cuenta CU encendidas × tiempo (probar `active_time_seconds` ×
+       el tamaño de la CU, y mirar si el periodo es el mismo). La cifra del
+       latido no queda en el registro (en producción solo se escribe de
+       `error` para arriba): se ve en la respuesta de `POST /api/latido`.
      - Alerta a `admin@ampasainzvicuna.com`. Saltó una vez con los registros
        de auditoría de ese permiso fallido: ahora se excluyen
        (`NOT logName:"cloudaudit.googleapis.com"`).
@@ -475,8 +482,8 @@ despliegues y demás")**
       robots de Google (Chrome/151, `Google-Read-Aloud`) ~5 s después de
       cada entrada desde Android.
     - `--min-instances=1` quitaría el arranque del todo: **~10 $ al mes**
-      (tarifa de inactividad, 0,0000025 $/s por vCPU y por GiB). **El usuario
-      lo deja para más adelante.**
+      (tarifa de inactividad, 0,0000025 $/s por vCPU y por GiB).
+      **Descartado por el usuario el 29/09/2026.**
 
 12. **Ayuda de la suite (28/09/2026; terminada el 29/09/2026, abajo).**
     Pedido por el usuario: FAQ con buscador en la barra de todas las
@@ -550,10 +557,10 @@ despliegues y demás")**
         comprimido en una variable, `app:ayuda:cargar`, y el job borrado),
         porque entrar en la pestaña pide la sesión de Google del usuario.
         La próxima vez, lo normal: la pestaña *Ayuda* → «Cargar el fichero».
-      - **Falta que el usuario**: suba el PDF 06 y el 07 a Drive (*Junta -
-        Documentos*, *Manuales*) y a las fuentes del cuaderno de NotebookLM,
-        y lea las preguntas cuando pueda (se corrigen en faq.json y se vuelve
-        a cargar).
+      - El PDF 06 y el 07, **ya en Drive y en el cuaderno** (el usuario,
+        29/09/2026). **Falta que el usuario** lea las preguntas cuando pueda (se corrigen en faq.json y se vuelve
+        a cargar). **Sigue pendiente** (repasado con el usuario el
+        29/09/2026).
 
 13. **Rol `junta` de tareas** (28/09/2026, Claude, desde la sesión de
     tareas): `junta: 'Junta (ve las tareas de solo la junta)'` en
@@ -589,10 +596,35 @@ despliegues y demás")**
       entró directa con el tráfico, sin pasar por `portal-migraciones`: no
       había ninguna migración pendiente.
 
+15. **Repaso de lo pendiente de toda la suite** (29/09/2026, el usuario punto
+    por punto; cada `CLAUDE.md` recoge su parte). Lo que Claude hizo después,
+    con commit y despliegue con permiso del usuario:
+    - Facturación `5fedc01` → `ampa-facturacion-00013-8zq`: días de clase de
+      Cutasa con `SuiteCalendar` (primer uso del calendario del portal),
+      recibo devuelto cobrado enlazado con sus dos apuntes y el Cuadrante del
+      mes en curso.
+    - Listados `8a85ef2` → `ampa-listados-00018-7ks`: **estadísticas**, con
+      **`@mui/x-charts`** como librería de gráficos de la suite (pasa a
+      `@ampa/ui` cuando otra aplicación la use).
+    - Fichajes `dc9d72c` → `ampa-fichajes-00021-8gn` (desplegado con la
+      sesión de gcloud de listados: su volumen tiene la sesión caducada) y
+      tareas `2f3c589` → `ampa-tareas-00017-544` (fuera la ruta vieja del
+      resumen).
+    - `ampa-manuales` **ya está en GitHub**, privado
+      (`ampa-sainz-vicuna/ampa-manuales`), con el manual 05 (KeePassXC).
+    - La sesión de gcloud caducó a mitad; la renovó el usuario con
+      `docker compose run --rm gcloud gcloud auth login --no-launch-browser`.
+    - **Falta que el usuario**: volver a cargar `faq.json` en la pestaña
+      *Ayuda* (cambiaron fichajes y facturación), subir a Drive y al
+      cuaderno los PDF 01, 02, 03, 05, 06 y 07, y poner el precio por día de
+      Cutasa de 2026/27 en *Alumnos* de facturación.
+    - Pendiente aquí: el **fallo del latido con Neon** (arriba, punto 9).
+
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
 - Facturación: **importar el extracto del banco** ("me encanta, ahorra
-  trabajo"), **leer los justificantes** con la API de Claude, y el **informe
+  trabajo"), **leer los justificantes** con la API de Claude (**descartado**
+  por el usuario el 29/09/2026), y el **informe
   de cuentas del curso para la asamblea**, que es **hacia el 10/10/2026**:
   **hecho y desplegado el 27/09/2026** (su `CLAUDE.md`). La hoja de 2025/26
   **está revisada entera** (662 filas) **e importada en producción** (el
@@ -606,8 +638,10 @@ despliegues y demás")**
 - Tareas: **tareas recurrentes**: **hechas el 27/09/2026 y ya juntadas en
   `main`** (commit `1a643cd`, *Merge remote-tracking branch
   'origin/recurrentes'*).
-- Listados: **resaltar los cambios de alergias** entre un listado y el
-  siguiente.
+- Listados: ~~resaltar los cambios de alergias~~ entre un listado y el
+  siguiente (**descartado** por el usuario el 29/09/2026). Las
+  **estadísticas**: el usuario pide el 29/09/2026 que Claude proponga las
+  cifras y las haga.
 - Documentos: **protección de menores** (certificados de monitores, LOPIVI,
   seguros, contratos con vencimientos).
 - Aplicación nueva: **buzón de las familias**, que además sirva para
@@ -615,7 +649,8 @@ despliegues y demás")**
   curso ("hay tiempo").
 - Fichajes: nada ("ok a fichajes como está").
 - Portal: registro de cambios de permisos y repaso anual, "me gustan pero no
-  corren prisa" (solo él gestiona permisos).
+  corren prisa" (solo él gestiona permisos). Siguen en la lista (repasado el
+  29/09/2026).
 - Descartado: lotería de Navidad como aplicación (la venderán en MiAmpa como
   producto, con tarjeta); subvenciones, poco prioritario (una al año).
 
