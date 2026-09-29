@@ -533,6 +533,27 @@ despliegues y demás")**
       - Comprobado de nuevo el 28/09/2026 (sesión de tareas): 97 unitarios y
         79 de integración en verde, con el rol `junta` de abajo ya en
         `suite.yaml`.
+    - **Terminada el 29/09/2026** (Claude, "termina lo de la ayuda"; el
+      usuario, preguntado, decidió cargar las preguntas sin revisarlas antes
+      y añadir las de tareas privadas y de solo la junta):
+      - Juntada con el lavado de cara (punto 14): `@ampa/ui` **0.2.5**
+        (`6298ae5`, release `v0.2.5`), portal `ba6f50b`, revisión
+        **`ampa-portal-00017-5jj`** (la migración de `faq`, por el job
+        `portal-migraciones`). Comprobado: `/api/ayuda` da 401 sin sesión, con
+        `Access-Control-Allow-Origin` a tareas y sin él a un origen de fuera.
+      - Visto en el navegador con las preguntas de verdad y una API simulada:
+        el botón en la barra, buscar, abrir una respuesta, «No está en la
+        ayuda» y la pestaña *Ayuda*.
+      - Contenido: **90 preguntas** (dos nuevas de tareas; `ampa-manuales`
+        `4298c5f`, con el manual 06 y el PDF 07 regenerados). Cargadas en
+        producción con un job de un solo uso (`portal-ayuda`, el fichero
+        comprimido en una variable, `app:ayuda:cargar`, y el job borrado),
+        porque entrar en la pestaña pide la sesión de Google del usuario.
+        La próxima vez, lo normal: la pestaña *Ayuda* → «Cargar el fichero».
+      - **Falta que el usuario**: suba el PDF 06 y el 07 a Drive (*Junta -
+        Documentos*, *Manuales*) y a las fuentes del cuaderno de NotebookLM,
+        y lea las preguntas cuando pueda (se corrigen en faq.json y se vuelve
+        a cargar).
 
 13. **Rol `junta` de tareas** (28/09/2026, Claude, desde la sesión de
     tareas): `junta: 'Junta (ve las tareas de solo la junta)'` en
