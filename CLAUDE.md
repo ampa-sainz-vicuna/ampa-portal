@@ -407,12 +407,18 @@ despliegues y demás")**
        **No cuadra con la consola**: el 29/09/2026 la consola de Neon decía
        **9,94 CU-horas** «Since Sep 22» (64 MB de almacenamiento). El latido
        se queda corto, así que el aviso del 80 % llegaría tarde o nunca.
-       **Pendiente de arreglar** en `NeonDatabaseUsage`. Sospecha:
-       `compute_time_seconds` son segundos de CPU usados de verdad, y la
-       consola cuenta CU encendidas × tiempo (probar `active_time_seconds` ×
-       el tamaño de la CU, y mirar si el periodo es el mismo). La cifra del
-       latido no queda en el registro (en producción solo se escribe de
-       `error` para arriba): se ve en la respuesta de `POST /api/latido`.
+       **Arreglado el 29/09/2026** (Claude, con commit y despliegue):
+       `compute_time_seconds` es la CPU usada de verdad (vale lo mismo que
+       `cpu_used_sec`: 5.611 s), y Neon cobra la CU **asignada** × el tiempo
+       encendida (`active_time_seconds`: 21.272 s; la base escala de 0,25 a
+       2 CU). La cifra exacta solo la da `consumption_history`, que no existe
+       en el plan gratuito. Ahora el latido da **el máximo posible**: tiempo
+       encendida × `autoscaling_limit_max_cu` más grande (de
+       `/projects/{id}/endpoints`): «como mucho 11,8 de 100 CU-horas». El
+       aviso sale antes de tiempo, nunca tarde. A ese ritmo (~10 CU-horas por
+       semana) el mes gasta ~43. La cifra del latido no queda en el registro
+       (en producción solo se escribe de `error` para arriba): se ve en la
+       respuesta de `POST /api/latido`.
      - Alerta a `admin@ampasainzvicuna.com`. Saltó una vez con los registros
        de auditoría de ese permiso fallido: ahora se excluyen
        (`NOT logName:"cloudaudit.googleapis.com"`).
@@ -614,11 +620,14 @@ despliegues y demás")**
       (`ampa-sainz-vicuna/ampa-manuales`), con el manual 05 (KeePassXC).
     - La sesión de gcloud caducó a mitad; la renovó el usuario con
       `docker compose run --rm gcloud gcloud auth login --no-launch-browser`.
-    - **Falta que el usuario**: volver a cargar `faq.json` en la pestaña
-      *Ayuda* (cambiaron fichajes y facturación), subir a Drive y al
-      cuaderno los PDF 01, 02, 03, 05, 06 y 07, y poner el precio por día de
-      Cutasa de 2026/27 en *Alumnos* de facturación.
-    - Pendiente aquí: el **fallo del latido con Neon** (arriba, punto 9).
+    - El usuario **volvió a cargar `faq.json`** y **subió los PDF** a Drive y
+      al cuaderno (29/09/2026). Después, el manual 05 recogió sus decisiones
+      y se regeneraron el 01, el 02 y el 05: **hay que subirlos otra vez**.
+    - **Falta que el usuario** ponga el precio por día de Cutasa de 2026/27
+      en *Alumnos* de facturación, y diga qué tal las **estadísticas de
+      listados** cuando suba el fichero de octubre.
+    - El **fallo del latido con Neon** (arriba, punto 9): arreglado ese mismo
+      día.
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):

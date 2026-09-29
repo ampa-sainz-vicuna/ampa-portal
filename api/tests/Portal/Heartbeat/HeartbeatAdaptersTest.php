@@ -104,28 +104,57 @@ final class HeartbeatAdaptersTest extends TestCase
     }
 
     #[Test]
-    public function lee_el_computo_de_neon_en_cu_horas(): void
+    public function el_computo_de_neon_es_el_maximo_horas_encendida_por_la_cu_mas_grande(): void
     {
-        $http = $this->http([new MockResponse((string) json_encode(['project' => [
-            'id' => 'bold-sun-123',
-            'compute_time_seconds' => 162000,
-            'consumption_period_end' => '2026-10-01T00:00:00Z',
-        ]]))]);
+        // Los datos de verdad del 29/09/2026: la consola decía 9,94 CU-horas;
+        // compute_time_seconds (la CPU usada) daba solo 1,6.
+        $http = $this->http([
+            $this->neonProject(activeSeconds: 21272, computeSeconds: 5611),
+            $this->neonEndpoints(0.25, 2),
+        ]);
 
         $usage = (new NeonDatabaseUsage($http, 'bold-sun-123', 'clave', 100))->current();
 
-        self::assertSame(45.0, $usage->getHoursUsed());
-        self::assertSame('45,0 de 100 CU-horas; el periodo acaba el 01/10/2026', $usage->describe());
+        self::assertEqualsWithDelta(11.82, $usage->getHoursUsed(), 0.01);
+        self::assertTrue($usage->isUpperBound());
+        self::assertSame('como mucho 11,8 de 100 CU-horas; el periodo acaba el 01/10/2026', $usage->describe());
         self::assertSame('https://console.neon.tech/api/v2/projects/bold-sun-123', $this->requests[0]['url']);
-        self::assertContains('Authorization: Bearer clave', $this->requests[0]['options']['headers']);
+        self::assertSame('https://console.neon.tech/api/v2/projects/bold-sun-123/endpoints', $this->requests[1]['url']);
+        self::assertContains('Authorization: Bearer clave', $this->requests[1]['options']['headers']);
     }
 
     #[Test]
-    public function si_neon_no_trae_el_computo_es_un_fallo_y_no_un_cero(): void
+    public function con_varias_maquinas_cuenta_la_que_mas_puede_crecer(): void
     {
-        $http = $this->http([new MockResponse('{"project":{"id":"bold-sun-123"}}')]);
+        $http = $this->http([
+            $this->neonProject(activeSeconds: 3600),
+            $this->neonEndpoints(1, 0.5, 4),
+        ]);
+
+        self::assertSame(4.0, (new NeonDatabaseUsage($http, 'bold-sun-123', 'clave', 100))->current()->getHoursUsed());
+    }
+
+    #[Test]
+    public function si_neon_no_trae_el_tiempo_encendida_es_un_fallo_y_no_un_cero(): void
+    {
+        $http = $this->http([new MockResponse('{"project":{"id":"bold-sun-123","compute_time_seconds":5611}}')]);
 
         $this->expectException(HeartbeatFailed::class);
+        $this->expectExceptionMessage('active_time_seconds');
+
+        (new NeonDatabaseUsage($http, 'bold-sun-123', 'clave', 100))->current();
+    }
+
+    #[Test]
+    public function si_neon_no_trae_el_tamano_de_las_maquinas_es_un_fallo(): void
+    {
+        $http = $this->http([
+            $this->neonProject(activeSeconds: 3600),
+            new MockResponse('{"endpoints":[]}'),
+        ]);
+
+        $this->expectException(HeartbeatFailed::class);
+        $this->expectExceptionMessage('autoscaling_limit_max_cu');
 
         (new NeonDatabaseUsage($http, 'bold-sun-123', 'clave', 100))->current();
     }
@@ -145,6 +174,24 @@ final class HeartbeatAdaptersTest extends TestCase
     public function sin_clave_neon_no_esta_configurado(): void
     {
         self::assertFalse((new NeonDatabaseUsage($this->http([]), 'bold-sun-123', '', 100))->isConfigured());
+    }
+
+    private function neonProject(int $activeSeconds, int $computeSeconds = 0): MockResponse
+    {
+        return new MockResponse((string) json_encode(['project' => [
+            'id' => 'bold-sun-123',
+            'active_time_seconds' => $activeSeconds,
+            'compute_time_seconds' => $computeSeconds,
+            'consumption_period_end' => '2026-10-01T00:00:00Z',
+        ]]));
+    }
+
+    private function neonEndpoints(float ...$maxSizes): MockResponse
+    {
+        return new MockResponse((string) json_encode(['endpoints' => array_map(
+            static fn (float $size): array => ['type' => 'read_write', 'autoscaling_limit_min_cu' => 0.25, 'autoscaling_limit_max_cu' => $size],
+            $maxSizes,
+        )]));
     }
 
     private function tareas(): Application

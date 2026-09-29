@@ -11,15 +11,24 @@ use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * El cómputo gastado por el proyecto `ampa` de Neon, con su API:
- * GET /api/v2/projects/{id}, campo `compute_time_seconds` (segundos de CPU
- * en el periodo en curso: 0,25 CU encendida una hora son 900, un cuarto de
- * CU-hora) y `consumption_period_end`.
+ * El cómputo gastado por el proyecto `ampa` de Neon, con su API, como un
+ * **máximo**: horas encendida × el tamaño más grande al que puede crecer.
  *
- * La API de consumo "de verdad" de Neon (consumption_history) es solo de los
- * planes de pago; este campo del proyecto es lo que hay en el gratuito.
- * **Contrastarlo con la consola de Neon la primera vez** (Projects → la
- * columna de cómputo): si no cuadra, el aviso sale antes o después de tiempo.
+ * Neon cobra la CU **asignada** × el tiempo encendida, y la base escala sola
+ * (0,25 a 2 CU). El número exacto solo lo da la API de consumo
+ * (`consumption_history`), que no existe en el plan gratuito. Lo que sí hay:
+ *
+ * - GET /projects/{id}: `active_time_seconds` (encendida en el periodo) y
+ *   `consumption_period_end`. Su `compute_time_seconds` **no sirve**: es la
+ *   CPU usada de verdad (vale lo mismo que `cpu_used_sec`), muy por debajo
+ *   de lo que se cobra. Comprobado el 29/09/2026: 1,6 CU-horas según ese
+ *   campo, 9,94 según la consola, 5,9 horas encendida.
+ * - GET /projects/{id}/endpoints: `autoscaling_limit_max_cu` de cada
+ *   máquina.
+ *
+ * Con las dos, el máximo posible (11,8 ese día). El aviso del 80 % sale así
+ * antes de tiempo, nunca tarde. Si alguna vez tarda en llegar al aviso,
+ * mirar la consola (Billing o el proyecto → Usage), que da la cifra exacta.
  *
  * Necesita una clave de la API de Neon (secreto `neon-api-key`; mejor una
  * de proyecto, que solo ve `ampa`) y el ID del proyecto. Sin las dos, el
@@ -44,8 +53,54 @@ final readonly class NeonDatabaseUsage implements DatabaseUsage
 
     public function current(): ComputeUsage
     {
+        $project = $this->get('')['project'] ?? null;
+        $activeSeconds = is_array($project) ? ($project['active_time_seconds'] ?? null) : null;
+
+        if (!is_int($activeSeconds) && !is_float($activeSeconds)) {
+            throw new HeartbeatFailed('La respuesta de Neon no trae active_time_seconds.');
+        }
+
+        $largestSize = $this->largestComputeSize();
+
+        $periodEnd = null;
+        if (is_string($project['consumption_period_end'] ?? null)) {
+            try {
+                $periodEnd = new \DateTimeImmutable($project['consumption_period_end']);
+            } catch (\Exception) {
+                // Sin fecha el aviso sigue valiendo.
+            }
+        }
+
+        return new ComputeUsage($activeSeconds * $largestSize / 3600, $this->hoursAllowed, $periodEnd, upperBound: true);
+    }
+
+    /** La CU más grande a la que puede crecer cualquier máquina del proyecto. */
+    private function largestComputeSize(): float
+    {
+        $endpoints = $this->get('/endpoints')['endpoints'] ?? null;
+        $sizes = [];
+
+        foreach (is_array($endpoints) ? $endpoints : [] as $endpoint) {
+            $size = is_array($endpoint) ? ($endpoint['autoscaling_limit_max_cu'] ?? null) : null;
+            if ((is_int($size) || is_float($size)) && $size > 0) {
+                $sizes[] = (float) $size;
+            }
+        }
+
+        if ([] === $sizes) {
+            throw new HeartbeatFailed('La respuesta de Neon no trae el tamaño de ninguna máquina (autoscaling_limit_max_cu).');
+        }
+
+        return max($sizes);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function get(string $path): array
+    {
         try {
-            $response = $this->httpClient->request('GET', self::API.rawurlencode(trim($this->projectId)), [
+            $response = $this->httpClient->request('GET', self::API.rawurlencode(trim($this->projectId)).$path, [
                 'headers' => ['Authorization' => 'Bearer '.trim($this->apiKey), 'Accept' => 'application/json'],
                 'timeout' => 15,
             ]);
@@ -59,22 +114,6 @@ final readonly class NeonDatabaseUsage implements DatabaseUsage
             throw new HeartbeatFailed(sprintf('Neon ha contestado %d: %s', $status, (string) ($body['message'] ?? 'sin detalle')));
         }
 
-        $project = $body['project'] ?? null;
-        $seconds = is_array($project) ? ($project['compute_time_seconds'] ?? null) : null;
-
-        if (!is_int($seconds) && !is_float($seconds)) {
-            throw new HeartbeatFailed('La respuesta de Neon no trae compute_time_seconds.');
-        }
-
-        $periodEnd = null;
-        if (is_string($project['consumption_period_end'] ?? null)) {
-            try {
-                $periodEnd = new \DateTimeImmutable($project['consumption_period_end']);
-            } catch (\Exception) {
-                // Sin fecha el aviso sigue valiendo.
-            }
-        }
-
-        return new ComputeUsage($seconds / 3600, $this->hoursAllowed, $periodEnd);
+        return $body;
     }
 }
