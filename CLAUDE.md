@@ -622,10 +622,16 @@ despliegues y demás")**
       `docker compose run --rm gcloud gcloud auth login --no-launch-browser`.
     - El usuario **volvió a cargar `faq.json`** y **subió los PDF** a Drive y
       al cuaderno (29/09/2026). Después, el manual 05 recogió sus decisiones
-      y se regeneraron el 01, el 02 y el 05: **hay que subirlos otra vez**.
-    - **Falta que el usuario** ponga el precio por día de Cutasa de 2026/27
-      en *Alumnos* de facturación, y diga qué tal las **estadísticas de
+      y se regeneraron el 01, el 02 y el 05; **también subidos** ese día.
+    - **Falta que el usuario** averigüe con Carmen quién da los desayunos en
+      2026/27 (cree que ya no es Cutasa) y a cuánto por niño y día, para
+      ponerlo en *Alumnos* de facturación; cree «Junta - Contraseñas» y la
+      base (manual 05); y diga qué tal las **estadísticas de
       listados** cuando suba el fichero de octubre.
+    - **`gh` instalado** (29/09/2026), con la cuenta `ampasainzvicuna` (dueña de
+      la organización; permisos `repo`, `read:org`, `workflow`). Está en
+      `C:\Program Files\GitHub CLI`; desde Git Bash no se ve hasta reiniciar
+      la aplicación: mientras, por PowerShell.
     - El **fallo del latido con Neon** (arriba, punto 9): arreglado ese mismo
       día.
 
