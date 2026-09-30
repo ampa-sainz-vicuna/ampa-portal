@@ -656,6 +656,9 @@ despliegues y demás")**
     - 99 unitarios y 79 de integración de PHP y 34 del front en verde.
     - El front, en **`@ampa/ui` 0.2.6** (publicada ese día: el icono de
       Proveedores, `StorefrontRounded`).
+    - **Proveedores desplegada el 30/09/2026** (`ampa-crm-00001-5sx`) y
+      `ampa-copias` preparado otra vez: lanzado a mano, seis `.dump` en Drive
+      con el de `crm`. El portal ya tenía `COPIAS_JOB`: sin redesplegar.
 
 **Ideas del 26/09/2026 que el usuario quiere, repartidas por aplicación**
 (apuntadas en el `CLAUDE.md` de cada una; ninguna empezada):
