@@ -32,7 +32,7 @@ instala con su sha1): README, *Publicar una versión del cliente*.
 
 PHP 8.4.25, Symfony 7.4, Doctrine ORM 3.7 / DBAL 4.4, PostgreSQL 16,
 firebase/php-jwt 7.2 (verificar Google y firmar la sesión, HS256), PHPUnit
-13.3. Sin lexik. Front: React 19, MUI 9, `@ampa/ui` 0.2.6, Vitest.
+13.3. Sin lexik. Front: React 19, MUI 9, `@ampa/ui` 0.2.7, Vitest.
 
 | | |
 |---|---|
@@ -90,9 +90,9 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   usuario (~10 $/mes).
 - **Desplegar**: `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza
   el job **`portal-migraciones`** con esa imagen y solo si sale bien pasa el
-  tráfico. El contenedor ya no migra al arrancar (arranque en frío más corto).
-- **Entrar con Google, en modo redirección** (la ventana emergente se quedaba
-  en `about:blank` en Android): Google vuelve con un POST a
+  tráfico. El contenedor no migra al arrancar (arranque en frío más corto).
+- **Entrar con Google, en modo redirección** (por qué, en el historial):
+  Google vuelve con un POST a
   `/api/auth/google/vuelta`, que compara la cookie `g_csrf_token` con el campo,
   comprueba el token y lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada`.
   Esa ruta tiene que estar en los **URI de redirección autorizados** del
@@ -141,17 +141,15 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: commit `68c1c69`, revisión **`ampa-portal-00019-4rp`**
-(con Proveedores); cliente **v0.1.5** (sha1
+**En producción**: commit `cb2149f`, revisión **`ampa-portal-00020-5b7`**
+(con Documentos en el catálogo, 03/10/2026); cliente **v0.1.5** (sha1
 `20260e590538aa64ccf8c56584df44c165c2d3c8`), el que usan todas las
 aplicaciones.
 
 **Pendiente**
 
-- **Alta de Documentos** (03/10/2026): hecha en local, **sin commit ni
-  despliegue** (`suite.yaml`, `URL_DOCUMENTOS`, tarjeta, 5179, copias,
-  `HelpApiTest`). El icono espera a `@ampa/ui` 0.2.7, sin publicar. Va junto
-  con el despliegue de [`ampa-documentos`](../ampa-documentos/CLAUDE.md).
+- Lanzar una vez a mano `gcloud run jobs execute ampa-copias` para ver la
+  copia de `documentos` ([su `CLAUDE.md`](../ampa-documentos/CLAUDE.md)).
 - **El usuario** lee las preguntas de la ayuda cuando pueda (se corrigen en
   `faq.json` y se vuelve a cargar).
 - **Base y usuario propios de fichajes** (la única que entra con el dueño de
@@ -185,4 +183,5 @@ fiesta de fin de curso ("hay tiempo").
 - Los `VITE_…` van dentro de la imagen: cambiarlos exige redesplegar, no
   basta con `services update`.
 - Si otra sesión está trabajando en el repo, desplegar desde un worktree
-  limpio (se hizo así con el rol `junta` de tareas).
+  limpio. Y los tests de integración de dos sesiones a la vez chocan en
+  `suite_test`: si fallan raro, repetir.

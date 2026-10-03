@@ -4,6 +4,25 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**Documentos en producción (03/10/2026)**
+
+- Commit `cb2149f` «Documentos en el catálogo; @ampa/ui 0.2.7», push a
+  `main`; desplegado por el usuario: revisión **`ampa-portal-00020-5b7`**. Es
+  el alta del punto 17 (abajo), que estaba sin commit: `documentos` en el
+  catálogo (roles `miembro`, `junta`, `admin`), `URL_DOCUMENTOS`, CORS del
+  5179 en local, `BASE_DOCUMENTOS` en el job de copias y `@ampa/ui` **0.2.7**
+  (el icono de Documentos, ya publicada).
+- El job de copias, vuelto a preparar con `deploy/copias/preparar.sh` una vez
+  creado el secreto `documentos-database-url`. Falta lanzarlo una vez a mano
+  para ver la copia de `documentos`.
+- Tests: 99 unitarios, 79 de integración, 43 del cliente y 34 de Vitest;
+  lint y build bien. La primera pasada de integración falló por chocar con
+  otros tests en la misma base (`suite_test`); repetida, verde.
+- [`ampa-documentos`](../ampa-documentos/CLAUDE.md) quedó desplegada ese día,
+  a falta del certificado del dominio.
+
+---
+
 
 **Hecho (24/09/2026, "hazlo tú")**
 
