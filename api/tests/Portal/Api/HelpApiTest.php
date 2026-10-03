@@ -41,7 +41,7 @@ final class HelpApiTest extends ApiTestCase
         self::assertSame('https://notebooklm.example.com/notebook/prueba', $summary['notebookUrl']);
         self::assertNotNull($summary['loadedAt']);
         self::assertSame(
-            ['general' => 1, 'fichajes' => 2, 'listados' => 0, 'facturacion' => 1, 'tareas' => 0, 'crm' => 0, 'portal' => 0],
+            ['general' => 1, 'fichajes' => 2, 'listados' => 0, 'facturacion' => 1, 'tareas' => 0, 'crm' => 0, 'documentos' => 0, 'portal' => 0],
             array_column($summary['byApplication'], 'entries', 'application'),
         );
 

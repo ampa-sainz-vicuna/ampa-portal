@@ -54,6 +54,17 @@ parameters:
                 miembro: 'Miembro'
                 # Además de miembro, no en su lugar: sin miembro no entra.
                 admin: 'Administración (borra proveedores y mantiene las categorías)'
+        # Documentos (03/10/2026): las carpetas y los ficheros del AMPA en
+        # Drive. Quien tenga algún rol en facturación, tareas o proveedores ve
+        # además, en solo lectura, la unidad de esa aplicación.
+        documentos:
+            name: 'Documentos'
+            url: '%env(URL_DOCUMENTOS)%'
+            roles:
+                miembro: 'Miembro (el espacio «AMPA»)'
+                # Los dos, además de miembro, no en su lugar: sin miembro no entra.
+                junta: 'Junta (además, el espacio «Junta»)'
+                admin: 'Administración (manda carpetas enteras a la papelera)'
         # El propio portal: quien tiene "admin" gestiona los permisos de todas.
         portal:
             name: 'Portal'

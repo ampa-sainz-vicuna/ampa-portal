@@ -45,6 +45,9 @@ BASES=(
     "BASE_TAREAS=tareas-database-url"
     # Proveedores (crm): hasta que exista su secreto, se salta con un aviso.
     "BASE_CRM=crm-database-url"
+    # Documentos: hasta que exista su secreto, se salta con un aviso. Solo
+    # guarda el registro de actividad: los documentos están en Drive.
+    "BASE_DOCUMENTOS=documentos-database-url"
 )
 
 SECRETS=""
