@@ -4,6 +4,66 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**Movido desde el CLAUDE.md (03/10/2026)**
+
+Recorte de higiene del `CLAUDE.md` (10,7 KB a unos 9 KB). Lo que salió, tal
+como estaba:
+
+- *Estado*: «**En producción**: commit `cb2149f`, revisión
+  **`ampa-portal-00020-5b7`** (con Documentos en el catálogo, 03/10/2026);
+  cliente **v0.1.5** (sha1 `20260e590538aa64ccf8c56584df44c165c2d3c8`), el que
+  usan todas las aplicaciones.»
+- *Lo propio de este repo*: «Si un cambio obliga a tocarlas, sube la **segunda
+  cifra** y las notas de la release dicen qué cambiar en cada una; si solo
+  añade, la tercera.» (Está en el `CLAUDE.md` global.)
+- *Stack*: la tabla de puertos: Web (Vite) **5176**, API (nginx) **8083**,
+  PostgreSQL **5435** (base `suite`, tests en `suite_test`). (Están en el
+  global.)
+- *Producción*: «(domain mapping; el CNAME en CDmon lo pone el usuario)».
+- *Desplegar*: «(arranque en frío más corto)» tras «El contenedor no migra al
+  arrancar».
+- *Entrar con Google*: «(por qué, en el historial)».
+- *Última entrada*: «se guarda como mucho una vez por hora, al entrar, en
+  `/api/me` y en `/api/acceso`; si falla, se anota y la petición sigue. En
+  *Permisos*, "Nunca ha entrado" delata un correo mal escrito.»
+- *Cuentas sin licencia*: «la gente que no es de la junta entra con cuentas de
+  **Cloud Identity Free** del dominio (sin buzón): en su ficha va su correo
+  personal como **segundo correo** con los avisos a *segundo*. Al crear
+  usuarios, comprobar que solo tienen *Cloud Identity Free* (la asignación
+  automática de licencias del Workspace, apagada).»
+- *Alertas*: «cualquier `[error]`, 5xx, fallos de las copias y de Cloud
+  Scheduler, a admin@, un correo por hora como mucho. 404 y 405 se anotan como
+  `warning` en las cinco (los robots que buscan `/.env`).»
+- *Ayuda*: «se carga en la pestaña *Ayuda* → "Cargar el fichero"».
+- *No hacer sin que lo pida el usuario*: comillas del usuario: el resumen
+  diario de toda la suite («quiero revisarlo bien»); registro de cambios de
+  permisos y repaso anual («no corren prisa»).
+- *Ideas sin repo*: «voluntariado para la fiesta de fin de curso ("hay
+  tiempo")» y «(justificar antes por qué no basta MiAmpa)» con el resto del
+  texto igual.
+- *Trampa de Neon*: «`compute_time_seconds` es la CPU usada, no lo que se cobra
+  (CU asignada × tiempo encendida)» y «La cifra no queda en el registro: se ve
+  en la respuesta de `POST /api/latido`.»
+- *Estructura*, el detalle por carpeta:
+
+```
+  Application/User/  RegisterUser, UpdateUser, ChangeOwnContact, GrantAccess, RecordVisit
+  Application/Calendar/  DefineSchoolYear
+  Application/Help/  FaqFile (la forma de faq.json), LoadFaq
+  Application/Heartbeat/ RunHeartbeat y sus puertos (Neon, copias, despertar aplicaciones)
+  Infrastructure/
+    Security/        Google, SessionTokens (HS256), SessionCookie, el autenticador de la
+                     cookie, BearerCaller (persona o cuenta de servicio), CrossSiteRequestGuard
+    Http/            controladores, presentadores y HelpCors
+    Persistence/     Doctrine con mapeo XML y un tipo por value object
+    Heartbeat/, Google/  HttpApplicationWaker, CloudRunBackupLauncher, NeonDatabaseUsage, MetadataServer
+cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, SuiteRecipients,
+                     SuiteMembers, SuiteCalendar, MeController, SignOutController,
+                     HeartbeatController, ApplicationRoles y MeExtension
+```
+
+---
+
 **Documentos en producción (03/10/2026)**
 
 - Commit `cb2149f` «Documentos en el catálogo; @ampa/ui 0.2.7», push a
