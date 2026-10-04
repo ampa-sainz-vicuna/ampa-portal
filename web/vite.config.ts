@@ -19,12 +19,6 @@ export default defineConfig({
     headers: {
       'Referrer-Policy': 'no-referrer-when-downgrade',
     },
-    // El código está en el disco de Windows y Vite en un contenedor Linux: los
-    // avisos de "fichero cambiado" no cruzan esa frontera. Sin sondeo, guardar
-    // un fichero no recarga la página.
-    watch: {
-      usePolling: true,
-    },
   },
   build: {
     // Vite avisa a partir de 500 kB. React y MUI ya suman unos 490, y el logo
