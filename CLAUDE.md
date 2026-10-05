@@ -144,6 +144,20 @@ se cierre al pulsar fuera; un buscador en *Permisos*.
 (justificar antes por qué no basta MiAmpa); voluntariado para la fiesta de fin
 de curso ("hay tiempo").
 
+**Datos comunes de la suite (fase 3, hablado el 05/10/2026, sin empezar)**:
+el portal ya sirve el calendario escolar a facturación y listados. Dos
+candidatos más, por el mismo camino (el portal guarda, las aplicaciones leen
+con la cuenta de servicio):
+- **Fichajes también debe leer el calendario del portal**: hoy lo tiene
+  duplicado (festivos propios).
+- **Catálogo de extraescolares**: qué extraescolares y grupos de MiAmpa hay
+  cada curso, de qué empresa y si están activos. Hoy está dos veces, en
+  listados (`GroupRoute.activity`) y en facturación (`EnrolmentGroup`), cada
+  una cargada del export de grupos y normalizando el nombre a su manera. Lo
+  propio de cada aplicación se queda en ella: las hojas de impresión en
+  listados, lo que se paga a cada empresa en facturación. Antes, la fase 2:
+  misma normalización y mismo lector en las dos. Solo si sigue doliendo.
+
 ## Trampas conocidas
 
 - Las del [README](README.md#trampas-conocidas): `UserId::__toString()` para
