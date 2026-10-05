@@ -100,7 +100,8 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes y
   tareas). Siempre 200; los fallos, `[error]` en el registro.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de cada base a
-  una unidad compartida de Drive, 30 por base.
+  una unidad compartida de Drive, 30 por base (las 7, `documentos` incluida,
+  comprobadas a mano el 05/10/2026).
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
   Cloud Scheduler, a admin@, un correo por hora como mucho. 404 y 405 solo
   `warning` (robots que buscan `/.env`).
@@ -128,8 +129,6 @@ catálogo); cliente **v0.1.5**, el que usan todas las aplicaciones.
 
 **Pendiente**
 
-- Lanzar una vez a mano `gcloud run jobs execute ampa-copias` para ver la
-  copia de `documentos` ([su `CLAUDE.md`](../ampa-documentos/CLAUDE.md)).
 - **El usuario** lee las preguntas de la ayuda cuando pueda (se corrigen en
   `faq.json` y se vuelve a cargar).
 - **Base y usuario propios de fichajes** (la única que entra con el dueño de

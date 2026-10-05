@@ -4,6 +4,21 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**05/10/2026 — Copias comprobadas a mano y datos comunes de la suite**
+
+- **Copias**: se lanzó a mano el job `ampa-copias` (ejecución
+  `ampa-copias-n8qqv`). Las 7 bases (crm, documentos, facturacion, fichajes,
+  listados, portal, tareas) subidas a Drive, «todas bien». Con eso queda hecho
+  el pendiente de ver la copia de `documentos`, que se quita del `CLAUDE.md`.
+  Sin despliegue del portal (sigue la revisión `ampa-portal-00020-5b7`).
+- **Datos comunes de la suite**: se habló y decidió el 05/10/2026 (el bloque
+  «Datos comunes de la suite (fase 3…)» está en el [`CLAUDE.md`](../CLAUDE.md),
+  commit `e097fdb`). Fichajes debe leer el calendario del portal en vez de sus
+  festivos propios, y puede haber un catálogo común de extraescolares. Fase 1,
+  **hecha** en `ampa-listados`: configurar los grupos desde el listado y desde
+  el export de grupos de MiAmpa. Fase 2, **sin empezar**: misma normalización
+  y mismo lector de grupos en listados y facturación. Fase 3, sin empezar.
+
 **Movido desde el CLAUDE.md (03/10/2026)**
 
 Recorte de higiene del `CLAUDE.md` (10,7 KB a unos 9 KB). Lo que salió, tal
