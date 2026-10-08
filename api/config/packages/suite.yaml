@@ -65,6 +65,15 @@ parameters:
                 # Los dos, además de miembro, no en su lugar: sin miembro no entra.
                 junta: 'Junta (además, el espacio «Junta»)'
                 admin: 'Administración (manda carpetas enteras a la papelera)'
+        # Familias (08/10/2026): sustituirá a MiAmpa. Aquí solo entra la junta;
+        # las familias entran con su propio correo y contraseña, no por el
+        # portal. Sin latido: no hace nada programado.
+        familias:
+            name: 'Familias del AMPA'
+            url: '%env(URL_FAMILIAS)%'
+            roles:
+                junta: 'Junta (consulta y gestiona las familias)'
+                admin: 'Administración'
         # El propio portal: quien tiene "admin" gestiona los permisos de todas.
         portal:
             name: 'Portal'

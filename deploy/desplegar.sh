@@ -69,6 +69,9 @@ ENV_VARS+=",URL_CRM=https://proveedores.ampasainzvicuna.com"
 # Documentos aún no está desplegada: es la dirección prevista (03/10/2026).
 # Su tarjeta solo la ve quien tenga documentos:miembro.
 ENV_VARS+=",URL_DOCUMENTOS=https://documentos.ampasainzvicuna.com"
+# Familias aún no está desplegada: es la dirección prevista (08/10/2026).
+# Su tarjeta solo la ve quien tenga familias:junta o familias:admin.
+ENV_VARS+=",URL_FAMILIAS=https://familias.ampasainzvicuna.com"
 # Las llamadas del servidor de una aplicación sin nadie detrás (el resumen
 # diario de tareas; cliente 0.1.3): el token de identidad de Google de la
 # cuenta de servicio con la que corren todas (la de Compute Engine por

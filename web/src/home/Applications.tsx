@@ -32,6 +32,7 @@ const LOOKS: Record<string, Look> = {
   tareas: { description: 'Tablero de tareas de la junta y Alberto', color: 'secondary' },
   crm: { description: 'A quién se llama para cada cosa y cómo fue', color: 'primary' },
   documentos: { description: 'Actas, contratos, seguros y demás papeles del AMPA', color: 'secondary' },
+  familias: { description: 'Familias, socios, alumnos, extraescolares y cobros', color: 'primary' },
 }
 
 const DEFAULT_LOOK: Look = { description: 'Aplicación del AMPA', color: 'secondary' }
