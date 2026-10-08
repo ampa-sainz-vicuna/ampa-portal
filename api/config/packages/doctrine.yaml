@@ -9,6 +9,9 @@ doctrine:
             user_id: App\Portal\Infrastructure\Persistence\Doctrine\Type\UserIdType
             email_address: App\Portal\Infrastructure\Persistence\Doctrine\Type\EmailAddressType
             grants: App\Portal\Infrastructure\Persistence\Doctrine\Type\GrantsType
+            board_member_id: App\Portal\Infrastructure\Persistence\Doctrine\Type\BoardMemberIdType
+            identity_document: App\Portal\Infrastructure\Persistence\Doctrine\Type\IdentityDocumentType
+            phone_number: App\Portal\Infrastructure\Persistence\Doctrine\Type\PhoneNumberType
     orm:
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore

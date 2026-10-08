@@ -28,9 +28,14 @@ services:
     # donde las dos capas se tocan.
     App\Portal\Domain\User\UserRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     App\Portal\Domain\Calendar\SchoolYearRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineSchoolYearRepository'
+    App\Portal\Domain\Board\BoardMemberRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineBoardMemberRepository'
     App\Portal\Domain\Help\FaqRepository: '@App\Portal\Infrastructure\Persistence\Doctrine\DoctrineFaqRepository'
     App\Portal\Infrastructure\Security\IdentityVerifier: '@App\Portal\Infrastructure\Security\GoogleIdTokenVerifier'
     App\Portal\Infrastructure\Security\ServiceAccountVerifier: '@App\Portal\Infrastructure\Security\GoogleServiceAccountVerifier'
+
+    # El único servicio de dominio (la regla de un titular por cargo): la carpeta
+    # Domain/ está excluida del autowiring, así que se declara a mano.
+    App\Portal\Domain\Board\SingleHolderRule: ~
 
     App\Portal\Domain\Suite\ApplicationCatalog:
         factory: ['App\Portal\Infrastructure\Suite\ApplicationCatalogFactory', 'fromConfig']

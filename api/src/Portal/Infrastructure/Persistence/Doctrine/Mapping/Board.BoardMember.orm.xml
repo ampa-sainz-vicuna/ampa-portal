@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <!-- Además de lo que se ve aquí, la migración crea (a mano, Doctrine no
+         sabe expresarlo) el índice único parcial uniq_board_single_holder:
+         un solo registro activo (end_date NULL) por cargo, salvo vocales; y la
+         clave foránea de user_id a users (ON DELETE SET NULL). -->
+    <entity name="App\Portal\Domain\Board\BoardMember" table="board_members">
+
+        <id name="id" type="board_member_id" column="id">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="firstName" type="string"            column="first_name" length="120"/>
+        <field name="lastName"  type="string"            column="last_name"  length="180"/>
+        <field name="document"  type="identity_document" column="document"   length="9"/>
+        <field name="address"   type="string"            column="address"    length="300"/>
+        <field name="email"     type="email_address"     column="email"      length="180"/>
+        <field name="phone"     type="phone_number"      column="phone"      length="16"/>
+        <field name="position"  type="string"            column="board_position" length="20"
+               enum-type="App\Portal\Domain\Board\BoardPosition"/>
+
+        <!-- Días del calendario, sin hora -->
+        <field name="startDate" type="date_immutable" column="start_date"/>
+        <field name="endDate"   type="date_immutable" column="end_date" nullable="true"/>
+
+        <field name="userId" type="user_id" column="user_id" nullable="true"/>
+
+    </entity>
+</doctrine-mapping>

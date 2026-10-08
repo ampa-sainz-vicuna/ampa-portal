@@ -12,14 +12,15 @@ import type { PortalUser } from '../types'
 import { Applications } from './Applications'
 import { returnTarget } from './returnTo'
 
-// Permisos, calendario y ayuda, en su propio trozo: solo los abre quien gestiona
+// Permisos, junta, calendario y ayuda, en su propio trozo: solo los abre quien gestiona
 // los permisos, y de vez en cuando. Con ellos dentro, el trozo principal pasaba de
 // los 600 kB de chunkSizeWarningLimit (vite.config.ts).
 const Permissions = lazy(() => import('../permissions/Permissions').then((module) => ({ default: module.Permissions })))
 const Calendar = lazy(() => import('../calendar/Calendar').then((module) => ({ default: module.Calendar })))
 const Help = lazy(() => import('../help/Help').then((module) => ({ default: module.Help })))
+const Board = lazy(() => import('../board/Board').then((module) => ({ default: module.Board })))
 
-type Section = 'applications' | 'emails' | 'permissions' | 'calendar' | 'help'
+type Section = 'applications' | 'emails' | 'permissions' | 'board' | 'calendar' | 'help'
 
 interface Props {
   user: PortalUser
@@ -67,6 +68,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
       <Tab value="applications" label="Aplicaciones" />
       <Tab value="emails" label="Mis correos" />
       {me.isAdmin && <Tab value="permissions" label="Permisos" />}
+      {me.isAdmin && <Tab value="board" label="Junta" />}
       {me.isAdmin && <Tab value="calendar" label="Calendario" />}
       {me.isAdmin && <Tab value="help" label="Ayuda" />}
     </Tabs>
@@ -101,6 +103,7 @@ export function Home({ user, onUnauthorized, onSignOut }: Props) {
         }
       >
         {section === 'permissions' && me.isAdmin && <Permissions me={me} onUnauthorized={onUnauthorized} />}
+        {section === 'board' && me.isAdmin && <Board onUnauthorized={onUnauthorized} />}
         {section === 'calendar' && me.isAdmin && <Calendar onUnauthorized={onUnauthorized} />}
         {section === 'help' && me.isAdmin && <Help onUnauthorized={onUnauthorized} />}
       </Suspense>

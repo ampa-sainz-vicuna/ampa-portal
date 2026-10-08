@@ -30,6 +30,7 @@ abstract class ApiTestCase extends WebTestCase
         $this->client = self::createClient();
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->getConnection()->executeStatement('DELETE FROM board_members');
         $entityManager->getConnection()->executeStatement('DELETE FROM users');
         $entityManager->getConnection()->executeStatement('DELETE FROM school_years');
         $entityManager->getConnection()->executeStatement('DELETE FROM faq');

@@ -163,6 +163,8 @@ detalle en el historial.
   (tiempo encendida × la CU máxima). La cifra se ve en la respuesta de
   `POST /api/latido`, no en el registro. **La máquina está fija en 0,25 CU**
   (mín. y máx.); una máquina nueva hay que fijarla igual. Detalle en el historial.
+- `board_members`: el índice único parcial, la FK y los CHECK solo están en la
+  migración; un `migrations:diff` propone borrarlos: no aceptarlo.
 - `HeartbeatApiTest` y `HelpApiTest` leen el `suite.yaml` de verdad: al dar de
   alta o cambiar una aplicación, cambian sus recuentos.
 - Variables vacías en `deploy/desplegar.sh` (`HELP_ALLOWED_ORIGINS=`, y

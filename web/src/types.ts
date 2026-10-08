@@ -63,6 +63,33 @@ export interface SchoolYear {
   periods: CalendarPeriod[]
 }
 
+/** Cargos de la junta. Los mismos textos que `BoardPosition` en la API. */
+export type BoardPosition = 'president' | 'vice_president' | 'secretary' | 'treasurer' | 'member'
+
+/** Un cargo de la junta con todos sus datos personales (`/api/admin/junta`, solo administradores). */
+export interface BoardMember {
+  id: string
+  firstName: string
+  lastName: string
+  document: string
+  address: string
+  email: string
+  phone: string
+  position: BoardPosition
+  /** AAAA-MM-DD. */
+  startDate: string
+  /** AAAA-MM-DD; null mientras sigue en el cargo. */
+  endDate: string | null
+  /** Persona de la plataforma asociada, si hay. */
+  userId: string | null
+}
+
+/** La junta: quién está hoy y quién estuvo antes. */
+export interface Board {
+  active: BoardMember[]
+  past: BoardMember[]
+}
+
 /** Lo que se manda al guardar los correos de alguien. */
 export interface Contact {
   secondaryEmail: string | null
