@@ -111,6 +111,16 @@ fi
 echo "Desplegando el portal en $PROJECT ($REGION). Tarda unos 5 minutos..."
 echo
 
+# Qué commit se despliega, como etiqueta «commit» de la revisión: Cloud Run no
+# lo guarda (sube la carpeta, no el commit), y sin él ampa-claude/scripts/estado.sh
+# solo podría adivinar por la fecha qué commits faltan por desplegar. «-cambios»
+# si la carpeta tenía cambios sin commit: lo desplegado no es ese commit tal cual.
+# (safe.directory: dentro del contenedor de gcloud la carpeta es de otro usuario.)
+COMMIT=$(git -c safe.directory='*' rev-parse --short=12 HEAD 2>/dev/null || echo desconocido)
+if [ -n "$(git -c safe.directory='*' status --porcelain 2>/dev/null)" ]; then
+    COMMIT="$COMMIT-cambios"
+fi
+
 # --max-instances=1: nunca más de un contenedor. Basta de sobra para el AMPA y
 #   pone techo al gasto.
 # --min-instances=0: sin uso se apaga del todo y no cuesta nada. OJO: el
@@ -131,6 +141,7 @@ echo
 #   Run lo cortaría a la primera aplicación lenta.
 gcloud run deploy "$SERVICE" \
     --source . \
+    --update-labels="commit=$COMMIT" \
     --region "$REGION" \
     --no-invoker-iam-check \
     --max-instances=1 \
