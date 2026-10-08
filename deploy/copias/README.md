@@ -69,6 +69,27 @@ luego se cambia el secreto de la aplicación para que apunte a ella.
    Para sacar una sola tabla, `--table=NOMBRE`; para ver qué hay dentro,
    `pg_restore --list fichero.dump`.
 
+## Comprobar que se pueden restaurar (cada mes)
+
+Una copia que nunca se ha restaurado no garantiza nada. Cada mes, y antes de
+un cambio grande (una migración delicada, otra versión de PostgreSQL en
+Neon), desde Ubuntu:
+
+```bash
+bash ~/dev/ampa-claude/scripts/probar-copias.sh
+```
+
+Baja de la unidad la última copia de cada base, la restaura en un
+PostgreSQL de Docker desechable (no toca Neon) y comprueba que las tablas
+clave tienen filas y que la copia no tiene más de 48 horas. Acaba en `BIEN`
+o en `MAL` con la lista de fallos. Primera vez, el 08/10/2026: las siete
+bases bien.
+
+Para leer la unidad se hace pasar por la cuenta de servicio del job, solo con
+permiso de lectura de Drive. Por eso la cuenta de gcloud tiene el rol
+*Creador de tokens de cuenta de servicio* **solo sobre esa cuenta** (dado el
+08/10/2026; ser propietario del proyecto no basta).
+
 ## Probarlo en local
 
 Sin `DRIVE_FOLDER_ID`, las copias se dejan en `/copias`. Contra la base de
