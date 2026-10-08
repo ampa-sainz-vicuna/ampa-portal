@@ -6,14 +6,14 @@ la sesión de toda la suite en una cookie de `.ampasainzvicuna.com`. Dentro
 lleva también el **cliente** (`cliente/`, el bundle `ampa/portal-cliente`) que
 instala cada aplicación para preguntarle al portal en cada petición.
 
-El detalle de cada pieza, en [README.md](README.md) y
-[cliente/README.md](cliente/README.md); el diseño y su porqué, en la
+Detalle en [README.md](README.md) y [cliente/README.md](cliente/README.md);
+diseño y porqué, en la
 [hoja de ruta de fichajes, sección 4a](../ampa-fichajes/docs/hoja-de-ruta.md);
-lo hecho, con commits y revisiones, en [docs/historial.md](docs/historial.md).
+lo hecho, en [docs/historial.md](docs/historial.md).
 
-Repositorio **público** (`ampa-sainz-vicuna/ampa-portal`: las aplicaciones
-descargan el cliente de la release sin credenciales). Nada de correos reales
-en el código, las migraciones, los tests ni estos `.md`.
+Repositorio **público** (las aplicaciones descargan el cliente de la release
+sin credenciales): nada de correos reales en código, migraciones, tests ni
+`.md`.
 
 ## Lo propio de este repo
 
@@ -47,17 +47,13 @@ docker compose run --rm gcloud bash deploy/desplegar.sh
 
 ```
 api/src/Portal/
-  Domain/User/       User (agregado: correo, nombre, activa, Grants, segundo correo,
-                     NotificationTarget, lastSeenAt), Grants (JSON aplicación → roles),
-                     EmailAddress, UserId
+  Domain/User/       User (agregado), Grants (JSON aplicación → roles), EmailAddress, UserId
   Domain/Suite/      Application (con su latido), ApplicationCatalog (de config/packages/suite.yaml)
-  Domain/Calendar/   SchoolYear (un curso: clases y días sin clase), CalendarPeriod, DayKind
-  Domain/Help/       Faq (la ayuda de la suite, una sola fila), FaqEntry (quién ve cada pregunta)
-  Application/       User/ (casos de uso de personas), Calendar/, Help/ (LoadFaq),
-                     Heartbeat/ (RunHeartbeat y sus puertos: Neon, copias, despertar)
+  Domain/Calendar/   SchoolYear (clases y días sin clase), CalendarPeriod, DayKind
+  Domain/Help/       Faq (una sola fila), FaqEntry (quién ve cada pregunta)
+  Application/       User/, Calendar/, Help/ (LoadFaq), Heartbeat/ (RunHeartbeat y sus puertos)
   Infrastructure/    Security/ (Google, SessionTokens, BearerCaller, CrossSiteRequestGuard…),
-                     Http/, Persistence/ (Doctrine, mapeo XML, un tipo por value object),
-                     Heartbeat/ y Google/ (adaptadores)
+                     Http/, Persistence/ (Doctrine, mapeo XML), Heartbeat/ y Google/ (adaptadores)
 cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, Suite*,
                      controladores de /api/me, salir y latido, ApplicationRoles
 web/src/             home/ (tarjetas), permissions/, calendar/, help/ (las tres, solo admin, con lazy)
@@ -71,37 +67,36 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   Los servidores de las aplicaciones usan la dirección fija
   `https://ampa-portal-273203000301.europe-west1.run.app` (`PORTAL_URL`).
   Secretos `portal-jwt-key` y `portal-database-url`; base `suite` en Neon.
-  `--timeout` 300 s (por el latido). `--min-instances=1` **descartado** por el
-  usuario (~10 $/mes).
+  `--timeout` 300 s (por el latido). `--min-instances=1` **descartado**.
 - **Desplegar**: `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza
   el job **`portal-migraciones`** con esa imagen y solo si sale bien pasa el
   tráfico. El contenedor no migra al arrancar.
 - **Entrar con Google, en modo redirección**: Google vuelve con un POST a
-  `/api/auth/google/vuelta`, que compara la cookie `g_csrf_token` con el campo,
-  comprueba el token y lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada`.
-  Esa ruta tiene que estar en los **URI de redirección autorizados** del
-  cliente OAuth (si no, `redirect_uri_mismatch`). OAuth en *Interno* y
-  `GOOGLE_HOSTED_DOMAIN`: solo entran cuentas `@ampasainzvicuna.com`.
+  `/api/auth/google/vuelta` (compara la cookie `g_csrf_token` con el campo,
+  comprueba el token y lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada`).
+  Tiene que estar en los **URI de redirección autorizados** del cliente OAuth
+  (si no, `redirect_uri_mismatch`). OAuth *Interno* y `GOOGLE_HOSTED_DOMAIN`:
+  solo `@ampasainzvicuna.com`.
 - **Quién puede llamar a qué**: `/api/acceso` solo con la sesión de una
   persona. `/api/personas`, `/api/avisos` y `/api/calendario` aceptan además el
   **token de identidad de la cuenta de servicio de la suite**
   (`SUITE_TOKEN_AUDIENCE`, `SUITE_SERVICE_ACCOUNTS`; vacías en desarrollo: no
   se acepta ninguno). El portal no distingue qué aplicación llama.
 - **Última entrada** (`lastSeenAt`): como mucho una vez por hora, en `/api/me`
-  y `/api/acceso`; si falla, se anota y la petición sigue. «Nunca ha entrado»
-  en *Permisos* delata un correo mal escrito.
-- **Cuentas sin licencia**: quien no es de la junta entra con cuentas de
-  **Cloud Identity Free** (sin buzón), con su correo personal como **segundo
-  correo** y los avisos a *segundo*. Al crearlas, comprobar que no se les
-  asigna licencia de Workspace. Abrir la entrada a cuentas personales de Google
-  exige abrir tres cerrojos: en el historial, punto 4.
+  y `/api/acceso`; si falla, se anota y sigue. «Nunca ha entrado» en
+  *Permisos* delata un correo mal escrito.
+- **Cuentas sin licencia**: quien no es de la junta entra con **Cloud Identity
+  Free** (sin buzón), con su correo personal como **segundo correo** y los
+  avisos a *segundo*. Al crearlas, comprobar que no llevan licencia de
+  Workspace. Abrir la entrada a cuentas personales exige tres cerrojos: en el
+  historial, punto 4.
 - **Latido** (`suite-latido` en Cloud Scheduler, 4:00 → `POST /api/latido`):
   mira Neon (avisa ≥ 80 % de 100 CU-horas), lanza el job `ampa-copias` y
   despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes y
   tareas). Siempre 200; los fallos, `[error]` en el registro.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de cada base a
-  una unidad compartida de Drive, 30 por base (las 7). Restauración probada el
-  08/10/2026 con `probar-copias.sh` (`ampa-claude`); repetir **cada mes**.
+  una unidad compartida de Drive, 30 por base (las 7). Se comprueban con
+  `probar-copias.sh` (`ampa-claude`) **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
   Cloud Scheduler, a admin@, un correo por hora como mucho. 404 y 405 solo
   `warning` (robots que buscan `/.env`).
@@ -124,8 +119,8 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00020-5b7`** (con Documentos en el
-catálogo); cliente **v0.1.5**, el que usan todas las aplicaciones.
+**En producción**: revisión **`ampa-portal-00020-5b7`**; cliente **v0.1.5**,
+el que usan todas las aplicaciones.
 
 **Pendiente**
 
@@ -140,23 +135,14 @@ registro de cambios de permisos y repaso anual; avisar en la ficha si una
 cuenta sin buzón deja los avisos en *principal*; que el diálogo de la ficha no
 se cierre al pulsar fuera; un buscador en *Permisos*.
 
-**Ideas sin repo todavía**: buzón de las familias con encuestas y votaciones
-(justificar antes por qué no basta MiAmpa); voluntariado para la fiesta de fin
-de curso ("hay tiempo").
+**Ideas sin repo**: buzón de las familias con encuestas y votaciones (antes,
+por qué no basta MiAmpa); voluntariado para la fiesta de fin de curso.
 
-**Datos comunes de la suite (fase 3, hablado el 05/10/2026, sin empezar)**:
-el portal ya sirve el calendario escolar a facturación y listados. Dos
-candidatos más, por el mismo camino (el portal guarda, las aplicaciones leen
-con la cuenta de servicio):
-- **Fichajes también debe leer el calendario del portal**: hoy lo tiene
-  duplicado (festivos propios).
-- **Catálogo de extraescolares**: qué extraescolares y grupos de MiAmpa hay
-  cada curso, de qué empresa y si están activos. Hoy está dos veces, en
-  listados (`GroupRoute.activity`) y en facturación (`EnrolmentGroup`), cada
-  una cargada del export de grupos y normalizando el nombre a su manera. Lo
-  propio de cada aplicación se queda en ella: las hojas de impresión en
-  listados, lo que se paga a cada empresa en facturación. Antes, la fase 2:
-  misma normalización y mismo lector en las dos. Solo si sigue doliendo.
+**Datos comunes de la suite (fase 3, sin empezar, 05/10/2026)**: fichajes
+debería leer el calendario del portal (hoy tiene festivos propios) y un
+**catálogo de extraescolares** común (hoy duplicado en listados y
+facturación; antes, unificar normalización y lector). Solo si sigue doliendo;
+detalle en el historial.
 
 ## Trampas conocidas
 
@@ -165,11 +151,9 @@ con la cuenta de servicio):
   con clave de 32 bytes o más.
 - **Neon**: `compute_time_seconds` es la CPU usada, no lo que se cobra; el plan
   gratuito no da `consumption_history`. El latido calcula **el máximo posible**
-  (tiempo encendida × la CU máxima): avisa antes de tiempo, nunca tarde. La
-  cifra se ve en la respuesta de `POST /api/latido`, no en el registro.
-  **Desde el 08/10/2026 la máquina está fija en 0,25 CU** (mín. y máx.): el
-  máximo del latido ya es casi lo real (con 0,25-2 daba 92,4 frente a 12,27
-  reales). Una máquina nueva hay que fijarla igual. Detalle en el historial.
+  (tiempo encendida × la CU máxima). La cifra se ve en la respuesta de
+  `POST /api/latido`, no en el registro. **La máquina está fija en 0,25 CU**
+  (mín. y máx.); una máquina nueva hay que fijarla igual. Detalle en el historial.
 - `HeartbeatApiTest` y `HelpApiTest` leen el `suite.yaml` de verdad: al dar de
   alta o cambiar una aplicación, cambian sus recuentos.
 - Variables vacías en `deploy/desplegar.sh` (`HELP_ALLOWED_ORIGINS=`, y

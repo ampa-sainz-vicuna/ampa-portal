@@ -4,6 +4,43 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — CLAUDE.md aligerado: lo movido aquí**
+
+Por encargo del usuario, el `CLAUDE.md` pasó de 10.675 bytes a 9.379 bytes.
+Se movió (literal, o resumido en el `CLAUDE.md` con la conclusión):
+
+- **Datos comunes de la suite (fase 3, hablado el 05/10/2026, sin empezar)**:
+  el portal ya sirve el calendario escolar a facturación y listados. Dos
+  candidatos más, por el mismo camino (el portal guarda, las aplicaciones leen
+  con la cuenta de servicio):
+  - **Fichajes también debe leer el calendario del portal**: hoy lo tiene
+    duplicado (festivos propios).
+  - **Catálogo de extraescolares**: qué extraescolares y grupos de MiAmpa hay
+    cada curso, de qué empresa y si están activos. Hoy está dos veces, en
+    listados (`GroupRoute.activity`) y en facturación (`EnrolmentGroup`), cada
+    una cargada del export de grupos y normalizando el nombre a su manera. Lo
+    propio de cada aplicación se queda en ella: las hojas de impresión en
+    listados, lo que se paga a cada empresa en facturación. Antes, la fase 2:
+    misma normalización y mismo lector en las dos. Solo si sigue doliendo.
+- **Neon (trampa)**: el latido avisa antes de tiempo, nunca tarde. Desde el
+  08/10/2026 la máquina está fija en 0,25 CU: el máximo del latido ya es casi
+  lo real (con 0,25-2 daba 92,4 frente a 12,27 reales).
+- **Copias**: restauración probada el 08/10/2026 con `probar-copias.sh`.
+- **Estado**: la revisión `ampa-portal-00020-5b7` era la «con Documentos en el
+  catálogo».
+- **Producción**: `--min-instances=1` descartado por el usuario (~10 $/mes).
+- **Idea sin repo**: voluntariado para la fiesta de fin de curso («hay
+  tiempo»).
+- **Estructura**: descripciones largas de `User` (correo, nombre, activa,
+  Grants, segundo correo, NotificationTarget, lastSeenAt), `SchoolYear` (un
+  curso: clases y días sin clase), `Faq` (la ayuda de la suite, una sola fila)
+  y de los casos de uso (personas; puertos del latido: Neon, copias,
+  despertar), y «un tipo por value object» en `Persistence/`.
+- **Cabecera y entrada con Google**: el repo es `ampa-sainz-vicuna/ampa-portal`;
+  la vuelta de Google «compara la cookie `g_csrf_token` con el campo, comprueba
+  el token y lleva con 303…»; «lo hecho, con commits y revisiones» (frases
+  recortadas sin cambiar la regla).
+
 **08/10/2026 — Primera prueba de restauración de las copias**
 
 - **Qué se hizo**: por primera vez se comprobó que las copias del job
