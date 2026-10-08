@@ -4,6 +4,22 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Primera prueba de restauración de las copias**
+
+- **Qué se hizo**: por primera vez se comprobó que las copias del job
+  `ampa-copias` (`deploy/copias/`) **se pueden restaurar**. Script nuevo en el
+  repo `ampa-claude`: `scripts/probar-copias.sh`. Baja la última copia de cada
+  base de la unidad de Drive, la restaura en un PostgreSQL 16 desechable de
+  Docker y comprueba que las tablas clave tienen filas y que la copia tiene
+  menos de 48 h.
+- **Resultado**: las **7 bases bien**.
+- **Permisos**: para leer Drive, el script se hace pasar por la cuenta de
+  servicio del job (solo lectura de Drive). A la cuenta de gcloud se le dio el
+  rol *Creador de tokens de cuenta de servicio* **solo sobre esa cuenta**.
+- **Documentado** en `deploy/copias/README.md`, sección «Comprobar que se
+  pueden restaurar (cada mes)» (commit `fcadc35`).
+- **Pendiente**: lanzarlo cada mes (el usuario).
+
 **08/10/2026 — Neon: máquina fija en 0,25 CU**
 
 - **Qué pasó**: el latido de las 4:00 avisó de «como mucho 92,4 de 100
