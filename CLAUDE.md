@@ -105,6 +105,10 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   `ampa-manuales/ayuda/faq.json` (privado), cargado en la pestaña *Ayuda*. El
   enlace a NotebookLM va en el fichero, no aquí (repositorio público).
 - **Calendario escolar**: el curso 2026/27 está cargado; lo usa facturación.
+  `GET /api/calendario/publico` (`PublicCalendarController`, firewall `public`
+  con patrón exacto) **no pide sesión**: da el curso de hoy (hora de
+  Europe/Madrid, Cloud Run va en UTC) y los posteriores; `Cache-Control`
+  1 h. Lo lee `ampa-web` al construirse. No es contrato del cliente.
 
 ### Dar de alta una aplicación nueva
 
@@ -119,8 +123,9 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00020-5b7`**; cliente **v0.1.5**,
-el que usan todas las aplicaciones.
+**En producción**: revisión **`ampa-portal-00022-5jz`** (commit `fa47db8`;
+`desplegar.sh` pone la etiqueta `commit`); cliente **v0.1.5**, el que usan
+todas las aplicaciones.
 
 **Pendiente**
 
@@ -129,6 +134,9 @@ el que usan todas las aplicaciones.
   `faq.json` y se vuelve a cargar).
 - **Base y usuario propios de fichajes** (la única que entra con el dueño de
   Neon): preparado en fichajes; espera al usuario, "no corre prisa".
+- **Claude (otra sesión)**: el repo es público y `api/tests/Portal/Api/CalendarApiTest.php`
+  (quizá otros tests) lleva direcciones reales de `@ampasainzvicuna.com`;
+  sustituirlas por `@example.com`.
 
 **No hacer sin que lo pida el usuario**: el resumen diario de toda la suite;
 registro de cambios de permisos y repaso anual; avisar en la ficha si una
@@ -139,7 +147,8 @@ se cierre al pulsar fuera; un buscador en *Permisos*.
 por qué no basta MiAmpa); voluntariado para la fiesta de fin de curso.
 
 **Datos comunes de la suite (fase 3, sin empezar, 05/10/2026)**: fichajes
-debería leer el calendario del portal (hoy tiene festivos propios) y un
+ya tiene `PortalSuiteHolidays` conectado en su `services.yaml` (no comprobado
+si está en producción) y falta un
 **catálogo de extraescolares** común (hoy duplicado en listados y
 facturación; antes, unificar normalización y lector). Solo si sigue doliendo;
 detalle en el historial.

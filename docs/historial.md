@@ -4,6 +4,32 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Calendario público para la web (`ampa-web`)**
+
+- **Qué**: `GET /api/calendario/publico`, sin sesión (`PublicCalendarController`,
+  añadido al firewall `public` de `security.yaml` con patrón exacto). Devuelve
+  `{"schoolYears":[...]}`: el curso en el que cae hoy, calculado a la hora de
+  Europe/Madrid (Cloud Run va en UTC), y los posteriores cargados, del más
+  antiguo al más nuevo. `Cache-Control: public, max-age=3600`. README
+  documentado.
+- **Por qué**: la web pública publica el calendario escolar al construirse.
+  Decisión del usuario: endpoint público antes que copiarlo a mano o usar un
+  token de la suite. No es contrato del cliente: **no sube** `portal-cliente`.
+- **Commits**: `fa47db8` (el endpoint) y `3fa94e5` (`desplegar.sh` pone la
+  etiqueta `commit` en la revisión de Cloud Run, con `-cambios` si había
+  cambios sin commit; trabajo de otra sesión, para `ampa-claude/scripts/estado.sh`).
+- **Desplegado**: revisión `ampa-portal-00022-5jz`, etiqueta
+  `commit=fa47db89f82d`, migraciones al día. En producción: el endpoint
+  público da 200 sin token (curso 2026-2027, 11 periodos) y `/api/calendario`
+  sin token sigue en 401.
+- **Tests**: unit OK 99, integration OK 86.
+- **Corrección**: fichajes ya tiene `PortalSuiteHolidays` conectado en su
+  `services.yaml` (no comprobado si está en producción), así que la fase 3 ya
+  no lo lista como pendiente.
+- **Pendiente detectado**: direcciones reales del dominio en
+  `CalendarApiTest.php` (y quizá otros tests), contra la regla del repo
+  público; anterior a este cambio.
+
 **08/10/2026 — CLAUDE.md aligerado: lo movido aquí**
 
 Por encargo del usuario, el `CLAUDE.md` pasó de 10.675 bytes a 9.379 bytes.
