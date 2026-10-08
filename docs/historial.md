@@ -4,6 +4,32 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Alta de la aplicación `familias` («Familias del AMPA»)**
+
+- **Qué**: siguiendo «Dar de alta una aplicación nueva». Repo `ampa-familias`,
+  roles `junta` y `admin`, sin latido. Ficheros tocados (**sin commit**, lo
+  hará la próxima sesión): `api/config/packages/suite.yaml`, `api/.env`
+  (`URL_FAMILIAS=http://localhost:5180` y 5180 en `HELP_ALLOWED_ORIGINS`),
+  `deploy/desplegar.sh` (`URL_FAMILIAS=https://familias.ampasainzvicuna.com`),
+  `deploy/copias/preparar.sh` (`BASE_FAMILIAS=familias-database-url`),
+  `web/src/home/Applications.tsx` (tarjeta «Familias, socios, alumnos,
+  extraescolares y cobros») y el recuento de `HelpApiTest`.
+- **Local**: `admin.prueba@example.com` con `familias:admin` y
+  `vocal.prueba@example.com` con `familias:junta`.
+- **`@ampa/ui`**: 0.2.12 (icono de familias) publicada hoy; el portal sigue
+  en 0.2.10.
+- **Tests**: `comprobar.sh todo` en verde (unit 130, integration 99, cliente
+  43, front 41, lint, build, audit).
+- **Pendiente**: subir `@ampa/ui` a 0.2.12, commit, desplegar el portal antes
+  que familias (con permiso del usuario) y relanzar
+  `deploy/copias/preparar.sh 0AOiXVV5m11pCUk9PVA` (el secreto ya existe);
+  después, «las 7» copias del `CLAUDE.md` pasan a 8.
+- **Movido aquí del `CLAUDE.md`**: «Ideas sin repo: buzón de las familias con
+  encuestas y votaciones (antes, por qué no basta MiAmpa)» (ahora lo cubre
+  `ampa-familias`); y «Datos comunes: falta un catálogo de extraescolares
+  común (duplicado en listados y facturación; antes, unificar normalización y
+  lector)».
+
 **08/10/2026 — Cargos de la junta (pestaña «Junta»)**
 
 - **Qué**: tabla `board_members` (nombre, apellidos, DNI/NIE validado con

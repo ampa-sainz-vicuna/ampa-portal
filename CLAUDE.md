@@ -134,6 +134,11 @@ todas las aplicaciones.
 
 **Pendiente**
 
+- **Claude (próxima sesión)**: alta de `familias` hecha pero **sin commit**
+  (ver el historial). Subir `@ampa/ui` a 0.2.12 (skill `subir-dependencia`),
+  commit y desplegar el portal **antes que familias** (con permiso del
+  usuario); luego `deploy/copias/preparar.sh 0AOiXVV5m11pCUk9PVA` (el secreto
+  `familias-database-url` ya existe) y entonces las copias pasan a 8.
 - **El usuario** prueba la pestaña *Junta* y carga los cargos reales.
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
@@ -151,12 +156,9 @@ registro de cambios de permisos y repaso anual; avisar en la ficha si una
 cuenta sin buzón deja los avisos en *principal*; que el diálogo de la ficha no
 se cierre al pulsar fuera; un buscador en *Permisos*.
 
-**Ideas sin repo**: buzón de las familias con encuestas y votaciones (antes,
-por qué no basta MiAmpa); voluntariado para la fiesta de fin de curso.
-
-**Datos comunes (fase 3, sin empezar)**: falta un **catálogo de
-extraescolares** común (duplicado en listados y facturación; antes, unificar
-normalización y lector). Solo si sigue doliendo; detalle en el historial.
+**Ideas sin repo**: voluntariado para la fiesta de fin de curso. **Datos
+comunes (fase 3, sin empezar)**: catálogo común de extraescolares, solo si
+sigue doliendo; detalle en el historial.
 
 ## Trampas conocidas
 
