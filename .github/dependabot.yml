@@ -1,0 +1,47 @@
+# Dependabot: una vez al mes, GitHub abre PR con las versiones nuevas de las
+# dependencias de PHP (api/), del front (web/) y de las Actions del workflow.
+#
+# Agrupado para no llenar de PR: todas las subidas menores y de parche de cada
+# gestor van en un solo PR; una versión mayor (puede romper cosas) llega en su
+# propio PR, para mirarla aparte. Donde hay desplegar.yml, los PR pasan los
+# tests en GitHub (su job «Tests») pero no despliegan: despliega el merge a
+# main. Donde aún no lo hay, se prueban en local antes del merge.
+#
+# @ampa/ui no se toca aquí: viene
+# de las releases de GitHub y se sube con la skill subir-dependencia de
+# ampa-claude, que también adapta el código si cambia el contrato.
+#
+# cliente/ no está: es una librería sin composer.lock (sus dependencias las
+# fija y las vigila cada aplicación que la instala).
+#
+# Igual en todas las aplicaciones de la suite (ampa-ui y ampa-manuales tienen
+# su propia versión, con lo que les toca).
+
+version: 2
+
+updates:
+  - package-ecosystem: composer
+    directory: /api
+    schedule:
+      interval: monthly
+    groups:
+      menores:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: monthly
+    ignore:
+      - dependency-name: '@ampa/ui'
+    groups:
+      menores:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
