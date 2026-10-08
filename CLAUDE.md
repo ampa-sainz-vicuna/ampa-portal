@@ -95,7 +95,7 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes y
   tareas). Siempre 200; los fallos, `[error]` en el registro.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de cada base a
-  una unidad compartida de Drive, 30 por base (las 7). Se comprueban con
+  una unidad compartida de Drive, 30 por base (las 8). Se comprueban con
   `probar-copias.sh` (`ampa-claude`) **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
   Cloud Scheduler, a admin@, un correo por hora como mucho. 404 y 405 solo
@@ -128,17 +128,16 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00023-s9n`** (commit `1d458c8`;
+**En producción**: revisión **`ampa-portal-00024-5j5`** (commit `8afdc24`;
 `desplegar.sh` pone la etiqueta `commit`); cliente **v0.1.5**, el que usan
-todas las aplicaciones.
+todas las aplicaciones. Copias de **8 bases**; Familias ya está en la suite.
 
 **Pendiente**
 
-- **Claude (próxima sesión)**: alta de `familias` hecha pero **sin commit**
-  (ver el historial). Subir `@ampa/ui` a 0.2.12 (skill `subir-dependencia`),
-  commit y desplegar el portal **antes que familias** (con permiso del
-  usuario); luego `deploy/copias/preparar.sh 0AOiXVV5m11pCUk9PVA` (el secreto
-  `familias-database-url` ya existe) y entonces las copias pasan a 8.
+- **Claude (otra sesión)**: en el SQL Editor de Neon, **solo consultar**, qué rol
+  es dueño de cada base (`SELECT datname, pg_get_userbyid(datdba) FROM
+  pg_database`), por si otra tiene un dueño ajeno (la de familias salió con
+  `listados`).
 - **El usuario** prueba la pestaña *Junta* y carga los cargos reales.
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
@@ -180,5 +179,7 @@ sigue doliendo; detalle en el historial.
 - Los `VITE_…` van dentro de la imagen: cambiarlos exige redesplegar, no
   basta con `services update`.
 - Si otra sesión trabaja en el repo, desplegar desde un worktree limpio; y los
-  tests de integración de dos sesiones a la vez chocan en `suite_test`: si
-  fallan raro, repetir.
+  tests de integración de dos sesiones (o dos `comprobar.sh`) a la vez chocan
+  en `suite_test` (p. ej. `BoardApiTest` da 401): si fallan raro, repetir solo.
+- Base nueva en Neon: crearla con dueño **`neondb_owner`**, no con el rol de otra
+  aplicación.

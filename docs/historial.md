@@ -4,6 +4,28 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Alta de Familias cerrada: commit, despliegue y copias de 8**
+
+- **Commit `8afdc24`** «Alta de Familias en la suite y @ampa/ui 0.2.12»:
+  entrada `familias` en `suite.yaml` (roles junta y admin, sin latido),
+  `URL_FAMILIAS` en `api/.env` y `deploy/desplegar.sh`, tarjeta en
+  `Applications.tsx`, 5180 en `HELP_ALLOWED_ORIGINS`, `BASE_FAMILIAS` en
+  `deploy/copias/preparar.sh`, recuento de `HelpApiTest`; `@ampa/ui` 0.2.10 →
+  0.2.12. `comprobar.sh todo` en verde: unit 130, integration 99, cliente 43,
+  front 41, lint, build, audit.
+- **Desplegado** (lo lanzó el usuario): revisión `ampa-portal-00024-5j5`, 100 %
+  del tráfico, etiqueta `commit` 8afdc24.
+- **Copias**: relanzado `deploy/copias/preparar.sh 0AOiXVV5m11pCUk9PVA`; el job
+  `ampa-copias` copia ya **8 bases** (CRM, DOCUMENTOS, FACTURACION, FAMILIAS,
+  FICHAJES, LISTADOS, PORTAL, TAREAS). El aviso final «vuelve a desplegar el
+  portal» no hacía falta: el portal ya tenía `COPIAS_JOB`.
+- **Trampa**: la base `familias` de Neon se creó con dueño `listados`; se rehízo
+  con dueño `neondb_owner`. Queda por revisar (solo consultar, en el SQL Editor
+  de Neon) el dueño de cada base: `SELECT datname, pg_get_userbyid(datdba) FROM
+  pg_database`.
+- **Trampa**: dos `comprobar.sh` a la vez en el portal chocan en `suite_test`
+  (`BoardApiTest` dio 401). Ya estaba apuntado.
+
 **08/10/2026 — Alta de la aplicación `familias` («Familias del AMPA»)**
 
 - **Qué**: siguiendo «Dar de alta una aplicación nueva». Repo `ampa-familias`,
