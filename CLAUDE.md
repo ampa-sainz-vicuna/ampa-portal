@@ -166,6 +166,9 @@ con la cuenta de servicio):
   gratuito no da `consumption_history`. El latido calcula **el máximo posible**
   (tiempo encendida × la CU máxima): avisa antes de tiempo, nunca tarde. La
   cifra se ve en la respuesta de `POST /api/latido`, no en el registro.
+  **Desde el 08/10/2026 la máquina está fija en 0,25 CU** (mín. y máx.): el
+  máximo del latido ya es casi lo real (con 0,25-2 daba 92,4 frente a 12,27
+  reales). Una máquina nueva hay que fijarla igual. Detalle en el historial.
 - `HeartbeatApiTest` y `HelpApiTest` leen el `suite.yaml` de verdad: al dar de
   alta o cambiar una aplicación, cambian sus recuentos.
 - Variables vacías en `deploy/desplegar.sh` (`HELP_ALLOWED_ORIGINS=`, y

@@ -4,6 +4,28 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Neon: máquina fija en 0,25 CU**
+
+- **Qué pasó**: el latido de las 4:00 avisó de «como mucho 92,4 de 100
+  CU-horas» (periodo 01/10-01/11). La consola de Neon decía **12,27 reales**.
+  El latido calcula el máximo (`active_time_seconds` × `autoscaling_limit_max_cu`)
+  y la máquina podía crecer hasta 2 CU, aunque casi siempre trabajaba a 0,25.
+  Uso medido con la API (`operations`): unas 6,5 h encendida al día, unos 50
+  arranques diarios, casi todo de 6:00 a 21:00.
+- **Decisión** (el usuario, con un PATCH a la API de Neon): el endpoint
+  `ep-odd-wind-b1idc2g2` del proyecto `small-pond-03723796` queda **fijo en
+  0,25 CU (mínimo y máximo)**. Así el máximo del latido ≈ lo real (sin falsas
+  alarmas); techo de unas 186 CU-horas aunque nunca se durmiera; con el uso
+  actual, unas 50 de 100 al mes. `default_endpoint_settings` del proyecto sigue
+  en 0,25-2 (solo afecta a máquinas nuevas, que habría que fijar igual). Si la
+  suite va lenta por la base, subir el máximo a 0,5 dobla el consumo.
+- **Costes estudiados por si hiciera falta pagar** (precios oficiales del
+  08/10/2026, sin IVA): Neon Launch 0,106 $/CU-h sin cuota mínima (con 0,25 CU
+  fijo: ~5 $/mes con el uso actual, techo ~20 $; sin tope de gasto duro, solo
+  avisos). Precio fijo: Scaleway DB-DEV-S ~11,40 €/mes + disco, Aiven Hobbyist
+  12 $, DigitalOcean 15,15 $. **Decisión del usuario: seguir en Neon gratis.**
+- Sin cambios de código ni despliegue.
+
 **05/10/2026 — Copias comprobadas a mano y datos comunes de la suite**
 
 - **Copias**: se lanzó a mano el job `ampa-copias` (ejecución
