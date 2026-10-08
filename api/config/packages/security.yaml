@@ -19,10 +19,12 @@ security:
         #     la cabecera; lo comprueba el propio controlador (BearerUser).
         #   - /api/calendario, que también lo llama el servidor de cada
         #     aplicación (CalendarController, con BearerCaller);
+        #   - /api/calendario/publico, el calendario abierto a todo el mundo para
+        #     la web pública (PublicCalendarController; no es ningún secreto);
         #   - /api/latido, que lo llama Cloud Scheduler con el token de la
         #     cuenta de servicio de la suite (HeartbeatController).
         public:
-            pattern: ^/api/(auth/google|auth/google/vuelta|auth/salir|acceso|avisos|personas|calendario|latido)$
+            pattern: ^/api/(auth/google|auth/google/vuelta|auth/salir|acceso|avisos|personas|calendario|calendario/publico|latido)$
             stateless: true
             security: false
 

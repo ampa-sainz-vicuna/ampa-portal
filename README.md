@@ -223,6 +223,7 @@ rol `admin`: quien gestiona los permisos de toda la suite.
 | `GET /api/avisos?aplicacion=X&rol=Y` | Bearer | **Contrato con el cliente.** A quién avisar: `[{ name, emails }]`. Solo si quien pregunta tiene algún rol en X. |
 | `GET /api/personas?aplicacion=X` | Bearer | **Contrato con el cliente** (0.1.1). Quién hay en X: `[{ name, email, roles, notificationEmails }]`. |
 | `GET /api/calendario?curso=2026-2027` | Bearer | **Contrato con el cliente** (0.1.5). `{ schoolYear, classesStart, classesEnd, periods: [{ from, to, kind, name }] }`; 404 si ese curso no está cargado. Basta con ser alguien de la suite. |
+| `GET /api/calendario/publico` | ninguna | Para la web pública (ampa-web, al construirse). `{ schoolYears: [...] }`: el curso de hoy y los posteriores cargados, del más antiguo al más nuevo, cada uno con la forma de `/api/calendario`; `[]` si no hay. `Cache-Control: public, max-age=3600`. |
 | `GET /api/admin/calendario` | cookie, admin | Los cursos cargados, del más nuevo al más viejo. |
 | `PUT /api/admin/calendario/{curso}` | cookie, admin | Guarda el curso entero: `{ classesStart, classesEnd, periods }`. 422 si algo no cuadra (con el motivo). |
 | `GET /api/ayuda` | cookie | **Contrato con `@ampa/ui`** (0.2.4). `{ notebookUrl, contactEmail, updatedAt, entries: [{ id, application, question, answer, keywords, manual }] }`: solo las preguntas que ve esa persona. Sin nada cargado, `entries: []` y lo demás null. La leen los fronts de las aplicaciones desde su web (CORS, arriba). |
