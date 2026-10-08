@@ -104,6 +104,11 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   las `URL_…` del catálogo y a `HELP_ALLOWED_ORIGINS`). Contenido en
   `ampa-manuales/ayuda/faq.json` (privado), cargado en la pestaña *Ayuda*. El
   enlace a NotebookLM va en el fichero, no aquí (repositorio público).
+- **Junta** (`board_members`): cargos con un titular activo (presidencia,
+  vicepresidencia, secretaría, tesorería) o varios (vocal). Pestaña solo admin
+  (`/api/admin/junta`); `GET /api/junta`, cualquier sesión, solo nombre,
+  correo y cargo. **DNI, dirección y teléfono nunca a logs ni errores.** Sin
+  «reactivar»: alta nueva.
 - **Calendario escolar**: el curso 2026/27 está cargado; lo usa facturación.
   `GET /api/calendario/publico` (`PublicCalendarController`, firewall `public`
   con patrón exacto) **no pide sesión**: da el curso de hoy (hora de
@@ -123,12 +128,15 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00022-5jz`** (commit `fa47db8`;
+**En producción**: revisión **`ampa-portal-00023-s9n`** (commit `1d458c8`;
 `desplegar.sh` pone la etiqueta `commit`); cliente **v0.1.5**, el que usan
 todas las aplicaciones.
 
 **Pendiente**
 
+- **El usuario** prueba la pestaña *Junta* y carga los cargos reales.
+- **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
+  cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
 - **El usuario** lanza `probar-copias.sh` cada mes.
 - **El usuario** lee las preguntas de la ayuda cuando pueda (se corrigen en
   `faq.json` y se vuelve a cargar).
@@ -146,12 +154,9 @@ se cierre al pulsar fuera; un buscador en *Permisos*.
 **Ideas sin repo**: buzón de las familias con encuestas y votaciones (antes,
 por qué no basta MiAmpa); voluntariado para la fiesta de fin de curso.
 
-**Datos comunes de la suite (fase 3, sin empezar, 05/10/2026)**: fichajes
-ya tiene `PortalSuiteHolidays` conectado en su `services.yaml` (no comprobado
-si está en producción) y falta un
-**catálogo de extraescolares** común (hoy duplicado en listados y
-facturación; antes, unificar normalización y lector). Solo si sigue doliendo;
-detalle en el historial.
+**Datos comunes (fase 3, sin empezar)**: falta un **catálogo de
+extraescolares** común (duplicado en listados y facturación; antes, unificar
+normalización y lector). Solo si sigue doliendo; detalle en el historial.
 
 ## Trampas conocidas
 

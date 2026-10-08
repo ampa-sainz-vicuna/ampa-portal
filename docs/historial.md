@@ -4,6 +4,33 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**08/10/2026 — Cargos de la junta (pestaña «Junta»)**
+
+- **Qué**: tabla `board_members` (nombre, apellidos, DNI/NIE validado con
+  letra, dirección, correo y teléfono de contacto, cargo, inicio, fin, usuario
+  de la plataforma opcional). Cargos: presidencia, vicepresidencia, secretaría
+  y tesorería (**un titular activo** cada uno; regla en el caso de uso y en un
+  índice único parcial) y vocal (varios). El fin de un cargo es la historia.
+- **API**: `/api/admin/junta` solo admins (`ROLE_SUITE_ADMIN`); `GET
+  /api/junta` para cualquier sesión, **solo** nombre, apellidos, correo y cargo.
+  DNI, dirección y teléfono no salen en logs ni errores (la `DriverException`
+  se relanza sin encadenar).
+- **Baja**: no admite fecha futura ni anterior al inicio. No hay «reactivar»:
+  se da un alta nueva.
+- **Por qué**: saber quién ocupa cada cargo para las firmas (registro mensual
+  de fichajes, paquete de asamblea) y cambiarlo en un solo sitio al cambiar la
+  junta.
+- **Revisión**: `revisor-suite`; corregidos la fecha futura y la
+  `DriverException`.
+- **Commit y despliegue**: `1d458c8`; revisión `ampa-portal-00023-s9n`;
+  migración `Version20261008120000` aplicada por el job `portal-migraciones`.
+- **Tests**: unit 130, integration 99, front 41, cliente 43, en verde.
+- **Local**: faltaba `cliente/vendor`; se instaló con `composer install` en
+  `cliente/`.
+- **Pendiente**: el usuario prueba la pestaña y carga los cargos reales;
+  exponer los cargos en `ampa/portal-cliente` (adición, sube la tercera cifra)
+  para que fichajes use la secretaría en vez de `REGISTRO_FIRMA_SECRETARIA`.
+
 **08/10/2026 — Calendario público para la web (`ampa-web`)**
 
 - **Qué**: `GET /api/calendario/publico`, sin sesión (`PublicCalendarController`,
