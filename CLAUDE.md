@@ -29,7 +29,7 @@ del cliente*.
 
 PHP 8.4.25, Symfony 7.4, Doctrine ORM 3.7 / DBAL 4.4, PostgreSQL 16,
 firebase/php-jwt 7.2 (verificar Google y firmar la sesión, HS256), PHPUnit
-13.3. Sin lexik. Front: React 19, MUI 9, `@ampa/ui` 0.2.12, Vitest. Puertos
+13.3. Sin lexik. Front: React 19, MUI 9, `@ampa/ui` 0.2.13, Vitest. Puertos
 (5176 / 8083 / 5435) en el global; base `suite`, tests en `suite_test`.
 
 ```bash
