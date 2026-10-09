@@ -4,7 +4,15 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
-**09/10/2026 — `@ampa/ui` 0.2.12 → 0.2.13 (desplegables), sin desplegar**
+**09/10/2026 — `@ampa/ui` 0.2.12 → 0.2.13 (desplegables), desplegado**
+
+- **Desplegado después por Claude**, con permiso del usuario, con
+  `deploy/desplegar.sh`: revisión **`ampa-portal-00025-qjm`**, salida 0, sin
+  avisos de secretos; `scripts/estado.sh` confirma producción = `main`. Queda
+  del usuario comprobar en pantalla que los desplegables abren a la primera.
+- **Movido del `CLAUDE.md`**: ideas sin repo: voluntariado para la fiesta de
+  fin de curso. Datos comunes (fase 3, sin empezar): catálogo común de
+  extraescolares, solo si sigue doliendo.
 
 - **Commit `5ac38f1`**, con permiso del usuario. La 0.2.13 arregla en el tema
   los desplegables: el clic que abre uno ya no elige una opción (antes había

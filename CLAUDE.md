@@ -128,16 +128,14 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00024-5j5`** (commit `8afdc24`;
-`desplegar.sh` pone la etiqueta `commit`); cliente **v0.1.5**, el que usan
-todas las aplicaciones. Copias de **8 bases**; Familias ya está en la suite.
+**En producción**: revisión **`ampa-portal-00025-qjm`** (commit `5ac38f1`,
+`@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`); cliente
+**v0.1.5**, el que usan todas las aplicaciones. Copias de **8 bases**.
 
 **Pendiente**
 
-- **El usuario** despliega el commit `5ac38f1` (`@ampa/ui` 0.2.13, arreglo de
-  los desplegables; subido, **sin desplegar**): `cd ~/dev/ampa-portal &&
-  docker compose run --rm gcloud bash deploy/desplegar.sh`. Después, comprobar
-  en pantalla que los desplegables abren a la primera.
+- **El usuario** comprueba en pantalla que los desplegables (0.2.13) abren a
+  la primera.
 - **Claude (otra sesión)**: en el SQL Editor de Neon, **solo consultar**, qué rol
   es dueño de cada base (`SELECT datname, pg_get_userbyid(datdba) FROM
   pg_database`), por si otra tiene un dueño ajeno (la de familias salió con
@@ -159,9 +157,7 @@ registro de cambios de permisos y repaso anual; avisar en la ficha si una
 cuenta sin buzón deja los avisos en *principal*; que el diálogo de la ficha no
 se cierre al pulsar fuera; un buscador en *Permisos*.
 
-**Ideas sin repo**: voluntariado para la fiesta de fin de curso. **Datos
-comunes (fase 3, sin empezar)**: catálogo común de extraescolares, solo si
-sigue doliendo; detalle en el historial.
+Ideas sin repo y datos comunes (fase 3): en el historial.
 
 ## Trampas conocidas
 
