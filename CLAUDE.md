@@ -134,6 +134,10 @@ todas las aplicaciones. Copias de **8 bases**; Familias ya está en la suite.
 
 **Pendiente**
 
+- **El usuario** despliega el commit `5ac38f1` (`@ampa/ui` 0.2.13, arreglo de
+  los desplegables; subido, **sin desplegar**): `cd ~/dev/ampa-portal &&
+  docker compose run --rm gcloud bash deploy/desplegar.sh`. Después, comprobar
+  en pantalla que los desplegables abren a la primera.
 - **Claude (otra sesión)**: en el SQL Editor de Neon, **solo consultar**, qué rol
   es dueño de cada base (`SELECT datname, pg_get_userbyid(datdba) FROM
   pg_database`), por si otra tiene un dueño ajeno (la de familias salió con

@@ -4,6 +4,19 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**09/10/2026 — `@ampa/ui` 0.2.12 → 0.2.13 (desplegables), sin desplegar**
+
+- **Commit `5ac38f1`**, con permiso del usuario. La 0.2.13 arregla en el tema
+  los desplegables: el clic que abre uno ya no elige una opción (antes había
+  que abrirlos dos veces).
+- `comprobar.sh todo` en verde: unit 130, integration 99, cliente 43, front 41,
+  lint, build y audit.
+- **Subido a GitHub pero sin desplegar**: el modo automático de Claude bloquea
+  desplegar en producción. Producción sigue en `ampa-portal-00024-5j5`. Lo
+  lanza el usuario: `cd ~/dev/ampa-portal && docker compose run --rm gcloud
+  bash deploy/desplegar.sh`; luego comprueba en pantalla que los desplegables
+  abren a la primera.
+
 **08/10/2026 — Alta de Familias cerrada: commit, despliegue y copias de 8**
 
 - **Commit `8afdc24`** «Alta de Familias en la suite y @ampa/ui 0.2.12»:
