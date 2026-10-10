@@ -43,6 +43,21 @@ final class HeartbeatAdaptersTest extends TestCase
     }
 
     #[Test]
+    public function si_la_tarjeta_lleva_a_una_ruta_el_latido_va_a_la_raiz_de_su_dominio(): void
+    {
+        $http = $this->http([
+            new MockResponse('token-para-familias'),
+            new MockResponse('{"ok":true}', ['http_code' => 200]),
+        ]);
+        $familias = new Application('familias', 'Familias', 'https://familias.ejemplo/junta', ['junta' => 'Junta'], heartbeat: true);
+
+        (new HttpApplicationWaker($http, new MetadataServer($http)))->wake($familias);
+
+        self::assertStringContainsString('audience=https://familias.ejemplo&', $this->requests[0]['url']);
+        self::assertSame('https://familias.ejemplo/api/latido', $this->requests[1]['url']);
+    }
+
+    #[Test]
     public function una_aplicacion_que_contesta_con_error_es_un_fallo_con_su_respuesta(): void
     {
         $http = $this->http([

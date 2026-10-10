@@ -213,15 +213,16 @@ el resumen). Sustituye a tener un trabajo propio de Cloud Scheduler: solo hay
    ```yaml
    ampa_portal_cliente:
        # …
-       latido_audiencia: '%env(LATIDO_AUDIENCIA)%'  # su dirección pública
+       latido_audiencia: '%env(LATIDO_AUDIENCIA)%'  # su dirección pública, la raíz del dominio (sin ruta)
        latido_cuentas: '%env(LATIDO_CUENTAS)%'      # la cuenta de servicio de la suite
    ```
 
    En `.env`, las dos **vacías** (en desarrollo no llega ningún latido; se
    prueba con el test). En producción, en su `deploy/desplegar.sh`:
-   `LATIDO_AUDIENCIA` = **la misma dirección que tiene en el catálogo del
-   portal** (`URL_…` del portal, p. ej. `https://tareas.ampasainzvicuna.com`,
-   sin barra final) y `LATIDO_CUENTAS` =
+   `LATIDO_AUDIENCIA` = **la raíz de la dirección que tiene en el catálogo
+   del portal** (`URL_…` del portal, p. ej. `https://tareas.ampasainzvicuna.com`,
+   sin barra final; si la tarjeta lleva a una ruta, como la de familias,
+   `…/junta`, sin ella: el portal llama al latido en la raíz) y `LATIDO_CUENTAS` =
    `${PROJECT_NUMBER}-compute@developer.gserviceaccount.com`.
 3. El oyente:
 

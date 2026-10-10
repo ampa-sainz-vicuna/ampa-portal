@@ -5,8 +5,7 @@
 #
 #   docker compose run --rm gcloud bash deploy/programar.sh
 #
-# SIN ESTRENAR (escrito el 26/09/2026 copiando el de tareas, que sí está
-# probado en producción).
+# Escrito el 26/09/2026 copiando el de tareas; en producción desde entonces.
 #
 # Cloud Scheduler llama a POST /api/latido del portal con el token OIDC de la
 # cuenta de servicio de la suite, emitido para la dirección fija del portal:
@@ -15,9 +14,8 @@
 # las copias y despierta a las aplicaciones que tengan el latido
 # (RunHeartbeat).
 #
-# Gratis: 3 trabajos por cuenta de facturación. Tareas gasta uno (su resumen
-# de las 5:00) y este es el segundo; el tercero queda libre. Si tareas pasa
-# su resumen al latido, se puede borrar el suyo.
+# Gratis: 3 trabajos por cuenta de facturación. Desde el 28/09/2026 este es el
+# único de la suite (tareas pasó su resumen de las 5:00 al latido).
 set -euo pipefail
 
 JOB=suite-latido

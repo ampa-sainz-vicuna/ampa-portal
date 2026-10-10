@@ -16,7 +16,7 @@ final readonly class Application
 {
     /**
      * @param array<string, string> $roles     código → nombre para la pantalla
-     * @param bool                  $heartbeat si el latido diario la despierta (POST {url}/api/latido,
+     * @param bool                  $heartbeat si el latido diario la despierta (POST {raíz}/api/latido,
      *                                         cliente 0.1.5): solo las que ya lo tienen instalado
      */
     public function __construct(

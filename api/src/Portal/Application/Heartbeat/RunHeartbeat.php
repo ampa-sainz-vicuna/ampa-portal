@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * El latido diario de la suite: lo que haría un cron, con UN solo trabajo de
  * Cloud Scheduler para todas las aplicaciones (hay 3 gratis por cuenta de
- * facturación y tareas ya gasta uno).
+ * facturación; tareas ya no gasta uno propio desde el 28/09/2026).
  *
  * Cloud Scheduler llama a POST /api/latido del portal a las 4:00 (Madrid) y
  * el portal, por orden:

@@ -67,10 +67,13 @@ parameters:
                 admin: 'Administración (manda carpetas enteras a la papelera)'
         # Familias (08/10/2026): sustituirá a MiAmpa. Aquí solo entra la junta;
         # las familias entran con su propio correo y contraseña, no por el
-        # portal. Sin latido: no hace nada programado.
+        # portal. Con latido (10/10/2026): cada día borra los datos personales
+        # viejos de su historial y lo caducado de la entrada de las familias.
+        # Su dirección es la de la junta (…/junta); el latido va a la raíz.
         familias:
             name: 'Familias del AMPA'
             url: '%env(URL_FAMILIAS)%'
+            latido: true
             roles:
                 junta: 'Junta (consulta y gestiona las familias)'
                 admin: 'Administración'
