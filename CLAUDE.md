@@ -84,9 +84,8 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   **token de identidad de la cuenta de servicio de la suite**
   (`SUITE_TOKEN_AUDIENCE`, `SUITE_SERVICE_ACCOUNTS`; vacías en desarrollo: no
   se acepta ninguno). El portal no distingue qué aplicación llama.
-- **Última entrada** (`lastSeenAt`): como mucho una vez por hora, en `/api/me`
-  y `/api/acceso`; si falla, se anota y sigue. «Nunca ha entrado» en
-  *Permisos* delata un correo mal escrito.
+- **Última entrada** (`lastSeenAt`): como mucho una vez por hora; «Nunca ha
+  entrado» en *Permisos* delata un correo mal escrito.
 - **Cuentas sin licencia**: quien no es de la junta entra con **Cloud Identity
   Free** (sin buzón), con su correo personal como **segundo correo** y los
   avisos a *segundo*. Al crearlas, comprobar que no llevan licencia de
@@ -94,8 +93,9 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   historial, punto 4.
 - **Latido** (`suite-latido` en Cloud Scheduler, 4:00 → `POST /api/latido`):
   mira Neon (avisa ≥ 80 % de 100 CU-horas), lanza el job `ampa-copias` y
-  despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes y
-  tareas). Siempre 200; los fallos, `[error]` en el registro.
+  despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes,
+  tareas y familias). Llama a la **raíz del dominio** aunque la URL del
+  catálogo lleve ruta (`…/junta`). Siempre 200; fallos, `[error]` en el registro.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de cada base a
   una unidad compartida de Drive, 30 por base (las 8). Se comprueban con
   `probar-copias.sh` (`ampa-claude`) **cada mes**.
@@ -134,19 +134,20 @@ personas de prueba en la base local con `app:permisos:dar`.
 `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`); cliente
 **v0.1.5**, el que usan todas las aplicaciones. Copias de **8 bases**.
 
-En `main` y **sin desplegar**: `c1382a8`, `URL_FAMILIAS` pasa a `…/junta`
-(la junta entra por `/junta`; las familias, en la raíz de su dominio).
+En `main` y **sin desplegar**: `c1382a8` (`URL_FAMILIAS` a `…/junta`) y
+`ca58298` (familias con `latido: true`; el waker llama a la raíz del dominio).
 
 **Pendiente**
 
-- **El usuario** despliega `c1382a8`: `cd ~/dev/ampa-portal && docker compose
-  run --rm gcloud bash deploy/desplegar.sh`. Mientras, no se rompe nada.
+- **El usuario** despliega: `cd ~/dev/ampa-portal && docker compose run --rm
+  gcloud bash deploy/desplegar.sh`. Después, en los registros del latido de las
+  4:00, el paso «familias» debe salir «hecho» (si 401: `LATIDO_AUDIENCIA` de
+  familias).
 - **El usuario** comprueba en pantalla que los desplegables (0.2.13) abren a
   la primera.
-- **Claude (otra sesión)**: en el SQL Editor de Neon, **solo consultar**, qué rol
-  es dueño de cada base (`SELECT datname, pg_get_userbyid(datdba) FROM
-  pg_database`), por si otra tiene un dueño ajeno (la de familias salió con
-  `listados`).
+- **Claude (otra sesión)**: en Neon, **solo consultar**, qué rol es dueño de
+  cada base (`SELECT datname, pg_get_userbyid(datdba) FROM pg_database`); la de
+  familias salió con `listados`.
 - **El usuario** prueba la pestaña *Junta* y carga los cargos reales.
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.

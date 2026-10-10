@@ -4,6 +4,29 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**10/10/2026 — Latido: familias despierta cada día, sin desplegar**
+
+- **Commit `ca58298`** (en `main`, **sin desplegar**; el portal se despliega a
+  mano). Familias pasa a `latido: true` en `api/config/packages/suite.yaml`:
+  cada día borra datos personales viejos de su historial y lo caducado de la
+  entrada de familias (fase 6a de `ampa-familias`).
+- **Por qué cambia el waker**: la URL de familias en el catálogo es `…/junta`
+  (la tarjeta lleva a la junta). `HttpApplicationWaker` llama ahora a la
+  **raíz del dominio** (`{esquema://host[:puerto]}/api/latido`) y pide el
+  token con esa raíz como audiencia. Para las demás aplicaciones no cambia
+  nada (su URL ya es la raíz). `cliente/README.md`: `latido_audiencia` = raíz
+  del dominio aunque la tarjeta lleve a una ruta.
+- Tests: caso nuevo en `HeartbeatAdaptersTest`; `HeartbeatApiTest` cuenta
+  fichajes, tareas y familias. Revisado con `revisor-suite`: sin errores.
+  unit 131, integration 99, en verde.
+- Comentarios desfasados corregidos: `ApplicationWaker`, `Application`,
+  `RunHeartbeat` y `deploy/programar.sh` (tareas ya no gasta un trabajo propio
+  desde el 28/09/2026; `suite-latido` es el único de Cloud Scheduler; ya no
+  «SIN ESTRENAR»).
+- **Pendiente del usuario**: desplegar (saca también `c1382a8`). Después, en
+  los registros del latido de las 4:00 debe salir el paso «familias» con
+  «hecho»; si sale 401, revisar `LATIDO_AUDIENCIA` de familias.
+
 **10/10/2026 — Familias: la junta entra por `/junta`, sin desplegar**
 
 - **Commit `c1382a8`**. `URL_FAMILIAS` pasa a
