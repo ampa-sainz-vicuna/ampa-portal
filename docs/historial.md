@@ -4,6 +4,25 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**10/10/2026 — Familias: la junta entra por `/junta`, sin desplegar**
+
+- **Commit `c1382a8`**. `URL_FAMILIAS` pasa a
+  `https://familias.ampasainzvicuna.com/junta` en `deploy/desplegar.sh` y a
+  `http://localhost:5180/junta` en `api/.env`. Motivo: `ampa-familias` tiene
+  ahora en el dominio a secas la zona de las familias (correo y contraseña
+  propios) y la junta en `/junta` (decisión del usuario del 10/10/2026;
+  `ampa-familias` `docs/diseno.md` §17).
+- Es seguro: `HelpCors` y el `returnTo` del front comparan por **origen**, no
+  por ruta; familias no tiene latido.
+- `comprobar.sh`: unit 130, integration 99, OK.
+- **Sin desplegar**: el portal no tiene workflow de despliegue (solo
+  `publicar.yml`), así que el push no desplegó. Producción sigue en
+  `ampa-portal-00025-qjm` con la URL antigua. Lo lanza el usuario:
+  `cd ~/dev/ampa-portal && docker compose run --rm gcloud bash deploy/desplegar.sh`.
+  Mientras, la tarjeta lleva al dominio a secas y la entrada de las familias
+  tiene el enlace «¿Eres de la junta?». Claude dio por hecho que el push
+  desplegaba y se equivocó: ahora lo dice el `CLAUDE.md`.
+
 **09/10/2026 — `@ampa/ui` 0.2.12 → 0.2.13 (desplegables), desplegado**
 
 - **Desplegado después por Claude**, con permiso del usuario, con

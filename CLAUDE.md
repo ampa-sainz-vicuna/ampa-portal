@@ -68,7 +68,9 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   `https://ampa-portal-273203000301.europe-west1.run.app` (`PORTAL_URL`).
   Secretos `portal-jwt-key` y `portal-database-url`; base `suite` en Neon.
   `--timeout` 300 s (por el latido). `--min-instances=1` **descartado**.
-- **Desplegar**: `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza
+- **Desplegar, siempre a mano**: el portal **no tiene workflow de despliegue**
+  (solo `publicar.yml`, con etiquetas `v*`): **el push no despliega**. Lo
+  lanza el usuario (el modo automático bloquea a Claude). `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza
   el job **`portal-migraciones`** con esa imagen y solo si sale bien pasa el
   tráfico. El contenedor no migra al arrancar.
 - **Entrar con Google, en modo redirección**: Google vuelve con un POST a
@@ -132,8 +134,13 @@ personas de prueba en la base local con `app:permisos:dar`.
 `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`); cliente
 **v0.1.5**, el que usan todas las aplicaciones. Copias de **8 bases**.
 
+En `main` y **sin desplegar**: `c1382a8`, `URL_FAMILIAS` pasa a `…/junta`
+(la junta entra por `/junta`; las familias, en la raíz de su dominio).
+
 **Pendiente**
 
+- **El usuario** despliega `c1382a8`: `cd ~/dev/ampa-portal && docker compose
+  run --rm gcloud bash deploy/desplegar.sh`. Mientras, no se rompe nada.
 - **El usuario** comprueba en pantalla que los desplegables (0.2.13) abren a
   la primera.
 - **Claude (otra sesión)**: en el SQL Editor de Neon, **solo consultar**, qué rol
