@@ -130,19 +130,16 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00025-qjm`** (commit `5ac38f1`,
-`@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`); cliente
-**v0.1.5**, el que usan todas las aplicaciones. Copias de **8 bases**.
-
-En `main` y **sin desplegar**: `c1382a8` (`URL_FAMILIAS` a `…/junta`) y
-`ca58298` (familias con `latido: true`; el waker llama a la raíz del dominio).
+**En producción**: revisión **`ampa-portal-00027-lv7`** (10/10/2026, commit
+`538fffa`, el último de `main`; `@ampa/ui` 0.2.13; `desplegar.sh` pone la
+etiqueta `commit`); cliente **v0.1.5**, el que usan todas las aplicaciones.
+Copias de **8 bases**. Nada sin desplegar (comprobado el 11/10/2026).
 
 **Pendiente**
 
-- **El usuario** despliega: `cd ~/dev/ampa-portal && docker compose run --rm
-  gcloud bash deploy/desplegar.sh`. Después, en los registros del latido de las
-  4:00, el paso «familias» debe salir «hecho» (si 401: `LATIDO_AUDIENCIA` de
-  familias).
+- **El usuario** mira en los registros del latido de las 4:00 que el paso
+  «familias» sale «hecho» (si 401: `LATIDO_AUDIENCIA` de familias). Sin
+  comprobar aún.
 - **El usuario** comprueba en pantalla que los desplegables (0.2.13) abren a
   la primera.
 - **Claude (otra sesión)**: en Neon, **solo consultar**, qué rol es dueño de

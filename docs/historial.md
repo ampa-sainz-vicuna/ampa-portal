@@ -4,6 +4,15 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**11/10/2026 — Puesta al día: desplegado**
+
+- Según `scripts/estado.sh`, producción sirve **`ampa-portal-00027-lv7`**,
+  desplegada el 10/10 a las 19:21 con el commit `538fffa` (último de `main`).
+  Saca `c1382a8` (`URL_FAMILIAS` a `…/junta`) y `ca58298` (latido de
+  familias). Sigue sin workflow: despliegue a mano.
+- Pendiente: mirar en los registros del latido de las 4:00 que el paso
+  «familias» sale «hecho»; no comprobado.
+
 **10/10/2026 — Latido: familias despierta cada día, sin desplegar**
 
 - **Commit `ca58298`** (en `main`, **sin desplegar**; el portal se despliega a
