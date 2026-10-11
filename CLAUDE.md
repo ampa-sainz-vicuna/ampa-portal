@@ -68,11 +68,11 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   `https://ampa-portal-273203000301.europe-west1.run.app` (`PORTAL_URL`).
   Secretos `portal-jwt-key` y `portal-database-url`; base `suite` en Neon.
   `--timeout` 300 s (por el latido). `--min-instances=1` **descartado**.
-- **Desplegar, siempre a mano**: el portal **no tiene workflow de despliegue**
-  (solo `publicar.yml`, con etiquetas `v*`): **el push no despliega**. Lo
-  lanza el usuario (el modo automático bloquea a Claude). `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza
-  el job **`portal-migraciones`** con esa imagen y solo si sale bien pasa el
-  tráfico. El contenedor no migra al arrancar.
+- **Desplegar, siempre a mano**: **sin workflow de despliegue** (solo
+  `publicar.yml`, etiquetas `v*`): **el push no despliega**. Lo lanza el
+  usuario. `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza el
+  job **`portal-migraciones`** y solo si sale bien pasa el tráfico. El
+  contenedor no migra al arrancar.
 - **Entrar con Google, en modo redirección**: Google vuelve con un POST a
   `/api/auth/google/vuelta` (compara la cookie `g_csrf_token` con el campo,
   comprueba el token y lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada`).
@@ -87,39 +87,34 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
 - **Última entrada** (`lastSeenAt`): como mucho una vez por hora; «Nunca ha
   entrado» en *Permisos* delata un correo mal escrito.
 - **Cuentas sin licencia**: quien no es de la junta entra con **Cloud Identity
-  Free** (sin buzón), con su correo personal como **segundo correo** y los
-  avisos a *segundo*. Al crearlas, comprobar que no llevan licencia de
-  Workspace. Abrir la entrada a cuentas personales exige tres cerrojos: en el
-  historial, punto 4.
-- **Latido** (`suite-latido` en Cloud Scheduler, 4:00 → `POST /api/latido`):
-  mira Neon (avisa ≥ 80 % de 100 CU-horas), lanza el job `ampa-copias` y
-  despierta a las aplicaciones con `latido: true` en `suite.yaml` (fichajes,
-  tareas y familias). Llama a la **raíz del dominio** aunque la URL del
-  catálogo lleve ruta (`…/junta`). Siempre 200; fallos, `[error]` en el registro.
-- **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de cada base a
-  una unidad compartida de Drive, 30 por base (las 8). Se comprueban con
-  `probar-copias.sh` (`ampa-claude`) **cada mes**.
+  Free** (sin buzón), correo personal como **segundo correo**, avisos a
+  *segundo*. Sin licencia de Workspace. Cuentas personales: tres cerrojos, en
+  el historial, punto 4.
+- **Latido** (`suite-latido`, 4:00 → `POST /api/latido`): mira Neon (avisa ≥ 80 %
+  de 100 CU-horas), lanza `ampa-copias` y despierta a las aplicaciones con
+  `latido: true` (fichajes, tareas, familias) en la **raíz del dominio** aunque
+  la URL lleve ruta. Siempre 200; fallos, `[error]`.
+- **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 8 bases
+  a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
-  Cloud Scheduler, a admin@, un correo por hora como mucho. 404 y 405 solo
-  `warning` (robots que buscan `/.env`).
+  Cloud Scheduler, a admin@, un correo por hora. 404 y 405 solo `warning`.
 - **Ayuda de la suite**: `GET /api/ayuda` (sesión, filtrado por roles, CORS a
-  las `URL_…` del catálogo y a `HELP_ALLOWED_ORIGINS`). Contenido en
-  `ampa-manuales/ayuda/faq.json` (privado), cargado en la pestaña *Ayuda*. El
-  enlace a NotebookLM va en el fichero, no aquí (repositorio público).
+  las `URL_…` del catálogo y `HELP_ALLOWED_ORIGINS`). Contenido en
+  `ampa-manuales/ayuda/faq.json` (privado), cargado en la pestaña *Ayuda*;
+  el enlace a NotebookLM va en el fichero, no aquí (repo público).
 - **Junta** (`board_members`): cargos con un titular activo (presidencia,
   vicepresidencia, secretaría, tesorería) o varios (vocal). Pestaña solo admin
   (`/api/admin/junta`); `GET /api/junta`, cualquier sesión, solo nombre,
   correo y cargo. **DNI, dirección y teléfono nunca a logs ni errores.** Sin
   «reactivar»: alta nueva.
-- **Calendario escolar**: el curso 2026/27 está cargado; lo usa facturación.
-  `GET /api/calendario/publico` (`PublicCalendarController`, firewall `public`
-  con patrón exacto) **no pide sesión**: da el curso de hoy (hora de
-  Europe/Madrid, Cloud Run va en UTC) y los posteriores; `Cache-Control`
-  1 h. Lo lee `ampa-web` al construirse. No es contrato del cliente.
+- **Calendario escolar**: curso 2026/27 cargado; lo usa facturación.
+  `GET /api/calendario/publico` (`PublicCalendarController`, firewall `public`)
+  **no pide sesión**: curso de hoy (hora de Madrid; Cloud Run va en UTC) y
+  posteriores; caché 1 h. Lo lee `ampa-web`. No es contrato del cliente.
 
 ### Dar de alta una aplicación nueva
 
-Como con Proveedores (`crm`) y Documentos: su entrada en `suite.yaml`
+Su entrada en `suite.yaml`
 (nombre visible y roles; `latido: true` si hace algo programado); `URL_X` en
 `api/.env` (su Vite) y en `deploy/desplegar.sh` (su dominio); la tarjeta en
 `web/src/home/Applications.tsx`; su puerto en `HELP_ALLOWED_ORIGINS` de
@@ -133,15 +128,14 @@ personas de prueba en la base local con `app:permisos:dar`.
 **En producción**: revisión **`ampa-portal-00027-lv7`** (10/10/2026, commit
 `538fffa`, el último de `main`; `@ampa/ui` 0.2.13; `desplegar.sh` pone la
 etiqueta `commit`); cliente **v0.1.5**, el que usan todas las aplicaciones.
-Copias de **8 bases**. Nada sin desplegar (comprobado el 11/10/2026).
+Copias de **8 bases**. Nada sin desplegar (11/10/2026). `faq.json` al día
+en la pestaña *Ayuda* (11/10/2026).
 
 **Pendiente**
 
 - **El usuario** mira en los registros del latido de las 4:00 que el paso
   «familias» sale «hecho» (si 401: `LATIDO_AUDIENCIA` de familias). Sin
   comprobar aún.
-- **El usuario** comprueba en pantalla que los desplegables (0.2.13) abren a
-  la primera.
 - **Claude (otra sesión)**: en Neon, **solo consultar**, qué rol es dueño de
   cada base (`SELECT datname, pg_get_userbyid(datdba) FROM pg_database`); la de
   familias salió con `listados`.
@@ -149,13 +143,11 @@ Copias de **8 bases**. Nada sin desplegar (comprobado el 11/10/2026).
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
 - **El usuario** lanza `probar-copias.sh` cada mes.
-- **El usuario** lee las preguntas de la ayuda cuando pueda (se corrigen en
-  `faq.json` y se vuelve a cargar).
 - **Base y usuario propios de fichajes** (la única que entra con el dueño de
   Neon): preparado en fichajes; espera al usuario, "no corre prisa".
-- **Claude (otra sesión)**: el repo es público y `api/tests/Portal/Api/CalendarApiTest.php`
-  (quizá otros tests) lleva direcciones reales de `@ampasainzvicuna.com`;
-  sustituirlas por `@example.com`.
+- **PENDIENTE, Claude en otra sesión (no olvidar)**: repo público y
+  `api/tests/Portal/Api/CalendarApiTest.php` (quizá otros tests) lleva correos
+  reales; sustituirlos por `@example.com`.
 
 **No hacer sin que lo pida el usuario**: el resumen diario de toda la suite;
 registro de cambios de permisos y repaso anual; avisar en la ficha si una
@@ -169,11 +161,10 @@ Ideas sin repo y datos comunes (fase 3): en el historial.
 - Las del [README](README.md#trampas-conocidas): `UserId::__toString()` para
   Doctrine, `when@test` sin autowiring, `status()` final en PHPUnit 13, HS256
   con clave de 32 bytes o más.
-- **Neon**: `compute_time_seconds` es la CPU usada, no lo que se cobra; el plan
-  gratuito no da `consumption_history`. El latido calcula **el máximo posible**
-  (tiempo encendida × la CU máxima). La cifra se ve en la respuesta de
-  `POST /api/latido`, no en el registro. **La máquina está fija en 0,25 CU**
-  (mín. y máx.); una máquina nueva hay que fijarla igual. Detalle en el historial.
+- **Neon**: `compute_time_seconds` es CPU usada, no lo cobrado; sin
+  `consumption_history` en el plan gratuito. El latido calcula **el máximo
+  posible**; la cifra sale en la respuesta de `POST /api/latido`. **Máquina
+  fija en 0,25 CU** (mín. y máx.); una nueva, igual. Detalle en el historial.
 - `board_members`: el índice único parcial, la FK y los CHECK solo están en la
   migración; un `migrations:diff` propone borrarlos: no aceptarlo.
 - `HeartbeatApiTest` y `HelpApiTest` leen el `suite.yaml` de verdad: al dar de
@@ -183,8 +174,8 @@ Ideas sin repo y datos comunes (fase 3): en el historial.
   que ir **vacías y definidas**; sin definir, Symfony usa las de `api/.env`.
 - Los `VITE_…` van dentro de la imagen: cambiarlos exige redesplegar, no
   basta con `services update`.
-- Si otra sesión trabaja en el repo, desplegar desde un worktree limpio; y los
-  tests de integración de dos sesiones (o dos `comprobar.sh`) a la vez chocan
-  en `suite_test` (p. ej. `BoardApiTest` da 401): si fallan raro, repetir solo.
+- Con otra sesión en el repo, desplegar desde un worktree limpio; dos tests
+  de integración a la vez chocan en `suite_test` (`BoardApiTest` da 401):
+  si fallan raro, repetir solo.
 - Base nueva en Neon: crearla con dueño **`neondb_owner`**, no con el rol de otra
   aplicación.

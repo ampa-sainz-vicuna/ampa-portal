@@ -4,6 +4,19 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**11/10/2026 — Confirmaciones del usuario y recorte del CLAUDE.md**
+
+- Comprobado por el usuario: los desplegables (`@ampa/ui` 0.2.13) abren a la
+  primera. Sale del Pendiente.
+- `faq.json`: el usuario carga hoy la última versión en la pestaña *Ayuda*;
+  se da por hecho y sale del Pendiente.
+- **Sigue abierto** (otra sesión): `api/tests/Portal/Api/CalendarApiTest.php`
+  (quizá otros tests) lleva correos reales en repo público; pasar a
+  `@example.com`. Marcado en negrita en el Pendiente.
+- `CLAUDE.md` de 11.202 a unos 10 KB: frases acortadas (latido, cuentas sin
+  licencia, calendario público, Neon, despliegue), sin quitar reglas. Texto
+  largo previo de esos puntos: ver commits anteriores de `CLAUDE.md`.
+
 **11/10/2026 — Puesta al día: desplegado**
 
 - Según `scripts/estado.sh`, producción sirve **`ampa-portal-00027-lv7`**,
