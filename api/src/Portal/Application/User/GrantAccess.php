@@ -25,6 +25,7 @@ final readonly class GrantAccess
     public function __construct(
         private UserRepository $users,
         private ApplicationCatalog $catalog,
+        private GrantsChangeAnnouncer $announcer,
     ) {
     }
 
@@ -45,6 +46,8 @@ final readonly class GrantAccess
         $this->catalog->validate($grants);
 
         $user = $this->users->findByEmail($email);
+        // Antes de tocarla: el agregado se modifica en el sitio.
+        $before = $this->announcer->snapshot($user);
 
         if (null === $user) {
             $user = User::register(
@@ -78,6 +81,7 @@ final readonly class GrantAccess
         }
 
         $this->users->save($user);
+        $this->announcer->announce($before, $user);
 
         return $user;
     }

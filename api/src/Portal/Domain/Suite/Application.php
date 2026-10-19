@@ -18,6 +18,8 @@ final readonly class Application
      * @param array<string, string> $roles     código → nombre para la pantalla
      * @param bool                  $heartbeat si el latido diario la despierta (POST {raíz}/api/latido,
      *                                         cliente 0.1.5): solo las que ya lo tienen instalado
+     * @param bool                  $grantNotices si, cuando cambian los roles de alguien en ella, el portal
+     *                                         le avisa de servidor a servidor (POST {raíz}/api/service/permisos)
      */
     public function __construct(
         private string $code,
@@ -25,6 +27,7 @@ final readonly class Application
         private string $url,
         private array $roles,
         private bool $heartbeat = false,
+        private bool $grantNotices = false,
     ) {
         if ([] === $roles) {
             throw new \InvalidArgumentException(sprintf('La aplicación "%s" no tiene ningún rol.', $code));
@@ -57,6 +60,12 @@ final readonly class Application
     public function receivesHeartbeat(): bool
     {
         return $this->heartbeat && '' !== $this->url;
+    }
+
+    /** Si hay que avisarla cuando cambian los roles de alguien en ella (ver GrantsChangeAnnouncer). */
+    public function receivesGrantNotices(): bool
+    {
+        return $this->grantNotices && '' !== $this->url;
     }
 
     public function hasRole(string $role): bool

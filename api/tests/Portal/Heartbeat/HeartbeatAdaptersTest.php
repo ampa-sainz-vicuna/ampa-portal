@@ -9,7 +9,9 @@ use App\Portal\Domain\Suite\Application;
 use App\Portal\Infrastructure\Google\MetadataServer;
 use App\Portal\Infrastructure\Heartbeat\CloudRunBackupLauncher;
 use App\Portal\Infrastructure\Heartbeat\HttpApplicationWaker;
+use App\Portal\Infrastructure\Heartbeat\HttpGrantsChangeNotifier;
 use App\Portal\Infrastructure\Heartbeat\NeonDatabaseUsage;
+use App\Tests\Support\RecordingLogger;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -79,6 +81,67 @@ final class HeartbeatAdaptersTest extends TestCase
         $this->expectException(HeartbeatFailed::class);
 
         (new HttpApplicationWaker($http, new MetadataServer($http)))->wake($this->tareas());
+    }
+
+    #[Test]
+    public function avisa_del_cambio_de_permisos_con_el_nombre_de_la_aplicacion_en_el_cuerpo(): void
+    {
+        $http = $this->http([
+            new MockResponse('token-para-documentos'),
+            new MockResponse('{"ok":true}', ['http_code' => 200]),
+        ]);
+        $logger = new RecordingLogger();
+        $documentos = new Application('documentos', 'Documentos', 'https://documentos.ejemplo/', ['miembro' => 'Miembro'], grantNotices: true);
+
+        (new HttpGrantsChangeNotifier($http, new MetadataServer($http), $logger))->notify($documentos);
+
+        self::assertStringContainsString('audience=https://documentos.ejemplo&', $this->requests[0]['url']);
+        self::assertSame('POST', $this->requests[1]['method']);
+        self::assertSame('https://documentos.ejemplo/api/service/permisos', $this->requests[1]['url']);
+        self::assertContains('Authorization: Bearer token-para-documentos', $this->requests[1]['options']['headers']);
+        self::assertSame('{"aplicacion":"documentos"}', $this->requests[1]['options']['body']);
+        self::assertSame([], $logger->errors());
+    }
+
+    #[Test]
+    public function si_la_aplicacion_contesta_con_error_el_aviso_no_lanza_y_queda_en_el_registro(): void
+    {
+        $http = $this->http([
+            new MockResponse('token'),
+            new MockResponse('{"error":"se ha roto"}', ['http_code' => 500]),
+        ]);
+        $logger = new RecordingLogger();
+
+        (new HttpGrantsChangeNotifier($http, new MetadataServer($http), $logger))->notify($this->tareas());
+
+        self::assertCount(1, $logger->errors());
+        self::assertStringContainsString('ha contestado 500', $logger->errors()[0]);
+    }
+
+    #[Test]
+    public function si_la_red_falla_el_aviso_no_lanza_y_queda_como_error(): void
+    {
+        $http = $this->http([
+            new MockResponse('token'),
+            new MockResponse('', ['error' => 'Connection refused']),
+        ]);
+        $logger = new RecordingLogger();
+
+        (new HttpGrantsChangeNotifier($http, new MetadataServer($http), $logger))->notify($this->tareas());
+
+        self::assertCount(1, $logger->errors());
+    }
+
+    #[Test]
+    public function fuera_de_google_cloud_el_aviso_no_lanza_y_queda_como_warning(): void
+    {
+        $http = $this->http([new MockResponse('', ['error' => 'Could not resolve host: metadata.google.internal'])]);
+        $logger = new RecordingLogger();
+
+        (new HttpGrantsChangeNotifier($http, new MetadataServer($http), $logger))->notify($this->tareas());
+
+        self::assertCount(1, $logger->warnings());
+        self::assertSame([], $logger->errors());
     }
 
     #[Test]

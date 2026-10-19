@@ -8,6 +8,11 @@
 # (cliente/README.md, "Roles"). Quitar un rol de aquí no borra los permisos
 # que ya se hubieran dado: el portal dejaría de aceptarlo al guardar esa ficha.
 #
+# Claves opcionales de cada aplicación:
+#   latido: true           el latido diario la despierta (POST {raíz}/api/latido).
+#   avisos_permisos: true  cuando cambian los roles de alguien en ella, el
+#                          portal se lo avisa al momento (POST {raíz}/api/service/permisos).
+#
 # El orden es el de las tarjetas del portal. Las URLs cambian entre desarrollo
 # y producción, por eso vienen de variables de entorno (api/.env).
 
@@ -60,6 +65,11 @@ parameters:
         documentos:
             name: 'Documentos'
             url: '%env(URL_DOCUMENTOS)%'
+            # 19/10/2026: Documentos sincroniza los miembros de sus unidades de
+            # Drive con los roles. El aviso lo hace al instante; el latido diario
+            # es la red de seguridad por si un aviso se pierde.
+            latido: true
+            avisos_permisos: true
             roles:
                 miembro: 'Miembro (el espacio «AMPA»)'
                 # Los dos, además de miembro, no en su lugar: sin miembro no entra.

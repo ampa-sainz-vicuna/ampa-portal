@@ -170,6 +170,13 @@ uno):
   las aplicaciones con `latido: true` en `suite.yaml` (cliente 0.1.5, paso 8
   de su README). Cada paso va por su lado; los fallos van al registro como
   `[error]`. A mano: `bin/console app:latido`.
+- **Avisos de permisos** (`avisos_permisos: true` en `suite.yaml`; hoy solo
+  Documentos, 19/10/2026): al dar de alta, guardar la ficha o dar acceso
+  (`GrantsChangeAnnouncer`), si cambian los roles de alguien en una aplicación
+  que lo pide (desactivar también cuenta), el portal hace `POST
+  {raíz}/api/service/permisos` con `{"aplicacion": "<código>"}` y el token de
+  la cuenta de servicio (`HttpGrantsChangeNotifier`). Nunca lanza: si falla
+  queda en el registro y lo arregla el latido diario de esa aplicación.
 - **Las copias** (`deploy/copias/`): un job de Cloud Run que hace `pg_dump` de
   cada base y lo sube a una unidad compartida de Drive; se guardan las 30
   últimas. Su [README](deploy/copias/README.md) explica cómo montarlo y cómo

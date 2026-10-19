@@ -105,3 +105,6 @@ when@test:
         App\Portal\Application\Heartbeat\ApplicationWaker:
             class: App\Tests\Double\FakeApplicationWaker
             public: true
+        App\Portal\Application\User\GrantsChangeNotifier:
+            class: App\Tests\Double\RecordingGrantsChangeNotifier
+            public: true

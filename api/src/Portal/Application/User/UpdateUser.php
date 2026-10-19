@@ -27,6 +27,7 @@ final readonly class UpdateUser
     public function __construct(
         private UserRepository $users,
         private ApplicationCatalog $catalog,
+        private GrantsChangeAnnouncer $announcer,
     ) {
     }
 
@@ -55,12 +56,15 @@ final readonly class UpdateUser
             throw UserError::cannotDemoteYourself();
         }
 
+        $before = $this->announcer->snapshot($user);
+
         $user->rename($name);
         $user->changeGrants($grants);
         $user->changeContact($secondaryEmail, $notify);
         $active ? $user->reactivate() : $user->deactivate();
 
         $this->users->save($user);
+        $this->announcer->announce($before, $user);
 
         return $user;
     }

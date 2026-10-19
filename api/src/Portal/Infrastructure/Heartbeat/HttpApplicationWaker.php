@@ -58,7 +58,7 @@ final readonly class HttpApplicationWaker implements ApplicationWaker
     }
 
     /** «https://familias.ejemplo/junta» → «https://familias.ejemplo» (con el puerto, si lo lleva). */
-    private static function root(string $url): string
+    public static function root(string $url): string
     {
         $parts = parse_url($url);
         if (false === $parts || !isset($parts['scheme'], $parts['host'])) {

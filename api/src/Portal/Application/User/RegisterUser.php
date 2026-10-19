@@ -22,6 +22,7 @@ final readonly class RegisterUser
     public function __construct(
         private UserRepository $users,
         private ApplicationCatalog $catalog,
+        private GrantsChangeAnnouncer $announcer,
     ) {
     }
 
@@ -45,6 +46,7 @@ final readonly class RegisterUser
         $user = User::register(UserId::generate(), $email, $name, $grants);
         $user->changeContact($secondaryEmail, $notify);
         $this->users->save($user);
+        $this->announcer->announce([], $user);
 
         return $user;
     }

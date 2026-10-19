@@ -29,6 +29,15 @@ final class RecordingLogger extends AbstractLogger
     }
 
     /** @return list<string> */
+    public function warnings(): array
+    {
+        return array_values(array_column(array_filter(
+            $this->records,
+            static fn (array $record): bool => LogLevel::WARNING === $record['level'],
+        ), 'message'));
+    }
+
+    /** @return list<string> */
     public function errors(): array
     {
         return array_values(array_column(array_filter(
