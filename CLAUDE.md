@@ -92,8 +92,14 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   el historial, punto 4.
 - **Latido** (`suite-latido`, 4:00 → `POST /api/latido`): mira Neon (avisa ≥ 80 %
   de 100 CU-horas), lanza `ampa-copias` y despierta a las aplicaciones con
-  `latido: true` (fichajes, tareas, familias) en la **raíz del dominio** aunque
-  la URL lleve ruta. Siempre 200; fallos, `[error]`.
+  `latido: true` (fichajes, tareas, familias, documentos) en la **raíz del
+  dominio** aunque la URL lleve ruta. Siempre 200; fallos, `[error]`.
+- **Avisos de permisos** (`avisos_permisos: true` en `suite.yaml`; hoy solo
+  `documentos`): si cambian los roles de una persona en esa aplicación
+  (también al desactivarla), `GrantsChangeAnnouncer` (en RegisterUser,
+  UpdateUser y GrantAccess) llama por `GrantsChangeNotifier` a
+  `POST {raíz}/api/service/permisos` con ID token y `{"aplicacion": código}`,
+  timeout 10 s; nunca lanza (el latido lo cubre). Detalle en el README.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 8 bases
   a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
@@ -115,7 +121,8 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
 ### Dar de alta una aplicación nueva
 
 Su entrada en `suite.yaml`
-(nombre visible y roles; `latido: true` si hace algo programado); `URL_X` en
+(nombre visible y roles; `latido: true` si hace algo programado;
+`avisos_permisos: true` si necesita saber al instante los cambios de roles); `URL_X` en
 `api/.env` (su Vite) y en `deploy/desplegar.sh` (su dominio); la tarjeta en
 `web/src/home/Applications.tsx`; su puerto en `HELP_ALLOWED_ORIGINS` de
 `api/.env`; `BASE_X=x-database-url` en `deploy/copias/preparar.sh` (se salta
@@ -125,14 +132,15 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00027-lv7`** (10/10/2026, commit
-`538fffa`, el último de `main`; `@ampa/ui` 0.2.13; `desplegar.sh` pone la
-etiqueta `commit`); cliente **v0.1.5**, el que usan todas las aplicaciones.
-Copias de **8 bases**. Nada sin desplegar (11/10/2026). `faq.json` al día
-en la pestaña *Ayuda* (11/10/2026).
+**En producción**: revisión **`ampa-portal-00028-c6s`** (19/10/2026, commit
+`473b067`; `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`);
+cliente **v0.1.5**, el que usan todas las aplicaciones (el contrato no
+cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
 
 **Pendiente**
 
+- **El usuario** prueba en producción los avisos de permisos: cambiar un rol
+  de `documentos`; Claude mira después los registros.
 - **El usuario** mira en los registros del latido de las 4:00 que el paso
   «familias» sale «hecho» (si 401: `LATIDO_AUDIENCIA` de familias). Sin
   comprobar aún.
@@ -143,18 +151,15 @@ en la pestaña *Ayuda* (11/10/2026).
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
 - **El usuario** lanza `probar-copias.sh` cada mes.
-- **Base y usuario propios de fichajes** (la única que entra con el dueño de
-  Neon): preparado en fichajes; espera al usuario, "no corre prisa".
-- **PENDIENTE, Claude en otra sesión (no olvidar)**: repo público y
-  `api/tests/Portal/Api/CalendarApiTest.php` (quizá otros tests) lleva correos
-  reales; sustituirlos por `@example.com`.
+- **Base y usuario propios de fichajes** (la única con el dueño de Neon):
+  preparado en fichajes; espera al usuario, sin prisa.
+- **Claude, otra sesión (no olvidar)**: repo público y `CalendarApiTest.php`
+  (quizá otros tests) lleva correos reales; pasar a `@example.com`.
 
-**No hacer sin que lo pida el usuario**: el resumen diario de toda la suite;
-registro de cambios de permisos y repaso anual; avisar en la ficha si una
-cuenta sin buzón deja los avisos en *principal*; que el diálogo de la ficha no
-se cierre al pulsar fuera; un buscador en *Permisos*.
-
-Ideas sin repo y datos comunes (fase 3): en el historial.
+**No hacer sin que lo pida el usuario**: resumen diario de la suite; repaso
+anual de permisos; avisar en la ficha si una cuenta sin buzón deja los avisos
+en *principal*; que el diálogo de la ficha no se cierre al pulsar fuera; un
+buscador en *Permisos*. Ideas sin repo (fase 3): en el historial.
 
 ## Trampas conocidas
 

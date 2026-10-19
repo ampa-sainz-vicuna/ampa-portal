@@ -4,6 +4,36 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**19/10/2026 — Avisos de permisos a Documentos y su latido**
+
+- Commit `473b067` «Avisar a las aplicaciones de los cambios de permisos
+  (Documentos) y su latido», desplegado a mano por el usuario: revisión
+  **`ampa-portal-00028-c6s`** (etiqueta `commit=473b06752a48`).
+  `comprobar.sh`: unit 142 e integration 104 en verde. Sin release del
+  cliente: el contrato de `ampa/portal-cliente` no cambia.
+- Para qué: Documentos sincroniza los miembros de sus unidades de Drive con
+  los roles (decisión del usuario, 19/10/2026; detalle en el historial de
+  `ampa-documentos`).
+- `suite.yaml`: clave nueva `avisos_permisos: true`
+  (`Application::receivesGrantNotices`, leída por `ApplicationCatalogFactory`),
+  de momento solo `documentos`. A `documentos` también `latido: true`:
+  Documentos ya escucha el latido, red de seguridad diaria de su sincronización.
+- Puerto `Application/User/GrantsChangeNotifier` (nunca lanza) y servicio
+  `GrantsChangeAnnouncer`: toma un snapshot antes de cambiar a la persona y
+  avisa tras `save` si cambian sus roles en una aplicación con avisos
+  (`rolesIn`, así que desactivar también cuenta). Enganchado en
+  `RegisterUser`, `UpdateUser` y `GrantAccess`.
+- `Infrastructure/Heartbeat/HttpGrantsChangeNotifier`: `POST {raíz}/api/service/permisos`
+  con ID token de `MetadataServer`, cuerpo `{"aplicacion": código}`, timeout
+  10 s (la pantalla de permisos espera; si Documentos tarda más, sigue
+  sincronizando y aquí queda un error en el log; el latido lo cubre). Fuera
+  de Cloud Run, `warning`. `HttpApplicationWaker::root()` pasa a `public static`.
+- Tests: `GrantsChangeAnnouncerTest` (7), `GrantsChangeNoticesApiTest` (5),
+  4 nuevos en `HeartbeatAdaptersTest`; doble `RecordingGrantsChangeNotifier`.
+  README con el apartado «Avisos de permisos».
+- Pendiente: el usuario prueba en producción cambiando un rol de
+  `documentos`; Claude mira después los registros.
+
 **11/10/2026 — Confirmaciones del usuario y recorte del CLAUDE.md**
 
 - Comprobado por el usuario: los desplegables (`@ampa/ui` 0.2.13) abren a la
