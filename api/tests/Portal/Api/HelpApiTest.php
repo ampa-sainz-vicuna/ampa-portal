@@ -70,7 +70,7 @@ final class HelpApiTest extends ApiTestCase
     public function cargarlo_otra_vez_lo_sustituye_entero(): void
     {
         $this->loadFile();
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->signedInAs('admin@example.com');
 
         $this->request('PUT', '/api/admin/ayuda', [...self::FILE, 'notebookUrl' => null, 'entries' => [self::FILE['entries'][1]]]);
 
@@ -83,7 +83,7 @@ final class HelpApiTest extends ApiTestCase
     public function un_fichero_que_no_vale_es_un_422_con_el_motivo_y_no_cambia_nada(): void
     {
         $this->loadFile();
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->signedInAs('admin@example.com');
 
         $this->request('PUT', '/api/admin/ayuda', [...self::FILE, 'entries' => [...self::FILE['entries'], ['id' => 'x', 'application' => 'listados', 'roles' => ['admin'], 'question' => 'P', 'answer' => 'R']]]);
 
@@ -107,8 +107,8 @@ final class HelpApiTest extends ApiTestCase
     #[Test]
     public function sin_gestionar_los_permisos_no_se_puede_cargar_ni_ver_el_resumen(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['facturacion' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['facturacion' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('PUT', '/api/admin/ayuda', self::FILE);
         self::assertSame(403, $this->responseStatus());
@@ -121,8 +121,8 @@ final class HelpApiTest extends ApiTestCase
     public function cada_uno_ve_las_generales_y_las_de_sus_aplicaciones_sin_los_roles(): void
     {
         $this->loadFile();
-        $this->given('tesoreria@ampasainzvicuna.com', ['facturacion' => ['usuario']]);
-        $this->signedInAs('tesoreria@ampasainzvicuna.com');
+        $this->given('tesoreria@example.com', ['facturacion' => ['usuario']]);
+        $this->signedInAs('tesoreria@example.com');
 
         $this->request('GET', '/api/ayuda');
 
@@ -142,14 +142,14 @@ final class HelpApiTest extends ApiTestCase
     public function las_que_llevan_roles_solo_las_ve_quien_tiene_uno(): void
     {
         $this->loadFile();
-        $this->given('alberto@ampasainzvicuna.com', ['fichajes' => ['empleado']]);
-        $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin']]);
+        $this->given('alberto@example.com', ['fichajes' => ['empleado']]);
+        $this->given('tesoreria@example.com', ['fichajes' => ['admin']]);
 
-        $this->signedInAs('alberto@ampasainzvicuna.com');
+        $this->signedInAs('alberto@example.com');
         $this->request('GET', '/api/ayuda');
         self::assertSame(['general-avisos', 'fichajes-fichar'], array_column($this->payload()['entries'], 'id'));
 
-        $this->signedInAs('tesoreria@ampasainzvicuna.com');
+        $this->signedInAs('tesoreria@example.com');
         $this->request('GET', '/api/ayuda');
         self::assertSame(['general-avisos', 'fichajes-corregir', 'fichajes-fichar'], array_column($this->payload()['entries'], 'id'));
     }
@@ -157,8 +157,8 @@ final class HelpApiTest extends ApiTestCase
     #[Test]
     public function sin_nada_cargado_es_un_200_vacio(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('GET', '/api/ayuda');
 
@@ -180,8 +180,8 @@ final class HelpApiTest extends ApiTestCase
     #[Test]
     public function una_aplicacion_de_la_suite_la_puede_leer_desde_su_web(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         // URL_LISTADOS en desarrollo (api/.env).
         $this->request('GET', '/api/ayuda', server: ['HTTP_ORIGIN' => 'http://localhost:5174', 'HTTP_SEC_FETCH_SITE' => 'same-site']);
@@ -196,8 +196,8 @@ final class HelpApiTest extends ApiTestCase
     #[Test]
     public function otra_web_no_la_puede_leer(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('GET', '/api/ayuda', server: ['HTTP_ORIGIN' => 'https://ampa-falso.example', 'HTTP_SEC_FETCH_SITE' => 'cross-site']);
 
@@ -225,8 +225,8 @@ final class HelpApiTest extends ApiTestCase
     #[Test]
     public function las_demas_rutas_no_llevan_cors(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('GET', '/api/me', server: ['HTTP_ORIGIN' => 'http://localhost:5174']);
 
@@ -236,8 +236,8 @@ final class HelpApiTest extends ApiTestCase
 
     private function signedInAdmin(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['portal' => ['admin'], 'facturacion' => ['usuario']]);
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->given('admin@example.com', ['portal' => ['admin'], 'facturacion' => ['usuario']]);
+        $this->signedInAs('admin@example.com');
     }
 
     private function loadFile(): void

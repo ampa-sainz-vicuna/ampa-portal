@@ -57,10 +57,10 @@ final class HeartbeatApiTest extends ApiTestCase
     #[Test]
     public function ni_siquiera_quien_gestiona_los_permisos_puede_lanzarlo(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['portal' => ['admin']]);
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->given('admin@example.com', ['portal' => ['admin']]);
+        $this->signedInAs('admin@example.com');
 
-        $this->request('POST', '/api/latido', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('admin@ampasainzvicuna.com')]);
+        $this->request('POST', '/api/latido', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('admin@example.com')]);
 
         self::assertSame(401, $this->responseStatus());
     }

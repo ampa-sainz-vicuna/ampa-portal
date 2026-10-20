@@ -44,7 +44,7 @@ final class GoogleTokenInfoVerifierTest extends TestCase
     {
         $this->expectException(InvalidHeartbeat::class);
 
-        $this->verifier($this->claims(['email' => 'alguien@gmail.com']))->verify('token');
+        $this->verifier($this->claims(['email' => 'alguien@example.org']))->verify('token');
     }
 
     #[Test]

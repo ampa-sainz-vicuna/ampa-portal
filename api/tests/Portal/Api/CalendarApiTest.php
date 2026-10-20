@@ -78,8 +78,8 @@ final class CalendarApiTest extends ApiTestCase
     #[Test]
     public function sin_gestionar_los_permisos_no_se_puede_cargar(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('PUT', '/api/admin/calendario/2026-2027', self::COURSE);
 
@@ -90,9 +90,9 @@ final class CalendarApiTest extends ApiTestCase
     public function una_aplicacion_lo_pide_con_la_sesion_de_cualquiera_de_la_suite(): void
     {
         $this->loadCourse();
-        $this->given('alberto@ampasainzvicuna.com', ['fichajes' => ['empleado']]);
+        $this->given('alberto@example.com', ['fichajes' => ['empleado']]);
 
-        $this->request('GET', '/api/calendario?curso=2026-2027', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('alberto@ampasainzvicuna.com')]);
+        $this->request('GET', '/api/calendario?curso=2026-2027', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('alberto@example.com')]);
 
         self::assertSame(200, $this->responseStatus());
         self::assertSame([
@@ -119,9 +119,9 @@ final class CalendarApiTest extends ApiTestCase
     #[Test]
     public function un_curso_sin_cargar_es_un_404(): void
     {
-        $this->given('alberto@ampasainzvicuna.com', ['fichajes' => ['empleado']]);
+        $this->given('alberto@example.com', ['fichajes' => ['empleado']]);
 
-        $this->request('GET', '/api/calendario?curso=2027-2028', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('alberto@ampasainzvicuna.com')]);
+        $this->request('GET', '/api/calendario?curso=2027-2028', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('alberto@example.com')]);
 
         self::assertSame(404, $this->responseStatus());
     }
@@ -236,8 +236,8 @@ final class CalendarApiTest extends ApiTestCase
 
     private function signedInAdmin(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['portal' => ['admin']]);
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->given('admin@example.com', ['portal' => ['admin']]);
+        $this->signedInAs('admin@example.com');
     }
 
     private function loadCourse(): void

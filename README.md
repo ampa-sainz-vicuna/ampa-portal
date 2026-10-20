@@ -322,8 +322,8 @@ primero (y pasar al portal los accesos que ya había en fichajes y listados)
 se da por consola:
 
 ```bash
-docker compose exec php bin/console app:permisos:dar admin@ampasainzvicuna.com portal:admin listados:usuario --nombre="Nombre Apellido"
-docker compose exec php bin/console app:permisos:dar tesoreria@ampasainzvicuna.com fichajes:admin --nombre="Tesorería" --segundo-correo=alguien@gmail.com
+docker compose exec php bin/console app:permisos:dar admin@example.com portal:admin listados:usuario --nombre="Nombre Apellido"
+docker compose exec php bin/console app:permisos:dar tesoreria@example.com fichajes:admin --nombre="Tesorería" --segundo-correo=alguien@example.org
 ```
 
 Solo suma permisos, nunca quita. `--avisos=primary|secondary|both` elige a
@@ -383,7 +383,7 @@ El orden, la primera vez:
    listados):
 
    ```bash
-   docker compose run --rm gcloud bash deploy/dar-permisos.sh admin@ampasainzvicuna.com portal:admin listados:usuario --nombre=Admin --segundo-correo=alguien@gmail.com
+   docker compose run --rm gcloud bash deploy/dar-permisos.sh admin@example.com portal:admin listados:usuario --nombre=Admin --segundo-correo=alguien@example.org
    ```
 
    Corre `app:permisos:dar` dentro de Google, como un *job* de Cloud Run con

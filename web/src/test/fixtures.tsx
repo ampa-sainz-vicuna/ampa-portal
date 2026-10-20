@@ -8,7 +8,7 @@ import type { CatalogApplication, PortalUser, SuiteUser } from '../types'
 export function portalUser(overrides: Partial<PortalUser> = {}): PortalUser {
   return {
     name: 'Presidencia',
-    email: 'presidencia@ampasainzvicuna.com',
+    email: 'presidencia@example.com',
     secondaryEmail: null,
     notify: 'primary',
     isAdmin: false,
@@ -24,7 +24,7 @@ export function portalUser(overrides: Partial<PortalUser> = {}): PortalUser {
 export function suiteUser(overrides: Partial<SuiteUser> = {}): SuiteUser {
   return {
     id: '0192a4b0-0000-7000-8000-000000000001',
-    email: 'tesoreria@ampasainzvicuna.com',
+    email: 'tesoreria@example.com',
     name: 'Tesorería',
     active: true,
     grants: { fichajes: ['admin'] },

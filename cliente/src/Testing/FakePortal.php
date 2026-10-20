@@ -19,7 +19,7 @@ use Ampa\PortalCliente\Portal\SessionRejected;
  *
  *   $client->getCookieJar()->set(new Cookie(
  *       PortalSession::COOKIE,
- *       FakePortal::session('admin@ampasainzvicuna.com', 'Admin', ['usuario']),
+ *       FakePortal::session('admin@example.com', 'Admin', ['usuario']),
  *   ));
  *
  * y los avisos se preparan con FakePortal::recipientsFor('admin', [...]), y

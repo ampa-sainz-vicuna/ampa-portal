@@ -25,10 +25,10 @@ final class HttpPortalTest extends TestCase
     public function pregunta_por_esta_aplicacion_con_el_token_en_la_cabecera(): void
     {
         $response = new JsonMockResponse([
-            'email' => 'a@b.com',
+            'email' => 'a@example.net',
             'name' => 'A',
             'roles' => ['usuario'],
-            'notificationEmails' => ['a@gmail.com'],
+            'notificationEmails' => ['a@example.org'],
             'applications' => [['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test']],
         ]);
         $portal = new HttpPortal(new MockHttpClient($response), 'http://portal:8083/', 'listados');
@@ -38,9 +38,9 @@ final class HttpPortalTest extends TestCase
         self::assertSame('GET', $response->getRequestMethod());
         self::assertSame('http://portal:8083/api/acceso?aplicacion=listados', $response->getRequestUrl());
         self::assertContains('Authorization: Bearer el-token', $response->getRequestOptions()['headers']);
-        self::assertSame('a@b.com', $access->getEmail());
+        self::assertSame('a@example.net', $access->getEmail());
         self::assertSame(['usuario'], $access->getRoles());
-        self::assertSame(['a@gmail.com'], $access->getNotificationEmails());
+        self::assertSame(['a@example.org'], $access->getNotificationEmails());
         self::assertSame(
             [['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test']],
             array_map(static fn ($application) => $application->toArray(), $access->getApplications()),
@@ -50,7 +50,7 @@ final class HttpPortalTest extends TestCase
     #[Test]
     public function un_portal_anterior_sin_aplicaciones_da_la_lista_vacia(): void
     {
-        $response = new JsonMockResponse(['email' => 'a@b.com', 'name' => 'A', 'roles' => [], 'notificationEmails' => []]);
+        $response = new JsonMockResponse(['email' => 'a@example.net', 'name' => 'A', 'roles' => [], 'notificationEmails' => []]);
 
         self::assertSame([], $this->portal($response)->access('t')->getApplications());
     }
@@ -90,32 +90,32 @@ final class HttpPortalTest extends TestCase
     #[Test]
     public function pide_a_quien_avisar_por_rol(): void
     {
-        $response = new JsonMockResponse([['name' => 'Presidencia', 'emails' => ['p@ampa.com', 'p@gmail.com']]]);
+        $response = new JsonMockResponse([['name' => 'Presidencia', 'emails' => ['p@example.com', 'p@example.org']]]);
 
         $recipients = $this->portal($response)->recipients('t', 'admin');
 
         self::assertSame('http://portal/api/avisos?aplicacion=listados&rol=admin', $response->getRequestUrl());
         self::assertSame('Presidencia', $recipients[0]->getName());
-        self::assertSame(['p@ampa.com', 'p@gmail.com'], $recipients[0]->getEmails());
+        self::assertSame(['p@example.com', 'p@example.org'], $recipients[0]->getEmails());
     }
 
     #[Test]
     public function pide_quien_hay_en_la_aplicacion(): void
     {
         $response = new JsonMockResponse([
-            ['name' => 'Alberto', 'email' => 'alberto@ampa.com', 'roles' => ['miembro'], 'notificationEmails' => ['alberto@gmail.com']],
+            ['name' => 'Alberto', 'email' => 'alberto@example.com', 'roles' => ['miembro'], 'notificationEmails' => ['alberto@example.org']],
             // Un portal anterior a la 0.1.2 no manda los correos de aviso.
-            ['name' => 'Vocal', 'email' => 'vocal@ampa.com', 'roles' => ['miembro']],
+            ['name' => 'Vocal', 'email' => 'vocal@example.com', 'roles' => ['miembro']],
         ]);
 
         $members = $this->portal($response)->members('t');
 
         self::assertSame('http://portal/api/personas?aplicacion=listados', $response->getRequestUrl());
-        self::assertSame('alberto@ampa.com', $members[0]->getEmail());
+        self::assertSame('alberto@example.com', $members[0]->getEmail());
         self::assertSame('Alberto', $members[0]->getName());
         self::assertSame(['miembro'], $members[0]->getRoles());
-        self::assertSame(['alberto@gmail.com'], $members[0]->getNotificationEmails());
-        self::assertSame(['vocal@ampa.com'], $members[1]->getNotificationEmails(), 'Sin correos de aviso, el de la cuenta.');
+        self::assertSame(['alberto@example.org'], $members[0]->getNotificationEmails());
+        self::assertSame(['vocal@example.com'], $members[1]->getNotificationEmails(), 'Sin correos de aviso, el de la cuenta.');
     }
 
     #[Test]

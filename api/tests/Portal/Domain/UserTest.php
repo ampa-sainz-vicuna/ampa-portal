@@ -19,29 +19,29 @@ final class UserTest extends TestCase
     {
         // Si no, quien se dio de alta como "Admin@…" no podría entrar: Google
         // devuelve el correo en minúsculas.
-        self::assertSame('admin@ampasainzvicuna.com', EmailAddress::fromString(' Admin@AmpaSainzVicuna.com ')->getValue());
+        self::assertSame('admin@example.com', EmailAddress::fromString(' Admin@Example.com ')->getValue());
     }
 
     #[Test]
     public function sin_segundo_correo_los_avisos_van_al_principal(): void
     {
-        self::assertSame(['tesoreria@ampasainzvicuna.com'], $this->emails($this->user()));
+        self::assertSame(['tesoreria@example.com'], $this->emails($this->user()));
     }
 
     #[Test]
     public function con_segundo_correo_cada_uno_elige_a_donde_van_los_avisos(): void
     {
         $user = $this->user();
-        $personal = EmailAddress::fromString('alguien@gmail.com');
+        $personal = EmailAddress::fromString('alguien@example.org');
 
         $user->changeContact($personal, NotificationTarget::Primary);
-        self::assertSame(['tesoreria@ampasainzvicuna.com'], $this->emails($user));
+        self::assertSame(['tesoreria@example.com'], $this->emails($user));
 
         $user->changeContact($personal, NotificationTarget::Secondary);
-        self::assertSame(['alguien@gmail.com'], $this->emails($user));
+        self::assertSame(['alguien@example.org'], $this->emails($user));
 
         $user->changeContact($personal, NotificationTarget::Both);
-        self::assertSame(['tesoreria@ampasainzvicuna.com', 'alguien@gmail.com'], $this->emails($user));
+        self::assertSame(['tesoreria@example.com', 'alguien@example.org'], $this->emails($user));
     }
 
     #[Test]
@@ -57,7 +57,7 @@ final class UserTest extends TestCase
     {
         // Si contara, con "a los dos" cada aviso llegaría dos veces.
         $user = $this->user();
-        $user->changeContact(EmailAddress::fromString('Tesoreria@ampasainzvicuna.com'), NotificationTarget::Primary);
+        $user->changeContact(EmailAddress::fromString('Tesoreria@example.com'), NotificationTarget::Primary);
 
         self::assertNull($user->getSecondaryEmail());
     }
@@ -65,7 +65,7 @@ final class UserTest extends TestCase
     #[Test]
     public function sin_permisos_no_puede_entrar_aunque_este_activo(): void
     {
-        $user = User::register(UserId::generate(), EmailAddress::fromString('a@b.com'), 'Alguien', Grants::none());
+        $user = User::register(UserId::generate(), EmailAddress::fromString('a@example.net'), 'Alguien', Grants::none());
 
         self::assertFalse($user->canSignIn());
     }
@@ -120,7 +120,7 @@ final class UserTest extends TestCase
     {
         return User::register(
             UserId::generate(),
-            EmailAddress::fromString('tesoreria@ampasainzvicuna.com'),
+            EmailAddress::fromString('tesoreria@example.com'),
             'Tesorería',
             Grants::fromArray(['fichajes' => ['admin']]),
         );

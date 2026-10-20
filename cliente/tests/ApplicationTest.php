@@ -44,12 +44,12 @@ final class ApplicationTest extends WebTestCase
     #[Test]
     public function con_la_cookie_de_la_suite_sabe_quien_soy(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario']);
 
         $this->client->request('GET', '/api/me');
 
         self::assertResponseIsSuccessful();
-        self::assertSame(['name' => 'Admin', 'email' => 'admin@ampasainzvicuna.com', 'applications' => []], $this->payload());
+        self::assertSame(['name' => 'Admin', 'email' => 'admin@example.com', 'applications' => []], $this->payload());
     }
 
     #[Test]
@@ -58,7 +58,7 @@ final class ApplicationTest extends WebTestCase
         $tareas = ['code' => 'tareas', 'name' => 'Tareas del AMPA', 'url' => 'https://tareas.ampa.test'];
         $this->client->getCookieJar()->set(new BrowserCookie(
             PortalSession::COOKIE,
-            FakePortal::session('admin@ampasainzvicuna.com', 'Admin', ['usuario'], [], [$tareas]),
+            FakePortal::session('admin@example.com', 'Admin', ['usuario'], [], [$tareas]),
         ));
 
         $this->client->request('GET', '/api/me');
@@ -69,29 +69,29 @@ final class ApplicationTest extends WebTestCase
     #[Test]
     public function abrir_la_aplicacion_avisa_a_quien_escuche(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario']);
 
         $this->client->request('GET', '/api/me');
 
-        self::assertSame(['admin@ampasainzvicuna.com'], OpenedListener::$opened);
+        self::assertSame(['admin@example.com'], OpenedListener::$opened);
     }
 
     #[Test]
     public function los_roles_del_portal_son_roles_de_symfony(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario', 'admin'], ['admin@gmail.com']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario', 'admin'], ['admin@example.org']);
 
         $this->client->request('GET', '/api/admin/algo');
 
         self::assertResponseIsSuccessful();
         self::assertSame(['ROLE_USUARIO', 'ROLE_ADMIN'], $this->payload()['roles']);
-        self::assertSame(['admin@gmail.com'], $this->payload()['notificationEmails']);
+        self::assertSame(['admin@example.org'], $this->payload()['notificationEmails']);
     }
 
     #[Test]
     public function sin_el_rol_que_pide_la_ruta_es_un_403_en_json(): void
     {
-        $this->signedIn('usuario@ampasainzvicuna.com', 'Usuario', ['usuario']);
+        $this->signedIn('usuario@example.com', 'Usuario', ['usuario']);
 
         $this->client->request('GET', '/api/admin/algo');
 
@@ -104,7 +104,7 @@ final class ApplicationTest extends WebTestCase
     {
         // La sesión vale para la suite: borrarla le sacaría también de las
         // aplicaciones en las que sí entra.
-        $this->signedIn('fichajes@ampasainzvicuna.com', 'Solo fichajes', []);
+        $this->signedIn('fichajes@example.com', 'Solo fichajes', []);
 
         $this->client->request('GET', '/api/me');
 
@@ -149,7 +149,7 @@ final class ApplicationTest extends WebTestCase
     #[Test]
     public function un_post_que_viene_de_otra_web_se_rechaza_antes_de_preguntar_al_portal(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario']);
 
         $this->client->request('POST', '/api/guardar', server: ['HTTP_SEC_FETCH_SITE' => 'cross-site']);
 
@@ -159,7 +159,7 @@ final class ApplicationTest extends WebTestCase
     #[Test]
     public function desde_la_misma_pagina_si_se_acepta(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario']);
 
         $this->client->request('POST', '/api/guardar', server: ['HTTP_SEC_FETCH_SITE' => 'same-origin']);
 
@@ -170,12 +170,12 @@ final class ApplicationTest extends WebTestCase
     public function a_quien_avisar_se_pregunta_con_la_sesion_de_la_peticion_en_curso(): void
     {
         FakePortal::recipientsFor('admin', [
-            new Recipient('Presidencia', ['presidencia@ampasainzvicuna.com', 'presi@gmail.com']),
-            new Recipient('Tesorería', ['presi@gmail.com']),
+            new Recipient('Presidencia', ['presidencia@example.com', 'presi@example.org']),
+            new Recipient('Tesorería', ['presi@example.org']),
         ]);
 
         $request = Request::create('/api/lo-que-sea');
-        $request->cookies->set(PortalSession::COOKIE, FakePortal::session('empleada@ampasainzvicuna.com', 'Empleada', ['usuario']));
+        $request->cookies->set(PortalSession::COOKIE, FakePortal::session('empleada@example.com', 'Empleada', ['usuario']));
         self::getContainer()->get('request_stack')->push($request);
 
         /** @var SuiteRecipients $recipients */
@@ -183,23 +183,23 @@ final class ApplicationTest extends WebTestCase
         $emails = $recipients->emailsWithRole('admin');
 
         // Sin repetir: el mismo correo personal en dos fichas llega una vez.
-        self::assertSame(['presidencia@ampasainzvicuna.com', 'presi@gmail.com'], $emails);
+        self::assertSame(['presidencia@example.com', 'presi@example.org'], $emails);
     }
 
     #[Test]
     public function sin_nadie_detras_se_pregunta_con_el_token_de_este_servidor(): void
     {
         // Una tarea programada: ninguna petición con cookie.
-        FakePortal::membersAre([new Member('alberto@ampasainzvicuna.com', 'Alberto', ['miembro'])]);
-        FakePortal::recipientsFor('admin', [new Recipient('Presidencia', ['presidencia@ampasainzvicuna.com'])]);
+        FakePortal::membersAre([new Member('alberto@example.com', 'Alberto', ['miembro'])]);
+        FakePortal::recipientsFor('admin', [new Recipient('Presidencia', ['presidencia@example.com'])]);
 
         /** @var SuiteMembers $members */
         $members = self::getContainer()->get('test.suite_members');
         /** @var SuiteRecipients $recipients */
         $recipients = self::getContainer()->get('test.suite_recipients');
 
-        self::assertTrue($members->has('Alberto@ampasainzvicuna.com'));
-        self::assertSame(['presidencia@ampasainzvicuna.com'], $recipients->emailsWithRole('admin'));
+        self::assertTrue($members->has('Alberto@example.com'));
+        self::assertSame(['presidencia@example.com'], $recipients->emailsWithRole('admin'));
     }
 
     #[Test]
@@ -238,7 +238,7 @@ final class ApplicationTest extends WebTestCase
     #[Test]
     public function el_latido_no_lo_puede_lanzar_una_persona_con_su_cookie(): void
     {
-        $this->signedIn('admin@ampasainzvicuna.com', 'Admin', ['usuario', 'admin']);
+        $this->signedIn('admin@example.com', 'Admin', ['usuario', 'admin']);
 
         $this->client->request('POST', '/api/latido');
 

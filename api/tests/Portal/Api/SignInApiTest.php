@@ -20,15 +20,15 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function entrar_pone_la_cookie_de_sesion_y_dice_a_donde_puede_ir(): void
     {
-        $admin = $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario'], 'portal' => ['admin']]);
+        $admin = $this->given('admin@example.com', ['listados' => ['usuario'], 'portal' => ['admin']]);
 
-        $this->request('POST', '/api/auth/google', ['credential' => 'admin@ampasainzvicuna.com']);
+        $this->request('POST', '/api/auth/google', ['credential' => 'admin@example.com']);
 
         self::assertSame(200, $this->responseStatus());
         // Y queda apuntado que ha entrado.
         self::assertNotNull($this->reload($admin)->getLastSeenAt());
         $payload = $this->payload();
-        self::assertSame('admin@ampasainzvicuna.com', $payload['email']);
+        self::assertSame('admin@example.com', $payload['email']);
         self::assertTrue($payload['isAdmin']);
         self::assertSame(['listados'], array_column($payload['applications'], 'code'));
         self::assertSame('http://localhost:5174', $payload['applications'][0]['url']);
@@ -46,14 +46,14 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function con_esa_cookie_ya_sabe_quien_soy(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->request('POST', '/api/auth/google', ['credential' => 'admin@ampasainzvicuna.com']);
+        $this->given('admin@example.com', ['listados' => ['usuario']]);
+        $this->request('POST', '/api/auth/google', ['credential' => 'admin@example.com']);
 
         // El cliente de pruebas guarda la cookie y la manda, como un navegador.
         $this->request('GET', '/api/me');
 
         self::assertSame(200, $this->responseStatus());
-        self::assertSame('admin@ampasainzvicuna.com', $this->payload()['email']);
+        self::assertSame('admin@example.com', $this->payload()['email']);
         self::assertFalse($this->payload()['isAdmin']);
     }
 
@@ -76,7 +76,7 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function quien_no_esta_dado_de_alta_no_entra(): void
     {
-        $this->request('POST', '/api/auth/google', ['credential' => 'desconocido@gmail.com']);
+        $this->request('POST', '/api/auth/google', ['credential' => 'desconocido@example.org']);
 
         self::assertSame(403, $this->responseStatus());
         self::assertNull($this->sessionCookieOrNull());
@@ -85,9 +85,9 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function quien_esta_desactivado_no_entra(): void
     {
-        $this->given('antiguo@ampasainzvicuna.com', ['listados' => ['usuario']], active: false);
+        $this->given('antiguo@example.com', ['listados' => ['usuario']], active: false);
 
-        $this->request('POST', '/api/auth/google', ['credential' => 'antiguo@ampasainzvicuna.com']);
+        $this->request('POST', '/api/auth/google', ['credential' => 'antiguo@example.com']);
 
         self::assertSame(403, $this->responseStatus());
     }
@@ -95,9 +95,9 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function quien_no_tiene_ningun_permiso_no_entra(): void
     {
-        $this->given('nada@ampasainzvicuna.com', []);
+        $this->given('nada@example.com', []);
 
-        $this->request('POST', '/api/auth/google', ['credential' => 'nada@ampasainzvicuna.com']);
+        $this->request('POST', '/api/auth/google', ['credential' => 'nada@example.com']);
 
         self::assertSame(403, $this->responseStatus());
     }
@@ -105,9 +105,9 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function a_la_vuelta_de_google_pone_la_cookie_y_lleva_a_la_portada_con_el_volver(): void
     {
-        $admin = $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $admin = $this->given('admin@example.com', ['listados' => ['usuario']]);
 
-        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com', 'state' => 'http://localhost:5174/grupos?id=3']);
+        $this->googleReturn(['credential' => 'admin@example.com', 'state' => 'http://localhost:5174/grupos?id=3']);
 
         self::assertSame(303, $this->responseStatus());
         self::assertSame('/?entrada=ok&volver=http%3A%2F%2Flocalhost%3A5174%2Fgrupos%3Fid%3D3', $this->location());
@@ -116,15 +116,15 @@ final class SignInApiTest extends ApiTestCase
 
         // Y la cookie vale: ya sabe quién soy.
         $this->request('GET', '/api/me');
-        self::assertSame('admin@ampasainzvicuna.com', $this->payload()['email']);
+        self::assertSame('admin@example.com', $this->payload()['email']);
     }
 
     #[Test]
     public function sin_volver_lleva_solo_a_la_portada(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $this->given('admin@example.com', ['listados' => ['usuario']]);
 
-        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com', 'state' => '']);
+        $this->googleReturn(['credential' => 'admin@example.com', 'state' => '']);
 
         self::assertSame('/?entrada=ok', $this->location());
     }
@@ -142,11 +142,11 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function a_la_vuelta_sin_la_cookie_de_google_no_entra(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $this->given('admin@example.com', ['listados' => ['usuario']]);
 
         // La cookie g_csrf_token dura 5 minutos: o ha tardado más, o el POST no
         // lo empezó el botón de esta página (CSRF).
-        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com'], csrfCookie: null);
+        $this->googleReturn(['credential' => 'admin@example.com'], csrfCookie: null);
 
         self::assertSame('/?entrada=caducada', $this->location());
         self::assertNull($this->sessionCookieOrNull());
@@ -155,9 +155,9 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function a_la_vuelta_con_otra_cookie_de_google_no_entra(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $this->given('admin@example.com', ['listados' => ['usuario']]);
 
-        $this->googleReturn(['credential' => 'admin@ampasainzvicuna.com'], csrfCookie: 'otra');
+        $this->googleReturn(['credential' => 'admin@example.com'], csrfCookie: 'otra');
 
         self::assertSame('/?entrada=caducada', $this->location());
         self::assertNull($this->sessionCookieOrNull());
@@ -175,7 +175,7 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function a_la_vuelta_quien_no_tiene_acceso_no_entra(): void
     {
-        $this->googleReturn(['credential' => 'desconocido@gmail.com']);
+        $this->googleReturn(['credential' => 'desconocido@example.org']);
 
         self::assertSame('/?entrada=sin-acceso', $this->location());
         self::assertNull($this->sessionCookieOrNull());
@@ -203,8 +203,8 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function desactivar_a_alguien_le_cierra_la_puerta_aunque_su_cookie_siga_vigente(): void
     {
-        $user = $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $user = $this->given('admin@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('admin@example.com');
 
         $user->deactivate();
         self::getContainer()->get(UserRepository::class)->save($user);
@@ -226,8 +226,8 @@ final class SignInApiTest extends ApiTestCase
     #[Test]
     public function un_post_que_viene_de_otra_web_se_rechaza(): void
     {
-        $this->given('admin@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('admin@ampasainzvicuna.com');
+        $this->given('admin@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('admin@example.com');
 
         $this->request('PUT', '/api/me/contacto', ['secondaryEmail' => 'atacante@example.com', 'notify' => 'secondary'], ['HTTP_SEC_FETCH_SITE' => 'cross-site']);
 

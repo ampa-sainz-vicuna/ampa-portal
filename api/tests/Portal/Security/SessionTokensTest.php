@@ -21,9 +21,9 @@ final class SessionTokensTest extends TestCase
     {
         $tokens = $this->tokens();
 
-        $email = $tokens->emailFrom($tokens->issue(EmailAddress::fromString('admin@ampasainzvicuna.com')));
+        $email = $tokens->emailFrom($tokens->issue(EmailAddress::fromString('admin@example.com')));
 
-        self::assertSame('admin@ampasainzvicuna.com', $email->getValue());
+        self::assertSame('admin@example.com', $email->getValue());
     }
 
     #[Test]
@@ -31,7 +31,7 @@ final class SessionTokensTest extends TestCase
     {
         // Emitido hace ocho días con una sesión de siete.
         $old = new SessionTokens(self::KEY, 7 * 86400, new MockClock('-8 days'));
-        $token = $old->issue(EmailAddress::fromString('admin@ampasainzvicuna.com'));
+        $token = $old->issue(EmailAddress::fromString('admin@example.com'));
 
         $this->expectException(InvalidSessionToken::class);
 
@@ -42,7 +42,7 @@ final class SessionTokensTest extends TestCase
     public function un_token_firmado_con_otra_clave_no_vale(): void
     {
         $other = new SessionTokens('otra-clave-distinta-de-al-menos-32-bytes', 3600, new MockClock());
-        $token = $other->issue(EmailAddress::fromString('admin@ampasainzvicuna.com'));
+        $token = $other->issue(EmailAddress::fromString('admin@example.com'));
 
         $this->expectException(InvalidSessionToken::class);
 
@@ -54,7 +54,7 @@ final class SessionTokensTest extends TestCase
     {
         // El ataque clásico: cabecera "alg: none" y sin firma.
         $header = JWT::urlsafeB64Encode((string) json_encode(['typ' => 'JWT', 'alg' => 'none']));
-        $claims = JWT::urlsafeB64Encode((string) json_encode(['sub' => 'admin@ampasainzvicuna.com', 'exp' => time() + 3600]));
+        $claims = JWT::urlsafeB64Encode((string) json_encode(['sub' => 'admin@example.com', 'exp' => time() + 3600]));
 
         $this->expectException(InvalidSessionToken::class);
 

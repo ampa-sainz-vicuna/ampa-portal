@@ -272,7 +272,7 @@ y en cada test, "entrar" es poner la cookie con lo que contestaría el portal:
 ```php
 $client->getCookieJar()->set(new Cookie(
     PortalSession::COOKIE,
-    FakePortal::session('admin@ampasainzvicuna.com', 'Admin', ['usuario']),
+    FakePortal::session('admin@example.com', 'Admin', ['usuario']),
 ));
 ```
 

@@ -17,8 +17,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Da permisos desde la consola, dando de alta a la persona si no existe.
  *
- *   bin/console app:permisos:dar admin@ampasainzvicuna.com portal:admin listados:usuario --nombre="Nombre Apellido"
- *   bin/console app:permisos:dar tesoreria@ampasainzvicuna.com fichajes:admin --segundo-correo=alguien@gmail.com
+ *   bin/console app:permisos:dar admin@example.com portal:admin listados:usuario --nombre="Nombre Apellido"
+ *   bin/console app:permisos:dar tesoreria@example.com fichajes:admin --segundo-correo=alguien@example.org
  *
  * Para lo que la pantalla no puede: el PRIMER administrador (sin él nadie
  * entra en la pantalla de permisos) y pasar al portal los accesos que ya había

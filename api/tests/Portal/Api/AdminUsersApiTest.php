@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
  */
 final class AdminUsersApiTest extends ApiTestCase
 {
-    private const string ADMIN = 'admin@ampasainzvicuna.com';
+    private const string ADMIN = 'admin@example.com';
 
     protected function setUp(): void
     {
@@ -26,8 +26,8 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function lista_a_todos_por_nombre_con_sus_permisos_y_correos(): void
     {
-        $this->given('zoe@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->given('alvaro@ampasainzvicuna.com', ['fichajes' => ['admin']], secondaryEmail: 'alvaro@gmail.com', notify: NotificationTarget::Both);
+        $this->given('zoe@example.com', ['listados' => ['usuario']]);
+        $this->given('alvaro@example.com', ['fichajes' => ['admin']], secondaryEmail: 'alvaro@example.org', notify: NotificationTarget::Both);
 
         $this->request('GET', '/api/admin/users');
 
@@ -35,42 +35,42 @@ final class AdminUsersApiTest extends ApiTestCase
         $users = $this->payload();
         self::assertSame(['Admin', 'Alvaro', 'Zoe'], array_column($users, 'name'));
         self::assertSame(['fichajes' => ['admin']], $users[1]['grants']);
-        self::assertSame('alvaro@gmail.com', $users[1]['secondaryEmail']);
+        self::assertSame('alvaro@example.org', $users[1]['secondaryEmail']);
         self::assertSame('both', $users[1]['notify']);
     }
 
     #[Test]
     public function dice_cuando_entro_cada_uno_por_ultima_vez_y_quien_no_ha_entrado_nunca(): void
     {
-        $zoe = $this->given('zoe@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->given('alvaro@ampasainzvicuna.com', ['listados' => ['usuario']]);
+        $zoe = $this->given('zoe@example.com', ['listados' => ['usuario']]);
+        $this->given('alvaro@example.com', ['listados' => ['usuario']]);
 
         // Zoe abre listados: su servidor pregunta al portal con su sesión.
-        $this->request('GET', '/api/acceso?aplicacion=listados', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('zoe@ampasainzvicuna.com')]);
+        $this->request('GET', '/api/acceso?aplicacion=listados', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->tokenFor('zoe@example.com')]);
         self::assertSame(200, $this->responseStatus());
         self::assertNotNull($this->reload($zoe)->getLastSeenAt());
 
         $this->request('GET', '/api/admin/users');
 
         $users = array_column($this->payload(), null, 'email');
-        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', (string) $users['zoe@ampasainzvicuna.com']['lastSeenAt']);
-        self::assertNull($users['alvaro@ampasainzvicuna.com']['lastSeenAt']);
+        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', (string) $users['zoe@example.com']['lastSeenAt']);
+        self::assertNull($users['alvaro@example.com']['lastSeenAt']);
     }
 
     #[Test]
     public function da_de_alta_a_alguien_con_sus_permisos(): void
     {
         $this->request('POST', '/api/admin/users', [
-            'email' => 'Secretaria@AmpaSainzVicuna.com',
+            'email' => 'Secretaria@Example.com',
             'name' => 'Secretaría',
             'grants' => ['fichajes' => ['admin'], 'listados' => ['usuario']],
-            'secondaryEmail' => 'secre@gmail.com',
+            'secondaryEmail' => 'secre@example.org',
             'notify' => 'secondary',
         ]);
 
         self::assertSame(201, $this->responseStatus());
         $user = $this->payload();
-        self::assertSame('secretaria@ampasainzvicuna.com', $user['email']);
+        self::assertSame('secretaria@example.com', $user['email']);
         self::assertSame(['fichajes' => ['admin'], 'listados' => ['usuario']], $user['grants']);
         self::assertTrue($user['active']);
         self::assertSame('secondary', $user['notify']);
@@ -79,7 +79,7 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function el_segundo_correo_es_opcional_al_dar_de_alta(): void
     {
-        $this->request('POST', '/api/admin/users', ['email' => 'a@ampasainzvicuna.com', 'name' => 'A', 'grants' => ['listados' => ['usuario']]]);
+        $this->request('POST', '/api/admin/users', ['email' => 'a@example.com', 'name' => 'A', 'grants' => ['listados' => ['usuario']]]);
 
         self::assertSame(201, $this->responseStatus());
         self::assertNull($this->payload()['secondaryEmail']);
@@ -97,7 +97,7 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function un_rol_que_la_aplicacion_no_tiene_es_un_422(): void
     {
-        $this->request('POST', '/api/admin/users', ['email' => 'a@ampasainzvicuna.com', 'name' => 'A', 'grants' => ['listados' => ['admin']]]);
+        $this->request('POST', '/api/admin/users', ['email' => 'a@example.com', 'name' => 'A', 'grants' => ['listados' => ['admin']]]);
 
         self::assertSame(422, $this->responseStatus());
         self::assertStringContainsString('no tiene el rol "admin"', $this->payload()['error']);
@@ -106,7 +106,7 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function avisos_al_segundo_correo_sin_segundo_correo_es_un_422(): void
     {
-        $this->request('POST', '/api/admin/users', ['email' => 'a@ampasainzvicuna.com', 'name' => 'A', 'grants' => [], 'notify' => 'secondary']);
+        $this->request('POST', '/api/admin/users', ['email' => 'a@example.com', 'name' => 'A', 'grants' => [], 'notify' => 'secondary']);
 
         self::assertSame(422, $this->responseStatus());
     }
@@ -114,7 +114,7 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function sin_los_campos_obligatorios_es_un_400(): void
     {
-        $this->request('POST', '/api/admin/users', ['email' => 'a@ampasainzvicuna.com']);
+        $this->request('POST', '/api/admin/users', ['email' => 'a@example.com']);
 
         self::assertSame(400, $this->responseStatus());
     }
@@ -122,13 +122,13 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function guardar_la_ficha_sustituye_nombre_estado_permisos_y_correos(): void
     {
-        $user = $this->given('tesoreria@ampasainzvicuna.com', ['fichajes' => ['admin'], 'listados' => ['usuario']]);
+        $user = $this->given('tesoreria@example.com', ['fichajes' => ['admin'], 'listados' => ['usuario']]);
 
         $this->request('PUT', '/api/admin/users/'.$user->getId()->toString(), [
             'name' => 'Tesorería',
             'active' => false,
             'grants' => ['fichajes' => ['admin']],
-            'secondaryEmail' => 'teso@gmail.com',
+            'secondaryEmail' => 'teso@example.org',
             'notify' => 'both',
         ]);
 
@@ -137,15 +137,15 @@ final class AdminUsersApiTest extends ApiTestCase
         self::assertSame('Tesorería', $saved->getName());
         self::assertFalse($saved->isActive());
         self::assertSame(['fichajes' => ['admin']], $saved->getGrants()->toArray());
-        self::assertSame('teso@gmail.com', $saved->getSecondaryEmail()?->getValue());
+        self::assertSame('teso@example.org', $saved->getSecondaryEmail()?->getValue());
         self::assertSame(NotificationTarget::Both, $saved->getNotify());
     }
 
     #[Test]
     public function nadie_puede_quitarse_a_si_mismo_la_gestion_de_permisos(): void
     {
-        $me = $this->given('yo@ampasainzvicuna.com', ['portal' => ['admin']]);
-        $this->signedInAs('yo@ampasainzvicuna.com');
+        $me = $this->given('yo@example.com', ['portal' => ['admin']]);
+        $this->signedInAs('yo@example.com');
 
         $this->request('PUT', '/api/admin/users/'.$me->getId()->toString(), ['name' => 'Yo', 'active' => true, 'grants' => ['listados' => ['usuario']]]);
 
@@ -155,8 +155,8 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function ni_desactivarse(): void
     {
-        $me = $this->given('yo@ampasainzvicuna.com', ['portal' => ['admin']]);
-        $this->signedInAs('yo@ampasainzvicuna.com');
+        $me = $this->given('yo@example.com', ['portal' => ['admin']]);
+        $this->signedInAs('yo@example.com');
 
         $this->request('PUT', '/api/admin/users/'.$me->getId()->toString(), ['name' => 'Yo', 'active' => false, 'grants' => ['portal' => ['admin']]]);
 
@@ -174,8 +174,8 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function quien_no_gestiona_permisos_no_ve_la_pantalla(): void
     {
-        $this->given('usuario@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('usuario@ampasainzvicuna.com');
+        $this->given('usuario@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('usuario@example.com');
 
         $this->request('GET', '/api/admin/users');
 
@@ -197,13 +197,13 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function cada_uno_elige_su_segundo_correo_y_a_donde_van_sus_avisos(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']]);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']]);
+        $this->signedInAs('vocal@example.com');
 
-        $this->request('PUT', '/api/me/contacto', ['secondaryEmail' => 'vocal@gmail.com', 'notify' => 'secondary']);
+        $this->request('PUT', '/api/me/contacto', ['secondaryEmail' => 'vocal@example.org', 'notify' => 'secondary']);
 
         self::assertSame(200, $this->responseStatus());
-        self::assertSame('vocal@gmail.com', $this->payload()['secondaryEmail']);
+        self::assertSame('vocal@example.org', $this->payload()['secondaryEmail']);
         self::assertSame('secondary', $this->payload()['notify']);
 
         // Y con eso no puede tocarse nada más de su ficha: los permisos siguen igual.
@@ -214,8 +214,8 @@ final class AdminUsersApiTest extends ApiTestCase
     #[Test]
     public function vaciar_el_segundo_correo_vuelve_a_mandar_los_avisos_al_principal(): void
     {
-        $this->given('vocal@ampasainzvicuna.com', ['listados' => ['usuario']], secondaryEmail: 'vocal@gmail.com', notify: NotificationTarget::Secondary);
-        $this->signedInAs('vocal@ampasainzvicuna.com');
+        $this->given('vocal@example.com', ['listados' => ['usuario']], secondaryEmail: 'vocal@example.org', notify: NotificationTarget::Secondary);
+        $this->signedInAs('vocal@example.com');
 
         $this->request('PUT', '/api/me/contacto', ['secondaryEmail' => '', 'notify' => 'primary']);
 

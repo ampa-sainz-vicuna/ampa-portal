@@ -2,7 +2,7 @@
 # Da permisos en PRODUCCIÓN con el comando de consola del portal:
 #
 #   docker compose run --rm gcloud bash deploy/dar-permisos.sh \
-#       admin@ampasainzvicuna.com portal:admin listados:usuario --nombre=Admin --segundo-correo=alguien@gmail.com
+#       admin@example.com portal:admin listados:usuario --nombre=Admin --segundo-correo=alguien@example.org
 #
 # (Nombres con espacios, entre comillas: --nombre="Nombre Apellido".)
 #
