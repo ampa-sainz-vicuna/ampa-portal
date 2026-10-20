@@ -4,6 +4,29 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**20/10/2026 — Correos reales fuera de los tests (repo público)**
+
+- Commit `1542eec`, ya en `main`. **Sin despliegue**: solo cambian tests,
+  ejemplos de los README y comentarios. Unit 142, integración 104, cliente 43,
+  front 41, lint y build en verde.
+- Qué: 192 correos en 18 ficheros (tests de `api/` y `cliente/`,
+  `web/src/App.test.tsx`, `web/src/test/fixtures.tsx`, comentarios de
+  `GrantAccessCommand.php` y `cliente/src/Testing/FakePortal.php`, `README.md`,
+  `cliente/README.md`, `deploy/dar-permisos.sh`).
+- Correspondencia: `@ampasainzvicuna.com` y `@ampa.com` a `@example.com`;
+  `@gmail.com` a `@example.org`; `a@b.com` a `@example.net`. Dominios
+  distintos porque los tests separan la cuenta de Google del «segundo correo»
+  personal y no deben pisarse.
+- Se dejó a propósito: el dominio (cookie `.ampasainzvicuna.com`, URL de las
+  aplicaciones; es público y no es un correo), las cuentas de servicio
+  `…-compute@developer.gserviceaccount.com` de `deploy/` (los scripts las
+  necesitan) y este historial.
+- Decisión: **no se reescribe el historial de git**; los correos siguen en
+  commits viejos porque son buzones de cargos ya públicos en la web y no
+  compensa forzar el push.
+- Trampa: un regex con `ampasainzvicuna\.com` escapado no lo coge una búsqueda
+  simple de `ampasainzvicuna.com`.
+
 **19/10/2026 — Avisos de permisos a Documentos y su latido**
 
 - Commit `473b067` «Avisar a las aplicaciones de los cambios de permisos

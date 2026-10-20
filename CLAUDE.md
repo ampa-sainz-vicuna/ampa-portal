@@ -13,7 +13,9 @@ lo hecho, en [docs/historial.md](docs/historial.md).
 
 Repositorio **público** (las aplicaciones descargan el cliente de la release
 sin credenciales): nada de correos reales en código, migraciones, tests ni
-`.md`.
+`.md`. En tests, `@example.com` (cuenta de la suite), `.org` (segundo correo)
+o `.net`; nunca el dominio real ni gmail. Un grep de `ampasainzvicuna.com` no
+ve los regex con `\.` escapado.
 
 ## Lo propio de este repo
 
@@ -152,9 +154,7 @@ cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
 - **El usuario** lanza `probar-copias.sh` cada mes.
 - **Base y usuario propios de fichajes** (la única con el dueño de Neon):
-  preparado en fichajes; espera al usuario, sin prisa.
-- **Claude, otra sesión (no olvidar)**: repo público y `CalendarApiTest.php`
-  (quizá otros tests) lleva correos reales; pasar a `@example.com`.
+  espera al usuario, sin prisa.
 
 **No hacer sin que lo pida el usuario**: resumen diario de la suite; repaso
 anual de permisos; avisar en la ficha si una cuenta sin buzón deja los avisos
