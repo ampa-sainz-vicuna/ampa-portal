@@ -4,6 +4,23 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**21/10/2026 — Parche de seguridad de PHP (8.4.27) en producción**
+
+- Commit `a78ad1d` «Fija PHP 8.4.27 en la imagen de producción». Dos
+  vulnerabilidades críticas de ejecución remota de código en el núcleo de PHP
+  (GHSA-w8hw-w9fx-j79w y GHSA-6wmf-4rv5-p3rp, CVSS 9.2), sobre todo con
+  mod_php, que es lo que usamos en producción; corregidas en PHP 8.4.27.
+- Qué: `Dockerfile`, `FROM php:8.4-apache` pasa a `FROM php:8.4.27-apache`.
+  Orden del usuario. Se fija la versión exacta para que Cloud Build no monte
+  una 8.4 vieja. **Trampa**: en cada parche futuro de PHP hay que subir esa
+  línea a mano. El entorno local sigue con la etiqueta flotante.
+- Despliegue a mano con `deploy/desplegar.sh`: revisión **`ampa-portal-00029-thg`**,
+  job `portal-migraciones` bien («Migraciones al día»), 100 % del tráfico,
+  etiqueta `commit` correcta. Antes: `ampa-portal-00028-c6s` (`473b067`).
+- El cliente no cambia: sigue en **v0.1.5**. Sin cambios de contrato.
+- `CLAUDE.md`: Stack a PHP 8.4.27 (antes decía 8.4.25), Estado y trampa del
+  `Dockerfile`.
+
 **20/10/2026 — Correos reales fuera de los tests (repo público)**
 
 - Commit `1542eec`, ya en `main`. **Sin despliegue**: solo cambian tests,

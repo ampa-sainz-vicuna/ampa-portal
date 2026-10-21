@@ -29,7 +29,7 @@ del cliente*.
 
 ## Stack
 
-PHP 8.4.25, Symfony 7.4, Doctrine ORM 3.7 / DBAL 4.4, PostgreSQL 16,
+PHP 8.4.27 (imagen fijada en el `Dockerfile`), Symfony 7.4, Doctrine ORM 3.7 / DBAL 4.4, PostgreSQL 16,
 firebase/php-jwt 7.2 (verificar Google y firmar la sesión, HS256), PHPUnit
 13.3. Sin lexik. Front: React 19, MUI 9, `@ampa/ui` 0.2.13, Vitest. Puertos
 (5176 / 8083 / 5435) en el global; base `suite`, tests en `suite_test`.
@@ -70,28 +70,24 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   `https://ampa-portal-273203000301.europe-west1.run.app` (`PORTAL_URL`).
   Secretos `portal-jwt-key` y `portal-database-url`; base `suite` en Neon.
   `--timeout` 300 s (por el latido). `--min-instances=1` **descartado**.
-- **Desplegar, siempre a mano**: **sin workflow de despliegue** (solo
-  `publicar.yml`, etiquetas `v*`): **el push no despliega**. Lo lanza el
-  usuario. `deploy/desplegar.sh` crea la revisión **sin tráfico**, lanza el
-  job **`portal-migraciones`** y solo si sale bien pasa el tráfico. El
-  contenedor no migra al arrancar.
-- **Entrar con Google, en modo redirección**: Google vuelve con un POST a
-  `/api/auth/google/vuelta` (compara la cookie `g_csrf_token` con el campo,
-  comprueba el token y lleva con 303 a `/?entrada=ok|sin-acceso|no-valida|caducada`).
-  Tiene que estar en los **URI de redirección autorizados** del cliente OAuth
-  (si no, `redirect_uri_mismatch`). OAuth *Interno* y `GOOGLE_HOSTED_DOMAIN`:
-  solo `@ampasainzvicuna.com`.
+- **Desplegar, siempre a mano** (`deploy/desplegar.sh`, lo lanza el usuario):
+  **el push no despliega** (no hay workflow; `publicar.yml` solo cuelga
+  etiquetas `v*`). Crea la revisión **sin tráfico**, lanza
+  **`portal-migraciones`** y solo si sale bien pasa el tráfico. El contenedor
+  no migra al arrancar.
+- **Entrar con Google** (redirección): POST a `/api/auth/google/vuelta`; debe
+  estar en los **URI de redirección** del cliente OAuth (si no,
+  `redirect_uri_mismatch`). OAuth *Interno* y `GOOGLE_HOSTED_DOMAIN`: solo
+  `@ampasainzvicuna.com`.
 - **Quién puede llamar a qué**: `/api/acceso` solo con la sesión de una
   persona. `/api/personas`, `/api/avisos` y `/api/calendario` aceptan además el
   **token de identidad de la cuenta de servicio de la suite**
   (`SUITE_TOKEN_AUDIENCE`, `SUITE_SERVICE_ACCOUNTS`; vacías en desarrollo: no
   se acepta ninguno). El portal no distingue qué aplicación llama.
-- **Última entrada** (`lastSeenAt`): como mucho una vez por hora; «Nunca ha
+- **Última entrada** (`lastSeenAt`, como mucho una vez por hora): «Nunca ha
   entrado» en *Permisos* delata un correo mal escrito.
 - **Cuentas sin licencia**: quien no es de la junta entra con **Cloud Identity
-  Free** (sin buzón), correo personal como **segundo correo**, avisos a
-  *segundo*. Sin licencia de Workspace. Cuentas personales: tres cerrojos, en
-  el historial, punto 4.
+  Free** (sin buzón); sus avisos van a su **segundo correo**. Cerrojos: historial, punto 4.
 - **Latido** (`suite-latido`, 4:00 → `POST /api/latido`): mira Neon (avisa ≥ 80 %
   de 100 CU-horas), lanza `ampa-copias` y despierta a las aplicaciones con
   `latido: true` (fichajes, tareas, familias, documentos) en la **raíz del
@@ -104,21 +100,14 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   timeout 10 s; nunca lanza (el latido lo cubre). Detalle en el README.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 8 bases
   a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
-- **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx, fallos de copias y de
-  Cloud Scheduler, a admin@, un correo por hora. 404 y 405 solo `warning`.
-- **Ayuda de la suite**: `GET /api/ayuda` (sesión, filtrado por roles, CORS a
-  las `URL_…` del catálogo y `HELP_ALLOWED_ORIGINS`). Contenido en
-  `ampa-manuales/ayuda/faq.json` (privado), cargado en la pestaña *Ayuda*;
-  el enlace a NotebookLM va en el fichero, no aquí (repo público).
-- **Junta** (`board_members`): cargos con un titular activo (presidencia,
-  vicepresidencia, secretaría, tesorería) o varios (vocal). Pestaña solo admin
-  (`/api/admin/junta`); `GET /api/junta`, cualquier sesión, solo nombre,
-  correo y cargo. **DNI, dirección y teléfono nunca a logs ni errores.** Sin
-  «reactivar»: alta nueva.
-- **Calendario escolar**: curso 2026/27 cargado; lo usa facturación.
-  `GET /api/calendario/publico` (`PublicCalendarController`, firewall `public`)
-  **no pide sesión**: curso de hoy (hora de Madrid; Cloud Run va en UTC) y
-  posteriores; caché 1 h. Lo lee `ampa-web`. No es contrato del cliente.
+- **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx y fallos de copias o de
+  Scheduler, a admin@, una vez por hora (404 y 405, solo `warning`).
+- **Ayuda**: `GET /api/ayuda` (filtrado por roles). El contenido es
+  `ampa-manuales/ayuda/faq.json` (privado); el enlace a NotebookLM va allí.
+- **Junta** (`board_members`): `/api/admin/junta` (solo admin); `GET /api/junta`
+  da solo nombre, correo y cargo. **DNI, dirección y teléfono nunca a logs.**
+- **Calendario**: curso 2026/27; lo usa facturación. `GET /api/calendario/publico`
+  **sin sesión** (hora de Madrid, no UTC), caché 1 h; lo lee `ampa-web`.
 
 ### Dar de alta una aplicación nueva
 
@@ -134,8 +123,8 @@ personas de prueba en la base local con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00028-c6s`** (19/10/2026, commit
-`473b067`; `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`);
+**En producción**: revisión **`ampa-portal-00029-thg`** (21/10/2026, commit
+`a78ad1d`; PHP 8.4.27; `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`);
 cliente **v0.1.5**, el que usan todas las aplicaciones (el contrato no
 cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
 
@@ -143,12 +132,10 @@ cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
 
 - **El usuario** prueba en producción los avisos de permisos: cambiar un rol
   de `documentos`; Claude mira después los registros.
-- **El usuario** mira en los registros del latido de las 4:00 que el paso
-  «familias» sale «hecho» (si 401: `LATIDO_AUDIENCIA` de familias). Sin
-  comprobar aún.
-- **Claude (otra sesión)**: en Neon, **solo consultar**, qué rol es dueño de
-  cada base (`SELECT datname, pg_get_userbyid(datdba) FROM pg_database`); la de
-  familias salió con `listados`.
+- **El usuario** mira en el latido de las 4:00 que «familias» sale «hecho»
+  (si 401: `LATIDO_AUDIENCIA`).
+- **Claude (otra sesión)**: en Neon, **solo consultar** el dueño de cada base
+  (`pg_database`); la de familias salió con `listados`.
 - **El usuario** prueba la pestaña *Junta* y carga los cargos reales.
 - **Claude**: exponer los cargos en `ampa/portal-cliente` (adición, tercera
   cifra) para que fichajes use la secretaría y no `REGISTRO_FIRMA_SECRETARIA`.
@@ -157,9 +144,8 @@ cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
   espera al usuario, sin prisa.
 
 **No hacer sin que lo pida el usuario**: resumen diario de la suite; repaso
-anual de permisos; avisar en la ficha si una cuenta sin buzón deja los avisos
-en *principal*; que el diálogo de la ficha no se cierre al pulsar fuera; un
-buscador en *Permisos*. Ideas sin repo (fase 3): en el historial.
+anual de permisos; avisar en la ficha de cuentas sin buzón con avisos en *principal*; cerrar el
+diálogo de la ficha al pulsar fuera; buscador en *Permisos*. Ideas: historial.
 
 ## Trampas conocidas
 
@@ -184,3 +170,6 @@ buscador en *Permisos*. Ideas sin repo (fase 3): en el historial.
   si fallan raro, repetir solo.
 - Base nueva en Neon: crearla con dueño **`neondb_owner`**, no con el rol de otra
   aplicación.
+- **PHP**: el `Dockerfile` fija `php:8.4.27-apache` (parche de seguridad del
+  21/10/2026). En cada parche nuevo de PHP, subir esa línea a mano, o Cloud Build
+  monta una 8.4 vieja.
