@@ -25,7 +25,7 @@ RUN npm run build
 # 2. Base de ejecución: Apache + PHP con las extensiones que usa el portal.
 #    Apache con mod_php: un único proceso, lo más sencillo de mantener.
 # ---------------------------------------------------------------------------
-FROM php:8.4-apache AS base
+FROM php:8.4.27-apache AS base
 
 COPY --from=mlocati/php-extension-installer:latest /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions pdo_pgsql intl opcache @composer \
