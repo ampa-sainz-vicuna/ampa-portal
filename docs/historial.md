@@ -4,6 +4,38 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**23/10/2026 — Portal instalable en el móvil (PWA)**
+
+- Commit `0343cbd` «Portal instalable en el móvil: manifest, iconos y etiquetas
+  apple-, sin service worker». Mismo criterio que `ampa-familias` (fase 5c,
+  10/10/2026). Lo pidió el usuario y lo aprobó.
+- Qué: `web/public/manifest.webmanifest` («Portal del AMPA», `short_name`
+  «Portal AMPA», `standalone`, tema `#E22333`, `scope` "/");
+  `web/public/icon-192.png`, `icon-512.png` e `icon-maskable-512.png`, copiados
+  de `ampa-familias/web/public` (mismo logo de la suite); `web/index.html`
+  (enlace al manifest y etiquetas `apple-mobile-web-app-*`);
+  `docker/prod/apache.conf` (`AddType application/manifest+json .webmanifest`,
+  para que `nosniff` lo acepte).
+- **Sin service worker, a propósito**: no hay caché vieja tras desplegar.
+- Despliegue a mano por el usuario con `deploy/desplegar.sh`: revisión
+  **`ampa-portal-00030-mct`**, 100 % del tráfico. Antes,
+  `ampa-portal-00029-thg`. El cliente (v0.1.5) y `@ampa/ui` no cambian.
+- Tests: `comprobar.sh front build` → front 41 OK, build OK.
+- **Límite conocido**: un manifest cubre solo su origen
+  (`portal.ampasainzvicuna.com`). El login de Google y las aplicaciones
+  (`listados.`, `facturacion.`…) quedan fuera del scope. En Android se abren
+  en la misma ventana, con barra de URL, y la cookie `.ampasainzvicuna.com` es
+  la de Chrome (debería ir bien). En iPhone, las webs instaladas tienen cookies
+  aparte de Safari y los enlaces fuera de scope pueden abrirse en un navegador
+  interno. **No comprobado** si la sesión llega a las aplicaciones sin volver a
+  entrar.
+- Pendiente del usuario: instalar y probar en Android y en iPhone (entrar con
+  Google; abrir Listados y Facturación; ver si piden entrar de nuevo y si se
+  vuelve al portal instalado). Si en iPhone piden entrar en cada aplicación, la
+  alternativa, decidida por el usuario, es hacer instalables las aplicaciones
+  de uso diario, cada una con su icono.
+- `CLAUDE.md`: Estado, Pendiente y «Cómo funciona hoy» (PWA).
+
 **21/10/2026 — Parche de seguridad de PHP (8.4.27) en producción**
 
 - Commit `a78ad1d` «Fija PHP 8.4.27 en la imagen de producción». Dos

@@ -84,20 +84,17 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   **token de identidad de la cuenta de servicio de la suite**
   (`SUITE_TOKEN_AUDIENCE`, `SUITE_SERVICE_ACCOUNTS`; vacías en desarrollo: no
   se acepta ninguno). El portal no distingue qué aplicación llama.
-- **Última entrada** (`lastSeenAt`, como mucho una vez por hora): «Nunca ha
-  entrado» en *Permisos* delata un correo mal escrito.
+- **Última entrada** (`lastSeenAt`): «Nunca ha entrado» en *Permisos* delata un
+  correo mal escrito.
 - **Cuentas sin licencia**: quien no es de la junta entra con **Cloud Identity
   Free** (sin buzón); sus avisos van a su **segundo correo**. Cerrojos: historial, punto 4.
 - **Latido** (`suite-latido`, 4:00 → `POST /api/latido`): mira Neon (avisa ≥ 80 %
   de 100 CU-horas), lanza `ampa-copias` y despierta a las aplicaciones con
   `latido: true` (fichajes, tareas, familias, documentos) en la **raíz del
-  dominio** aunque la URL lleve ruta. Siempre 200; fallos, `[error]`.
+  dominio**. Siempre 200; fallos, `[error]`.
 - **Avisos de permisos** (`avisos_permisos: true` en `suite.yaml`; hoy solo
-  `documentos`): si cambian los roles de una persona en esa aplicación
-  (también al desactivarla), `GrantsChangeAnnouncer` (en RegisterUser,
-  UpdateUser y GrantAccess) llama por `GrantsChangeNotifier` a
-  `POST {raíz}/api/service/permisos` con ID token y `{"aplicacion": código}`,
-  timeout 10 s; nunca lanza (el latido lo cubre). Detalle en el README.
+  `documentos`): al cambiar roles (o desactivar), `GrantsChangeAnnouncer` llama a
+  `POST {raíz}/api/service/permisos`; timeout 10 s, nunca lanza. Detalle en el README.
 - **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 8 bases
   a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx y fallos de copias o de
@@ -108,28 +105,32 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   da solo nombre, correo y cargo. **DNI, dirección y teléfono nunca a logs.**
 - **Calendario**: curso 2026/27; lo usa facturación. `GET /api/calendario/publico`
   **sin sesión** (hora de Madrid, no UTC), caché 1 h; lo lee `ampa-web`.
+- **PWA**: manifest e iconos en `web/public`, sin service worker a propósito (no
+  hay caché vieja tras desplegar). El manifest cubre solo `portal.` (el login y
+  las aplicaciones quedan fuera del scope).
 
 ### Dar de alta una aplicación nueva
 
-Su entrada en `suite.yaml`
-(nombre visible y roles; `latido: true` si hace algo programado;
-`avisos_permisos: true` si necesita saber al instante los cambios de roles); `URL_X` en
-`api/.env` (su Vite) y en `deploy/desplegar.sh` (su dominio); la tarjeta en
-`web/src/home/Applications.tsx`; su puerto en `HELP_ALLOWED_ORIGINS` de
-`api/.env`; `BASE_X=x-database-url` en `deploy/copias/preparar.sh` (se salta
-hasta que exista el secreto; después, volver a lanzar ese `preparar.sh`); el
-recuento de `HelpApiTest`; el icono en `@ampa/ui`; y los roles de las dos
-personas de prueba en la base local con `app:permisos:dar`.
+Su entrada en `suite.yaml` (`latido` y `avisos_permisos` según haga falta);
+`URL_X` en `api/.env` y en `deploy/desplegar.sh`; la tarjeta en
+`web/src/home/Applications.tsx`; su puerto en `HELP_ALLOWED_ORIGINS`;
+`BASE_X` en `deploy/copias/preparar.sh` (se salta hasta que exista el secreto;
+luego, volver a lanzarlo); el recuento de `HelpApiTest`; el icono en `@ampa/ui`;
+y los roles de las dos personas de prueba con `app:permisos:dar`.
 
 ## Estado
 
-**En producción**: revisión **`ampa-portal-00029-thg`** (21/10/2026, commit
-`a78ad1d`; PHP 8.4.27; `@ampa/ui` 0.2.13; `desplegar.sh` pone la etiqueta `commit`);
-cliente **v0.1.5**, el que usan todas las aplicaciones (el contrato no
-cambió). Copias de **8 bases**. `faq.json` al día en la pestaña *Ayuda*.
+**En producción**: revisión **`ampa-portal-00030-mct`** (23/10/2026, commit
+`0343cbd`: portal instalable, PWA; PHP 8.4.27; `@ampa/ui` 0.2.13); cliente
+**v0.1.5**, el que usan todas las aplicaciones (el contrato no cambió). Copias de
+**8 bases**. `faq.json` al día en la pestaña *Ayuda*.
 
 **Pendiente**
 
+- **El usuario** instala el portal en Android y en iPhone y lo prueba: entrar
+  con Google, abrir Listados y Facturación, ver si piden entrar de nuevo. Si en
+  iPhone piden entrar en cada una, hacer instalables las de uso diario (cada una
+  con su icono). Detalle en [historial](docs/historial.md).
 - **El usuario** prueba en producción los avisos de permisos: cambiar un rol
   de `documentos`; Claude mira después los registros.
 - **El usuario** mira en el latido de las 4:00 que «familias» sale «hecho»
@@ -152,10 +153,9 @@ diálogo de la ficha al pulsar fuera; buscador en *Permisos*. Ideas: historial.
 - Las del [README](README.md#trampas-conocidas): `UserId::__toString()` para
   Doctrine, `when@test` sin autowiring, `status()` final en PHPUnit 13, HS256
   con clave de 32 bytes o más.
-- **Neon**: `compute_time_seconds` es CPU usada, no lo cobrado; sin
-  `consumption_history` en el plan gratuito. El latido calcula **el máximo
-  posible**; la cifra sale en la respuesta de `POST /api/latido`. **Máquina
-  fija en 0,25 CU** (mín. y máx.); una nueva, igual. Detalle en el historial.
+- **Neon**: `compute_time_seconds` es CPU usada, no lo cobrado (sin
+  `consumption_history` en gratis); el latido calcula **el máximo posible**
+  (cifra en `POST /api/latido`). **Máquina fija en 0,25 CU**. Detalle en el historial.
 - `board_members`: el índice único parcial, la FK y los CHECK solo están en la
   migración; un `migrations:diff` propone borrarlos: no aceptarlo.
 - `HeartbeatApiTest` y `HelpApiTest` leen el `suite.yaml` de verdad: al dar de
@@ -170,6 +170,5 @@ diálogo de la ficha al pulsar fuera; buscador en *Permisos*. Ideas: historial.
   si fallan raro, repetir solo.
 - Base nueva en Neon: crearla con dueño **`neondb_owner`**, no con el rol de otra
   aplicación.
-- **PHP**: el `Dockerfile` fija `php:8.4.27-apache` (parche de seguridad del
-  21/10/2026). En cada parche nuevo de PHP, subir esa línea a mano, o Cloud Build
-  monta una 8.4 vieja.
+- **PHP**: el `Dockerfile` fija `php:8.4.27-apache`; en cada parche nuevo de PHP,
+  subir esa línea a mano, o Cloud Build monta una 8.4 vieja.
