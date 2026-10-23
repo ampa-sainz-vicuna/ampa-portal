@@ -4,6 +4,16 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**23/10/2026 — Prueba del portal instalable en el móvil: sin arreglos**
+
+- El usuario instaló el portal en Android y en iPhone y lo probó. Lo da por
+  probado: no ha pedido ningún arreglo, así que **no** se hacen instalables
+  las aplicaciones por separado (la alternativa del punto anterior queda
+  descartada salvo que vuelva a aparecer el problema).
+- Pendiente del punto anterior («instalar y probar en Android y en iPhone»)
+  cerrado. Sin cambios de código ni despliegue.
+- `CLAUDE.md`: se quita ese punto del Pendiente.
+
 **23/10/2026 — Portal instalable en el móvil (PWA)**
 
 - Commit `0343cbd` «Portal instalable en el móvil: manifest, iconos y etiquetas

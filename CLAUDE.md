@@ -127,10 +127,6 @@ y los roles de las dos personas de prueba con `app:permisos:dar`.
 
 **Pendiente**
 
-- **El usuario** instala el portal en Android y en iPhone y lo prueba: entrar
-  con Google, abrir Listados y Facturación, ver si piden entrar de nuevo. Si en
-  iPhone piden entrar en cada una, hacer instalables las de uso diario (cada una
-  con su icono). Detalle en [historial](docs/historial.md).
 - **El usuario** prueba en producción los avisos de permisos: cambiar un rol
   de `documentos`; Claude mira después los registros.
 - **El usuario** mira en el latido de las 4:00 que «familias» sale «hecho»
