@@ -50,6 +50,10 @@ BASES=(
     "BASE_DOCUMENTOS=documentos-database-url"
     # Familias: hasta que exista su secreto, se salta con un aviso.
     "BASE_FAMILIAS=familias-database-url"
+    # Camisetas (de familias): base aparte, en su propio proyecto de Neon,
+    # con pedidos y caja reales. El secreto es de familias; la cuenta de
+    # servicio del job ya puede leerlo (la misma que la de familias).
+    "BASE_CAMISETAS=familias-camisetas-database-url"
 )
 
 SECRETS=""
