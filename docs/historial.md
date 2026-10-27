@@ -4,6 +4,30 @@ La historia del portal, punto por punto, tal como estaba en el `CLAUDE.md`
 hasta el 03/10/2026. Lo que se añada a partir de ahora va **arriba**, lo más
 reciente primero. El resumen para trabajar, en el [`CLAUDE.md`](../CLAUDE.md).
 
+**27/10/2026 — Copias de seguridad: entra la base de camisetas (9 bases)**
+
+- **Qué**: el job `ampa-copias` (`deploy/copias/`) hace ya `pg_dump` de **9 bases**.
+  Se añade `camisetas`, de ampa-familias, que vive en **su propio proyecto de
+  Neon**. Commit `fdd3fc3` «Copias: base de camisetas (BASE_CAMISETAS)»:
+  `BASE_CAMISETAS=familias-camisetas-database-url` en `deploy/copias/preparar.sh`
+  y la lista de bases en `deploy/copias/README.md`.
+- **Por qué**: la base de camisetas guarda pedidos y caja reales y no tenía
+  ninguna copia fuera de Neon.
+- **Despliegue del job**: el usuario relanzó `deploy/copias/preparar.sh` (job
+  actualizado) y una ejecución manual, `ampa-copias-plxsw`, terminó bien con
+  9 bases: portal, fichajes, listados, facturación, tareas, CRM, documentos,
+  familias y camisetas.
+- **Comprobación**: `scripts/probar-copias.sh` (ampa-claude) da **BIEN**. Commit
+  `eb30d34` en ampa-claude: el script ya prueba familias y camisetas.
+- **Trampa nueva**: un secreto con **dos cadenas de conexión pegadas** (pasó con
+  el de camisetas) funciona en la aplicación, porque Doctrine lee la primera,
+  pero `pg_dump` lo rechaza («extra key/value separator = in URI query parameter
+  channel_binding»). Se corrigió el secreto. `ampa-familias/deploy/neon.sh` ya
+  frena ese caso al pegar la cadena.
+- Tests: no aplica (scripts de shell). Nada pendiente nuevo.
+- `CLAUDE.md`: Estado (copias de 9 bases), Cómo funciona (copias) y una trampa
+  nueva. Pendiente, sin cambios.
+
 **23/10/2026 — Prueba del portal instalable en el móvil: sin arreglos**
 
 - El usuario instaló el portal en Android y en iPhone y lo probó. Lo da por

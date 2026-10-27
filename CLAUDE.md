@@ -60,7 +60,7 @@ cliente/src/         PortalAuthenticator, HttpPortal / FakePortal, PortalUser, S
                      controladores de /api/me, salir y latido, ApplicationRoles
 web/src/             home/ (tarjetas), permissions/, calendar/, help/ (las tres, solo admin, con lazy)
 deploy/              desplegar, preparar, dar-permisos, programar (latido), alertas,
-                     copias/ (el job de las copias de seguridad)
+                     copias/ (el job de las copias)
 ```
 
 ## Cómo funciona hoy (lo que hay que saber para tocarlo)
@@ -95,8 +95,8 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
 - **Avisos de permisos** (`avisos_permisos: true` en `suite.yaml`; hoy solo
   `documentos`): al cambiar roles (o desactivar), `GrantsChangeAnnouncer` llama a
   `POST {raíz}/api/service/permisos`; timeout 10 s, nunca lanza. Detalle en el README.
-- **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 8 bases
-  a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
+- **Copias**: job `ampa-copias` (`deploy/copias/`): `pg_dump` de las 9 bases
+  (incluida `camisetas`) a una unidad de Drive, 30 por base. `probar-copias.sh` **cada mes**.
 - **Alertas** (`deploy/alertas.sh`): `[error]`, 5xx y fallos de copias o de
   Scheduler, a admin@, una vez por hora (404 y 405, solo `warning`).
 - **Ayuda**: `GET /api/ayuda` (filtrado por roles). El contenido es
@@ -105,9 +105,8 @@ deploy/              desplegar, preparar, dar-permisos, programar (latido), aler
   da solo nombre, correo y cargo. **DNI, dirección y teléfono nunca a logs.**
 - **Calendario**: curso 2026/27; lo usa facturación. `GET /api/calendario/publico`
   **sin sesión** (hora de Madrid, no UTC), caché 1 h; lo lee `ampa-web`.
-- **PWA**: manifest e iconos en `web/public`, sin service worker a propósito (no
-  hay caché vieja tras desplegar). El manifest cubre solo `portal.` (el login y
-  las aplicaciones quedan fuera del scope).
+- **PWA**: manifest e iconos en `web/public`, sin service worker a propósito. El
+  manifest cubre solo `portal.` (el login y las aplicaciones quedan fuera del scope).
 
 ### Dar de alta una aplicación nueva
 
@@ -123,7 +122,7 @@ y los roles de las dos personas de prueba con `app:permisos:dar`.
 **En producción**: revisión **`ampa-portal-00030-mct`** (23/10/2026, commit
 `0343cbd`: portal instalable, PWA; PHP 8.4.27; `@ampa/ui` 0.2.13); cliente
 **v0.1.5**, el que usan todas las aplicaciones (el contrato no cambió). Copias de
-**8 bases**. `faq.json` al día en la pestaña *Ayuda*.
+**9 bases**. `faq.json` al día en la pestaña *Ayuda*.
 
 **Pendiente**
 
@@ -166,5 +165,6 @@ diálogo de la ficha al pulsar fuera; buscador en *Permisos*. Ideas: historial.
   si fallan raro, repetir solo.
 - Base nueva en Neon: crearla con dueño **`neondb_owner`**, no con el rol de otra
   aplicación.
+- **Copias**: un secreto con **dos cadenas pegadas** funciona en la app, pero `pg_dump` lo rechaza.
 - **PHP**: el `Dockerfile` fija `php:8.4.27-apache`; en cada parche nuevo de PHP,
   subir esa línea a mano, o Cloud Build monta una 8.4 vieja.
